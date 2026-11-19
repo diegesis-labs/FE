@@ -14,11 +14,14 @@ export function HomePage() {
   return (
     <section className="space-y-6">
       <div className="space-y-2">
-        <p className="text-xs font-medium text-brand">MVP</p>
+        <p className="text-xs font-medium text-brand-ink">MVP</p>
         <h1 className="font-display text-3xl leading-tight md:text-4xl">Diegesis</h1>
         <p className="text-muted-foreground">FE 초기 세팅이 완료되었습니다.</p>
+        {/* 타자기 포인트 서체 예시 (docs/design-system.md 3.1) */}
+        <p className="font-typewriter text-sm text-muted-foreground">2026. 11. 19 — 첫 페이지</p>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <Button variant="brand">시작하기</Button>
         <Button onClick={() => health.refetch()} disabled={health.isFetching}>
           {health.isFetching ? '확인 중…' : 'BE 연결 확인'}
         </Button>

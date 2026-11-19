@@ -9,3 +9,6 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 )
+
+// CI 차단 확인용: 일부러 넣은 lint 오류
+const ciBlockCheck = 1

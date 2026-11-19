@@ -1,11 +1,12 @@
-# Phase 01: FSD 구조로 전환
+# Phase 02: FSD 구조로 전환
 
 - 상태: 계획 (승인 대기)
+- 선행 phase: [01 디자인 팔레트를 #4에 맞추기](01-design-palette.md) (먼저 끝나야 시작)
 - 관련 이슈: [#2 FE 아키텍처 설계 및 기술스택 선정](https://github.com/diegesis-labs/FE/issues/2)
 - 브랜치: `setup/2-init` (#2 초기 세팅과 함께 올린다)
 - 계획 커밋: (승인 후 기록)
 - 구현 커밋: (구현 후 기록)
-- 리뷰 문서: [01-fsd-migration-review.md](../reviews/01-fsd-migration-review.md) (리뷰 단계에서 작성)
+- 리뷰 문서: [02-fsd-migration-review.md](../reviews/02-fsd-migration-review.md) (리뷰 단계에서 작성)
 
 ## 목표
 
@@ -109,3 +110,4 @@ pages/home ──> shared/api, shared/ui
 ## 변경 기록
 
 - 2026-11-19: 작성
+- 2026-11-19: 01 → 02로 번호 변경. #4 디자인 팔레트 정렬을 먼저 하기로 해서 순서를 바꿈

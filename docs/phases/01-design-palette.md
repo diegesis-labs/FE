@@ -1,11 +1,11 @@
 # Phase 01: 디자인 팔레트를 #4에 맞추기
 
-- 상태: 진행 중
+- 상태: 리뷰 중
 - 관련 이슈: [#4 이미지 보드 및 컬러 팔레트 공유](https://github.com/diegesis-labs/FE/issues/4)
 - 브랜치: `setup/2-init` (아직 PR 전이라 초기 세팅과 같은 브랜치에서 진행)
-- 계획 커밋: (승인 후 기록)
-- 구현 커밋: (구현 후 기록)
-- 리뷰 문서: [01-design-palette-review.md](../reviews/01-design-palette-review.md) (리뷰 단계에서 작성)
+- 계획 커밋: `154d6bd` (계획 변경 `14fca67`)
+- 구현 커밋: `6ff3454`
+- 리뷰 문서: [01-design-palette-review.md](../reviews/01-design-palette-review.md)
 
 ## 목표
 
@@ -118,14 +118,14 @@
 
 ## 작업 단계
 
-- [ ] 1. `index.css` 팔레트와 의미 토큰을 바꾼다 (라이트).
-- [ ] 2. 다크 모드 토큰을 초록 계열로 바꾼다.
-- [ ] 3. `font-typewriter`와 폰트 링크를 추가한다.
-- [ ] 4. 코드에서 `clay`, `text-brand`(글자 용도) 사용처를 새 토큰으로 바꾼다.
-- [ ] 5. 홈 화면 예시를 고친다.
-- [ ] 6. `design-system.md`를 고친다 (팔레트 표, 대비 표, 다크 모드, 서체, 이미지, 결정 기록).
-- [ ] 7. 바뀐 모든 글자/바탕 조합의 대비를 스크립트로 다시 계산해서 문서 표와 맞는지 확인한다.
-- [ ] 8. `pnpm lint`, `pnpm typecheck`, `pnpm build`를 통과시킨다.
+- [x] 1. `index.css` 팔레트와 의미 토큰을 바꾼다 (라이트).
+- [x] 2. 다크 모드 토큰을 초록 계열로 바꾼다.
+- [x] 3. `font-typewriter`와 폰트 링크를 추가한다.
+- [x] 4. 코드에서 `clay`, `text-brand`(글자 용도) 사용처를 새 토큰으로 바꾼다.
+- [x] 5. 홈 화면 예시를 고친다.
+- [x] 6. `design-system.md`를 고친다 (팔레트 표, 대비 표, 다크 모드, 서체, 이미지, 결정 기록).
+- [x] 7. 바뀐 모든 글자/바탕 조합의 대비를 스크립트로 다시 계산해서 문서 표와 맞는지 확인한다.
+- [x] 8. `pnpm lint`, `pnpm typecheck`, `pnpm build`를 통과시킨다.
 
 ## 완료 기준
 

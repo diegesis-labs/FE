@@ -20,7 +20,7 @@ phase 문서 작성 → 승인 → [커밋·푸시] → 구현 → [커밋·푸�
 
 코드를 한 줄이라도 고치기 전에 `docs/phases/`에 phase 문서를 먼저 쓴다.
 
-- 파일 이름: `NN-짧은-이름.md` (예: `02-fsd-migration.md`). **번호는 실행 순서**다. 보통은 기존 파일의 다음 번호를 쓴다.
+- 파일 이름: `NN-짧은-이름.md` (예: `03-fsd-migration.md`). **번호는 실행 순서**다. 보통은 기존 파일의 다음 번호를 쓴다.
 - 새 phase를 아직 시작하지 않은 phase보다 먼저 해야 하면, 시작 전인 phase들의 번호를 뒤로 미루고(`git mv`) 각 문서의 "변경 기록"에 이유를 적는다. 이미 시작했거나 끝난 phase의 번호는 바꾸지 않는다.
 - 다른 phase가 먼저 끝나야 하면 문서 위쪽에 `선행 phase`를 적는다.
 - 양식: [docs/phases/_template.md](docs/phases/_template.md)를 복사해서 채운다.
@@ -43,7 +43,7 @@ phase 문서 작성 → 승인 → [커밋·푸시] → 구현 → [커밋·푸�
 
 구현이 끝나면 바로 리뷰하지 않는다. `docs/reviews/`에 **리뷰 계획 문서를 먼저 새로 쓴다.**
 
-- 파일 이름: phase와 같은 번호와 이름에 `-review`를 붙인다 (예: `02-fsd-migration-review.md`).
+- 파일 이름: phase와 같은 번호와 이름에 `-review`를 붙인다 (예: `03-fsd-migration-review.md`).
 - 양식: [docs/reviews/_template.md](docs/reviews/_template.md)
 - phase 문서를 다시 읽고, 완료 기준 하나하나를 **어떻게 확인할지**(명령, 볼 파일, 확인할 화면) 적는다.
 - 실제 변경 내용(`git diff`)을 보고, 계획에 없던 변경이나 위험한 부분을 확인 항목에 추가한다.

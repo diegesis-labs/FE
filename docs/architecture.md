@@ -94,3 +94,53 @@ export function useStory(id: string) {
 ## 5. 배포
 
 정적 파일(`dist/`)만 나오므로 Vercel, Netlify, Cloudflare Pages 같은 정적 호스팅에 올리면 된다. SPA라서 모든 경로를 `index.html`로 돌려주는 rewrite 설정이 필요하다. 배포처는 아직 정하지 않았다.
+
+## 6. CI와 브랜치 규칙
+
+> 관련 phase: [02 CI와 브랜치 보호](phases/02-ci-branch-protection.md)
+
+### CI (GitHub Actions)
+
+`.github/workflows/ci.yml`이 `main`을 향한 PR과 `main` 푸시 때 실행된다. job 이름은 `check`이고, 순서대로 실행한다.
+
+1. `pnpm install --frozen-lockfile` (lockfile 버전만 설치, `pnpm-workspace.yaml` 보안 설정 적용)
+2. `pnpm format:check`
+3. `pnpm lint`
+4. `pnpm typecheck`
+5. `pnpm build`
+
+보안 설정:
+
+- 워크플로 토큰 권한은 `contents: read`뿐이다. 비밀값은 쓰지 않고, `pull_request_target`도 쓰지 않는다.
+- 액션은 커밋 SHA로 고정한다. 레포 설정(`sha_pinning_required`)이 태그로 지정한 액션의 실행을 거부한다.
+- Dependabot이 매주 GitHub Actions 업데이트를 PR로 올린다. 배포된 지 3일 지난 버전만 제안한다. npm 패키지는 자동 업데이트하지 않는다.
+
+### `main` 보호 (ruleset)
+
+설정 파일: `.github/rulesets/main.json`
+
+| 규칙                  | 값                                        |
+| --------------------- | ----------------------------------------- |
+| PR 필수               | 켬 (직접 푸시 금지)                       |
+| 필수 승인 수          | 0 (쓰기 권한자가 1명이라서. 늘면 1로)     |
+| 리뷰 대화 해결 필수   | 켬                                        |
+| 필수 상태 검사        | `check` (GitHub Actions에서 온 것만 인정) |
+| 최신 `main` 반영 필수 | 끔                                        |
+| 머지 방식             | merge commit만                            |
+| force push, 삭제      | 금지                                      |
+| 우회                  | 없음 (관리자 포함)                        |
+
+ruleset을 바꿀 때는 파일을 먼저 고친 뒤 적용한다.
+
+```bash
+# 처음 만들 때
+gh api -X POST repos/diegesis-labs/FE/rulesets --input .github/rulesets/main.json
+# 바꿀 때 (ID는 gh api repos/diegesis-labs/FE/rulesets 로 확인)
+gh api -X PUT repos/diegesis-labs/FE/rulesets/<ID> --input .github/rulesets/main.json
+```
+
+### 레포 설정
+
+- 머지 방식: merge commit만 허용 (squash, rebase 끔)
+- 머지 후 브랜치 자동 삭제: 켬
+- 새 PR 작성 화면에는 `.github/pull_request_template.md`가 자동으로 들어간다.

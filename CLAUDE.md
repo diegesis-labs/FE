@@ -157,3 +157,11 @@ pnpm이 없으면 `corepack enable`을 먼저 실행한다 (버전은 `package.j
 - `main`에 직접 푸시, force push, PR 머지는 사용자가 명시적으로 요청할 때만 한다.
 - 커밋 메시지는 `종류(범위): 설명` 형식으로 쓴다 (`feat`, `fix`, `refactor`, `docs`, `chore`, `style`).
 - 한 커밋에 계획 문서와 코드를 섞지 않는다.
+
+### CI와 머지
+
+- `main`은 ruleset으로 보호된다: PR 필수, CI(`check`) 통과 필수, 리뷰 댓글 해결 필수, force push·삭제 금지. 관리자도 우회할 수 없다. 자세한 내용은 [docs/architecture.md](docs/architecture.md) 6장.
+- PR을 올리기 전에 로컬에서 `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`를 통과시킨다. CI도 같은 명령을 돌린다.
+- 머지는 **merge commit으로만** 한다. squash·rebase는 커밋 해시를 바꿔서 phase·리뷰 문서에 적은 해시가 끊긴다.
+- 워크플로의 액션은 태그가 아니라 **커밋 SHA로 고정**한다 (`uses: owner/action@<40자리 SHA> # vX.Y.Z`). 레포 설정이 태그 사용을 거부한다.
+- ruleset을 바꿀 때는 `.github/rulesets/main.json`을 먼저 고치고 API로 적용해서, 파일과 실제 설정을 항상 같게 유지한다. ruleset 변경은 사용자 승인을 받는다.

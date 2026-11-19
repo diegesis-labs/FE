@@ -139,6 +139,15 @@ gh api -X POST repos/diegesis-labs/FE/rulesets --input .github/rulesets/main.jso
 gh api -X PUT repos/diegesis-labs/FE/rulesets/<ID> --input .github/rulesets/main.json
 ```
 
+### 긴급할 때 (ruleset 우회)
+
+ruleset에는 우회 권한이 없어서 관리자도 CI를 건너뛸 수 없다. 정말 급하게 `main`을 고쳐야 하면(예: CI 자체가 고장 나서 어떤 PR도 머지할 수 없을 때):
+
+1. 사용자(레포 관리자)의 승인을 받는다.
+2. ruleset을 잠시 끈다: `.github/rulesets/main.json`의 `enforcement`를 `disabled`로 바꿔 `PUT`으로 적용한다.
+3. 필요한 작업을 한 뒤 바로 `active`로 되돌려 적용한다.
+4. 언제, 왜, 무엇을 했는지 해당 phase 문서나 이슈에 기록한다.
+
 ### 레포 설정
 
 - 머지 방식: merge commit만 허용 (squash, rebase 끔)

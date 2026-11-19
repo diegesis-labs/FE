@@ -21,6 +21,7 @@ export function HomePage() {
         <p className="font-typewriter text-sm text-muted-foreground">2026. 11. 19 — 첫 페이지</p>
       </div>
       <div className="flex flex-wrap items-center gap-3">
+        {/* 브랜드 버튼 예시. 홈 화면은 임시이며 실제 동작은 #3 화면 설계 후 연결한다. */}
         <Button variant="brand">시작하기</Button>
         <Button onClick={() => health.refetch()} disabled={health.isFetching}>
           {health.isFetching ? '확인 중…' : 'BE 연결 확인'}

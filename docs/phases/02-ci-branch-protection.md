@@ -1,12 +1,12 @@
 # Phase 02: CI와 브랜치 보호
 
-- 상태: 승인됨
+- 상태: 리뷰 중
 - 선행 phase: [01 디자인 팔레트](01-design-palette.md) (완료)
 - 관련 이슈: [#2 FE 아키텍처 설계 및 기술스택 선정](https://github.com/diegesis-labs/FE/issues/2) (레포 초기 세팅의 일부)
 - 브랜치: `setup/2-init` (열려 있는 [PR #5](https://github.com/diegesis-labs/FE/pull/5)에 이어서 올린다. 아래 "열린 질문 3" 참고)
-- 계획 커밋: (승인 후 기록)
-- 구현 커밋: (구현 후 기록)
-- 리뷰 문서: [02-ci-branch-protection-review.md](../reviews/02-ci-branch-protection-review.md) (리뷰 단계에서 작성)
+- 계획 커밋: `6388ab2`
+- 구현 커밋: `2d0e17b`, `984c2da` (ruleset 파일 보정)
+- 리뷰 문서: [02-ci-branch-protection-review.md](../reviews/02-ci-branch-protection-review.md)
 
 ## 목표
 
@@ -183,15 +183,15 @@ npm 패키지는 없음. GitHub Actions 3개(`actions/checkout`, `actions/setup-
 
 ## 작업 단계
 
-- [ ] 1. 액션 3개의 최신 릴리스와 커밋 SHA를 다시 확인한다.
-- [ ] 2. `ci.yml`을 만든다.
-- [ ] 3. PR 템플릿과 `dependabot.yml`을 만든다.
-- [ ] 4. `.github/rulesets/main.json`을 만든다.
-- [ ] 5. `CLAUDE.md`, `architecture.md`를 고친다.
-- [ ] 6. 로컬에서 `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`를 통과시킨다.
-- [ ] 7. 커밋·푸시하고, PR #5에서 CI가 실행되어 통과하는지 확인한다.
-- [ ] 8. CI가 통과한 것을 확인한 뒤 레포 설정을 바꾸고 ruleset을 적용한다. (CI 이름 `check`가 한 번 실행된 뒤에 필수 검사로 걸어야 PR #5가 막히지 않는다)
-- [ ] 9. 보호가 실제로 동작하는지 확인한다 (완료 기준 참고). 확인용으로 만든 브랜치와 PR은 닫고 지운다.
+- [x] 1. 액션 3개의 최신 릴리스와 커밋 SHA를 다시 확인한다.
+- [x] 2. `ci.yml`을 만든다.
+- [x] 3. PR 템플릿과 `dependabot.yml`을 만든다.
+- [x] 4. `.github/rulesets/main.json`을 만든다.
+- [x] 5. `CLAUDE.md`, `architecture.md`를 고친다.
+- [x] 6. 로컬에서 `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`를 통과시킨다.
+- [x] 7. 커밋·푸시하고, PR #5에서 CI가 실행되어 통과하는지 확인한다.
+- [x] 8. CI가 통과한 것을 확인한 뒤 레포 설정을 바꾸고 ruleset을 적용한다. (CI 이름 `check`가 한 번 실행된 뒤에 필수 검사로 걸어야 PR #5가 막히지 않는다)
+- [x] 9. 보호가 실제로 동작하는지 확인한다 (완료 기준 참고). 확인용으로 만든 브랜치와 PR은 닫고 지운다.
 
 ## 완료 기준
 

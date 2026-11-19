@@ -1,6 +1,6 @@
 # Phase 02: CI와 브랜치 보호
 
-- 상태: 리뷰 중
+- 상태: 리뷰 중 (PR #5 머지 후 확인 대기)
 - 선행 phase: [01 디자인 팔레트](01-design-palette.md) (완료)
 - 관련 이슈: [#2 FE 아키텍처 설계 및 기술스택 선정](https://github.com/diegesis-labs/FE/issues/2) (레포 초기 세팅의 일부)
 - 브랜치: `setup/2-init` (열려 있는 [PR #5](https://github.com/diegesis-labs/FE/pull/5)에 이어서 올린다. 아래 "열린 질문 3" 참고)
@@ -218,3 +218,7 @@ npm 패키지는 없음. GitHub Actions 3개(`actions/checkout`, `actions/setup-
 ## 변경 기록
 
 - 2026-11-19: 작성. 기존 Phase 02(FSD 전환)를 03으로 미루고 이 phase를 02로 넣음
+- 2026-11-19: 구현 중 달라진 점 (리뷰에서 확인)
+  - 캐시: 계획의 `setup-node` `cache: pnpm` 대신 `pnpm/action-setup`의 `cache: true`를 쓰고 `setup-node`의 패키지 매니저 캐시는 끔. `setup-node`의 pnpm 캐시는 pnpm이 먼저 설치되어 있어야 하는데, pnpm 설치를 `pnpm/action-setup`이 맡기 때문
+  - ruleset 필수 상태 검사에 `integration_id: 15368`(GitHub Actions)을 붙임. 다른 앱이나 API가 같은 이름(`check`)의 상태를 올려 검사를 통과시키는 것을 막기 위함
+  - GitHub이 기본값으로 채운 `pull_request` 파라미터 3개를 ruleset 파일에도 적어서 파일과 실제 설정을 일치시킴

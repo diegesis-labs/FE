@@ -1,12 +1,12 @@
 # Phase 04: 가드레일 lint
 
-- 상태: 리뷰 중 (리뷰 계획 작성 전)
+- 상태: 완료 (2026-11-20, 리뷰 수정 후 통과. 머지는 PR [#10](https://github.com/diegesis-labs/FE/pull/10))
 - 선행 phase: [03 FSD 구조로 전환](03-fsd-migration.md) (레이어 폴더가 있어야 레이어별 규칙을 걸 수 있다)
 - 관련 이슈: [#8 가드레일 lint: 코드 규칙을 ESLint로 강제](https://github.com/diegesis-labs/FE/issues/8)
 - 브랜치: `setup/8-guardrail-lint` (`main`의 `17ae620`에서 만듦. `setup/2-init`은 PR #5로 머지됐다)
 - 계획 커밋: `9dbb1c1`
 - 구현 커밋: `6bf180a` (그 전에 `main` 머지 `78046c2`로 Phase 03 반영)
-- 리뷰 문서: [04-guardrail-lint-review.md](../reviews/04-guardrail-lint-review.md) (리뷰 단계에서 작성)
+- 리뷰 문서: [04-guardrail-lint-review.md](../reviews/04-guardrail-lint-review.md)
 
 ## 목표
 
@@ -171,16 +171,16 @@ export default defineConfig([
 
 ## 완료 기준
 
-- [ ] `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`가 통과한다.
-- [ ] `pnpm lint`가 ESLint, steiger, 가드레일 자체 검사를 모두 실행한다.
-- [ ] 위 규칙 표의 규칙마다 걸려야 하는 사례와 걸리면 안 되는 사례가 `scripts/check-guardrails.mjs`에 있고 모두 기대대로 나온다.
-- [ ] `eslint.config.js`에서 규칙 하나를 빼면 `pnpm lint:guardrails`가 실패한다 (확인 후 되돌림).
-- [ ] 제품 레이어 파일에 `// eslint-disable-next-line`을 붙여도 규칙 위반이 그대로 보고된다.
-- [ ] 에러 메시지가 한국어이고 대신 쓸 것을 알려준다.
-- [ ] `docs/guardrails.md`에 CLAUDE.md "코드 규칙"과 "Git" 절의 규칙이 모두 들어 있고, 각 규칙의 강제 수단이 실제 설정과 맞다.
-- [ ] 새 의존성이 없다 (`package.json`, `pnpm-lock.yaml`의 의존성 목록이 바뀌지 않음).
-- [ ] 빌드한 CSS(`dist/assets/*.css`)에 `--color-red-500`, `--color-white` 같은 Tailwind 기본 색 변수가 없다.
-- [ ] 개발 서버에서 홈, 404, 테마 전환(라이트·다크) 화면이 이전과 똑같다.
+- [x] `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`가 통과한다.
+- [x] `pnpm lint`가 ESLint, steiger, 가드레일 자체 검사를 모두 실행한다.
+- [x] 위 규칙 표의 규칙마다 걸려야 하는 사례와 걸리면 안 되는 사례가 `scripts/check-guardrails.mjs`에 있고 모두 기대대로 나온다.
+- [x] `eslint.config.js`에서 규칙 하나를 빼면 `pnpm lint:guardrails`가 실패한다 (확인 후 되돌림).
+- [x] 제품 레이어 파일에 `// eslint-disable-next-line`을 붙여도 규칙 위반이 그대로 보고된다.
+- [x] 에러 메시지가 한국어이고 대신 쓸 것을 알려준다.
+- [x] `docs/guardrails.md`에 CLAUDE.md "코드 규칙"과 "Git" 절의 규칙이 모두 들어 있고, 각 규칙의 강제 수단이 실제 설정과 맞다.
+- [x] 새 의존성이 없다 (`package.json`, `pnpm-lock.yaml`의 의존성 목록이 바뀌지 않음).
+- [x] 빌드한 CSS(`dist/assets/*.css`)에 `--color-red-500`, `--color-white` 같은 Tailwind 기본 색 변수가 없다.
+- [x] 개발 서버에서 홈, 404, 테마 전환(라이트·다크) 화면이 이전과 똑같다.
 
 ## 위험과 열린 질문
 
@@ -197,3 +197,4 @@ export default defineConfig([
 - 2026-11-20: Tailwind 기본 팔레트 끄기를 범위에 넣음 (사용자 결정). 기본 색 클래스 lint 추가. PR #5 머지로 브랜치를 `main`에서 새로 따기로 함
 - 2026-11-20: 승인. 이슈 #8 생성, 브랜치 `setup/8-guardrail-lint`
 - 2026-11-20: 구현 완료. 계획과 다른 점: (1) 시작 전에 `main`을 머지해 Phase 03의 FSD 레이어 위에서 작업 (`78046c2`). (2) 금지 목록을 조금 넓힘: `useInsertionEffect`, 전역 객체 `self`, HTTP 라이브러리 `node-fetch`·`cross-fetch`. Tailwind 기본 색 이름은 설치된 `tailwindcss/theme.css`에서 읽어 `mauve`·`olive`·`mist`·`taupe`까지 넣음. (3) 자체 검사 사례 28개. 규칙을 지워 보는 확인은 세 가지로 함: 제품 레이어 블록에서 색 규칙을 빼면(덮어쓰기 함정) 6개, 타이머 규칙을 빼면 2개, `noInlineConfig`를 빼면 1개 사례가 실패. (4) 기존 코드에서 새 규칙에 걸린 곳은 없었음. (5) 기본 팔레트를 끈 뒤 빌드 CSS에서 빠진 클래스는 `bg-red-500`, `text-stone-600`, `text-white`뿐이고 모두 문서 예시 문구에서 생긴 것. headless 브라우저로 `main`과 홈(라이트·다크)·404 스크린샷을 비교해 픽셀 동일
+- 2026-11-20: 리뷰 반영 (`3bfd34e`): 문자열 안의 hex 값과 `rgb()`·`oklch()` 같은 색 함수도 금지, 자체 검사 사례 28 → 38개, `docs/guardrails.md`에 빠진 Git 규칙과 규칙이 못 잡는 경우 추가. 남은 일: shadcn 오버레이용 의미 토큰(리뷰 발견 4), Tailwind의 `docs/` 스캔 제외(리뷰 발견 6). 완료 처리

@@ -36,24 +36,24 @@
 
 ### FSD 배치 (현재 → 이동 후)
 
-| 현재                             | 이동 후                                        | 레이어   | 비고                                                                  |
-| -------------------------------- | ---------------------------------------------- | -------- | --------------------------------------------------------------------- |
-| `src/main.tsx`                   | 그대로                                         | –        | Vite 진입점. `@/app`만 import                                         |
-| `src/index.css`                  | `src/app/styles/index.css`                     | app      | 전역 스타일과 디자인 토큰                                             |
-| `src/app/App.tsx`                | `src/app/App.tsx`                              | app      | Provider 조립                                                         |
-| `src/app/query-client.ts`        | `src/app/providers/query-client.ts`            | app      |                                                                       |
-| `src/app/router.tsx`             | `src/app/router/router.tsx`                    | app      |                                                                       |
-| `src/app/RootLayout.tsx`         | `src/app/layouts/RootLayout.tsx`               | app      | 헤더는 widgets로 분리                                                 |
-| (RootLayout 안의 헤더)           | `src/widgets/header/ui/Header.tsx`             | widgets  | 워드마크 + 테마 버튼                                                  |
-| `src/components/ThemeToggle.tsx` | `src/features/theme-toggle/ui/ThemeToggle.tsx` | features | 사용자 동작 "테마 바꾸기"                                             |
-| `src/shared/theme/*`             | `src/shared/lib/theme/*`                       | shared   | Provider와 `useTheme`. features와 app이 둘 다 써야 해서 shared에 둔다 |
-| `src/components/ui/button.tsx`   | `src/shared/ui/button.tsx`                     | shared   | shadcn                                                                |
-| `src/lib/utils.ts`               | `src/shared/lib/utils.ts`                      | shared   | `cn`                                                                  |
-| `src/shared/api/client.ts`       | 그대로 + `src/shared/api/index.ts`             | shared   |                                                                       |
-| `src/pages/HomePage.tsx`         | `src/pages/home/ui/HomePage.tsx`               | pages    | 헬스체크 쿼리는 `pages/home/api/health.ts`로 분리                     |
-| `src/pages/NotFoundPage.tsx`     | `src/pages/not-found/ui/NotFoundPage.tsx`      | pages    |                                                                       |
-| `src/pages/RouteErrorPage.tsx`   | `src/pages/route-error/ui/RouteErrorPage.tsx`  | pages    | 라우터 `ErrorBoundary`                                                |
-| –                                | `src/entities/.gitkeep`                        | entities | 빈 레이어                                                             |
+| 현재                             | 이동 후                                        | 레이어   | 비고                                                                                 |
+| -------------------------------- | ---------------------------------------------- | -------- | ------------------------------------------------------------------------------------ |
+| `src/main.tsx`                   | 그대로                                         | –        | Vite 진입점. `@/app`만 import                                                        |
+| `src/index.css`                  | `src/app/styles/index.css`                     | app      | 전역 스타일과 디자인 토큰                                                            |
+| `src/app/App.tsx`                | `src/app/App.tsx`                              | app      | Provider 조립                                                                        |
+| `src/app/query-client.ts`        | `src/app/api/query-client.ts`                  | app      | 서버 데이터 캐시 설정. steiger `segments-by-purpose` 때문에 `providers`가 아닌 `api` |
+| `src/app/router.tsx`             | `src/app/router/router.tsx`                    | app      |                                                                                      |
+| `src/app/RootLayout.tsx`         | `src/app/layouts/RootLayout.tsx`               | app      | 헤더는 widgets로 분리                                                                |
+| (RootLayout 안의 헤더)           | `src/widgets/header/ui/Header.tsx`             | widgets  | 워드마크 + 테마 버튼                                                                 |
+| `src/components/ThemeToggle.tsx` | `src/features/theme-toggle/ui/ThemeToggle.tsx` | features | 사용자 동작 "테마 바꾸기"                                                            |
+| `src/shared/theme/*`             | `src/shared/lib/theme/*`                       | shared   | Provider와 `useTheme`. features와 app이 둘 다 써야 해서 shared에 둔다                |
+| `src/components/ui/button.tsx`   | `src/shared/ui/button.tsx`                     | shared   | shadcn                                                                               |
+| `src/lib/utils.ts`               | `src/shared/lib/utils.ts`                      | shared   | `cn`                                                                                 |
+| `src/shared/api/client.ts`       | 그대로 + `src/shared/api/index.ts`             | shared   |                                                                                      |
+| `src/pages/HomePage.tsx`         | `src/pages/home/ui/HomePage.tsx`               | pages    | 헬스체크 쿼리는 `pages/home/api/health.ts`로 분리                                    |
+| `src/pages/NotFoundPage.tsx`     | `src/pages/not-found/ui/NotFoundPage.tsx`      | pages    |                                                                                      |
+| `src/pages/RouteErrorPage.tsx`   | `src/pages/route-error/ui/RouteErrorPage.tsx`  | pages    | 라우터 `ErrorBoundary`                                                               |
+| –                                | `src/entities/.gitkeep`                        | entities | 빈 레이어                                                                            |
 
 이동 후 import 방향:
 
@@ -104,7 +104,7 @@ pages/home ──> shared/api, shared/ui
 
 ## 위험과 열린 질문
 
-- steiger가 아직 0.x 버전이라 규칙이 바뀔 수 있다. 너무 엄격한 규칙(예: 슬라이스 하나만 쓰는 레이어 경고)은 설정에서 끈다.
+- steiger가 아직 0.x 버전이라 규칙이 바뀔 수 있다. 너무 엄격한 규칙(예: 슬라이스 하나만 쓰는 레이어 경고)은 설정에서 끈다. 구현 중 확인 결과: `fsd/insignificant-slice`(한 곳에서만 쓰는 슬라이스 경고)가 `features/theme-toggle`에 걸려서 끈다. 기능이 늘어 슬라이스가 여러 곳에서 쓰이면 다시 켤지 정한다.
 - 화면 확인은 브라우저가 있어야 한다. 이 작업 환경에서 브라우저를 못 쓰면 리뷰 문서에 "확인 못 함"으로 남기고 사용자에게 확인을 부탁한다.
 
 ## 변경 기록
@@ -114,3 +114,4 @@ pages/home ──> shared/api, shared/ui
 - 2026-11-19: 02 → 03으로 번호 변경. CI와 브랜치 보호(새 Phase 02)를 먼저 하기로 함. FSD 검사(steiger)는 Phase 02에서 만든 CI의 `pnpm lint`로 함께 돌게 된다
 - 2026-11-20: 브랜치를 `setup/2-init` → `setup/2-fsd-migration`으로 변경. PR #5가 머지되어 `main`에서 새로 땀. 이 phase가 끝나면 Phase 04 가드레일 lint([#8](https://github.com/diegesis-labs/FE/issues/8))를 시작할 수 있다
 - 2026-11-20: 승인
+- 2026-11-20: 계획 변경 - steiger 첫 실행 결과 반영. `app/providers` → `app/api` (`fsd/segments-by-purpose`: 세그먼트 이름은 내용물이 아니라 목적을 나타내야 함). `fsd/insignificant-slice`는 끈다 (위험에서 예상한 경우)

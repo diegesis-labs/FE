@@ -1,9 +1,9 @@
 # Phase 03: FSD 구조로 전환
 
-- 상태: 계획 (승인 대기)
-- 선행 phase: [01 디자인 팔레트](01-design-palette.md) (완료), [02 CI와 브랜치 보호](02-ci-branch-protection.md) (CI에서 FSD 검사까지 돌리기 위해 먼저 끝나야 시작)
+- 상태: 승인됨
+- 선행 phase: [01 디자인 팔레트](01-design-palette.md) (완료), [02 CI와 브랜치 보호](02-ci-branch-protection.md) (완료. CI에서 FSD 검사까지 돌리기 위해 먼저 끝나야 시작)
 - 관련 이슈: [#2 FE 아키텍처 설계 및 기술스택 선정](https://github.com/diegesis-labs/FE/issues/2)
-- 브랜치: `setup/2-init` (#2 초기 세팅과 함께 올린다)
+- 브랜치: `setup/2-fsd-migration` (`main`의 `0039d14`에서 만듦. #2 초기 세팅 브랜치 `setup/2-init`은 PR #5로 머지됐다)
 - 계획 커밋: (승인 후 기록)
 - 구현 커밋: (구현 후 기록)
 - 리뷰 문서: [03-fsd-migration-review.md](../reviews/03-fsd-migration-review.md) (리뷰 단계에서 작성)
@@ -112,3 +112,5 @@ pages/home ──> shared/api, shared/ui
 - 2026-11-19: 작성
 - 2026-11-19: 01 → 02로 번호 변경. #4 디자인 팔레트 정렬을 먼저 하기로 해서 순서를 바꿈
 - 2026-11-19: 02 → 03으로 번호 변경. CI와 브랜치 보호(새 Phase 02)를 먼저 하기로 함. FSD 검사(steiger)는 Phase 02에서 만든 CI의 `pnpm lint`로 함께 돌게 된다
+- 2026-11-20: 브랜치를 `setup/2-init` → `setup/2-fsd-migration`으로 변경. PR #5가 머지되어 `main`에서 새로 땀. 이 phase가 끝나면 Phase 04 가드레일 lint([#8](https://github.com/diegesis-labs/FE/issues/8))를 시작할 수 있다
+- 2026-11-20: 승인

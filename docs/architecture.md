@@ -25,31 +25,40 @@
 
 ## 2. 폴더 구조
 
+[Feature-Sliced Design](https://feature-sliced.design)을 따른다. 레이어, 슬라이스, Public API 규칙은 [CLAUDE.md](../CLAUDE.md) "아키텍처 (FSD)"에 있고, `pnpm lint`가 steiger(`steiger.config.ts`)로 검사한다.
+
 ```
 src/
-├── app/                # 앱 전체 설정: 진입 컴포넌트, 라우터, QueryClient, 공통 레이아웃
-│   ├── App.tsx
-│   ├── router.tsx      # 모든 라우트 정의
-│   ├── RootLayout.tsx
-│   └── query-client.ts
-├── pages/              # 라우트 하나 = 페이지 컴포넌트 하나. 화면 조립만 하고 로직은 features로
-├── features/           # 기능 단위 모듈 (예: features/auth, features/story)
-│   └── <feature>/
-│       ├── api.ts      # 이 기능의 API 함수 + TanStack Query 훅
-│       ├── components/ # 이 기능에서만 쓰는 컴포넌트
-│       └── types.ts
-├── components/
-│   └── ui/             # shadcn/ui 컴포넌트 (pnpm dlx shadcn add <name>)
-├── shared/             # 기능에 상관없이 공통으로 쓰는 코드
-│   └── api/client.ts   # fetch 래퍼, ApiError
-└── lib/utils.ts        # cn() 등 유틸
+├── main.tsx                  # Vite 진입점. @/app만 import
+├── app/                      # 앱 초기화
+│   ├── App.tsx               # Provider 조립, 전역 스타일 import
+│   ├── index.ts
+│   ├── api/query-client.ts   # TanStack Query 기본 설정
+│   ├── layouts/RootLayout.tsx
+│   ├── router/router.tsx     # 모든 라우트 정의
+│   └── styles/index.css      # 전역 스타일, 디자인 토큰
+├── pages/                    # 라우트 하나 = 슬라이스 하나
+│   ├── home/                 # ui/HomePage.tsx, api/health.ts, index.ts
+│   ├── not-found/
+│   └── route-error/          # 라우터 ErrorBoundary
+├── widgets/
+│   └── header/               # 워드마크 + 테마 버튼
+├── features/
+│   └── theme-toggle/         # 사용자 동작 "테마 바꾸기"
+├── entities/                 # (아직 없음. BE API가 정해지면 추가)
+└── shared/
+    ├── api/                  # apiClient(fetch 래퍼), ApiError
+    ├── lib/
+    │   ├── theme/            # ThemeProvider, useTheme
+    │   └── utils.ts          # cn()
+    └── ui/                   # shadcn/ui 컴포넌트 (pnpm dlx shadcn add <name>)
 ```
 
-규칙:
+규칙 요약 (자세한 것은 CLAUDE.md):
 
-- import는 `@/` 별칭을 쓴다 (`@/features/auth/api`).
-- `features/A`가 `features/B`의 내부 파일을 직접 가져다 쓰지 않는다. 여러 기능이 같이 쓰게 되면 `shared/`로 올린다.
-- `pages/`는 얇게 유지한다. 데이터 호출과 상태는 `features/`의 훅으로 뺀다.
+- 위 레이어만 아래 레이어를 import 한다. 같은 레이어의 슬라이스끼리는 import 하지 않는다.
+- 슬라이스 밖에서는 `index.ts`로만 import 한다 (`@/features/theme-toggle`). `shared/ui`만 파일별로 import 한다 (`@/shared/ui/button`).
+- `pages`는 얇게 유지한다. 한 페이지에서만 쓰는 코드는 그 페이지 슬라이스 안에 두고, 두 곳 이상에서 쓰이면 아래 레이어로 내린다.
 
 ## 3. BE API 연동
 
@@ -105,7 +114,7 @@ export function useStory(id: string) {
 
 1. `pnpm install --frozen-lockfile` (lockfile 버전만 설치, `pnpm-workspace.yaml` 보안 설정 적용)
 2. `pnpm format:check`
-3. `pnpm lint`
+3. `pnpm lint` (ESLint + steiger FSD 검사)
 4. `pnpm typecheck`
 5. `pnpm build`
 

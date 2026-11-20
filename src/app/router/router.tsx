@@ -1,9 +1,10 @@
 import { createBrowserRouter } from 'react-router'
 
-import { RootLayout } from '@/app/RootLayout'
-import { HomePage } from '@/pages/HomePage'
-import { NotFoundPage } from '@/pages/NotFoundPage'
-import { RouteErrorPage } from '@/pages/RouteErrorPage'
+import { HomePage } from '@/pages/home'
+import { NotFoundPage } from '@/pages/not-found'
+import { RouteErrorPage } from '@/pages/route-error'
+
+import { RootLayout } from '../layouts/RootLayout'
 
 // Data mode 라우터. 나중에 SSR/prerender가 필요해지면
 // React Router framework mode로 옮길 수 있도록 라우트 단위로 페이지를 나눠 둔다.

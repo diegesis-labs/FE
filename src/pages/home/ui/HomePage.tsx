@@ -1,15 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { Button } from '@/components/ui/button'
-import { apiClient } from '@/shared/api/client'
+import { Button } from '@/shared/ui/button'
+
+import { healthQuery } from '../api/health'
 
 export function HomePage() {
-  // BE 연결 확인용 예시. BE에 헬스체크 엔드포인트가 정해지면 경로를 맞춘다.
-  const health = useQuery({
-    queryKey: ['health'],
-    queryFn: () => apiClient.get<{ status: string }>('/health'),
-    enabled: false,
-  })
+  const health = useQuery(healthQuery)
 
   return (
     <section className="space-y-6">

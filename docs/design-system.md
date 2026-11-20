@@ -137,7 +137,7 @@ MVP에 포함한다. #4의 **Piano Bench 초록**을 바탕으로 쓴다. 밤의
 - 사용자는 헤더의 버튼으로 **시스템 설정 → 라이트 → 다크** 순으로 바꿀 수 있다. 기본값은 시스템 설정을 따른다.
 - 선택은 `localStorage`(`diegesis-theme` 키)에 저장된다.
 - `index.html`의 작은 스크립트가 React보다 먼저 테마를 적용해서, 새로고침할 때 화면이 하얗게 깜빡이지 않는다.
-- 구현: `src/shared/theme/` (`ThemeProvider`, `useTheme`), `src/components/ThemeToggle.tsx`. `<html>`에 `dark` 클래스를 붙이는 방식이라 Tailwind의 `dark:` 접두사도 쓸 수 있다. 하지만 **의미 토큰을 쓰면 `dark:`를 쓸 일이 거의 없다.**
+- 구현: `src/shared/lib/theme/` (`ThemeProvider`, `useTheme`), `src/features/theme-toggle/`. `<html>`에 `dark` 클래스를 붙이는 방식이라 Tailwind의 `dark:` 접두사도 쓸 수 있다. 하지만 **의미 토큰을 쓰면 `dark:`를 쓸 일이 거의 없다.**
 - 사진처럼 다크에서 너무 밝아 보이는 요소는 `dark:brightness-90` 정도로 살짝 낮춘다.
 
 ### 1.7 대비 (WCAG)
@@ -253,7 +253,7 @@ MVP에 포함한다. #4의 **Piano Bench 초록**을 바탕으로 쓴다. 밤의
 
 ## 4. 컴포넌트
 
-shadcn/ui 컴포넌트를 쓰되, 아래 규칙에 맞게 `src/components/ui/`의 코드를 고친다.
+shadcn/ui 컴포넌트를 쓰되, 아래 규칙에 맞게 `src/shared/ui/`의 코드를 고친다.
 
 ### 4.1 버튼
 
@@ -322,7 +322,7 @@ shadcn/ui 컴포넌트를 쓰되, 아래 규칙에 맞게 `src/components/ui/`�
 - 색은 의미 토큰 클래스만 쓴다: `bg-background`, `text-foreground`, `text-muted-foreground`, `border-border`, `bg-accent`, `bg-brand`, `text-brand-ink` 등. `#333` 같은 값을 직접 쓰지 않는다.
 - 브랜드 색 글자는 `text-brand`가 아니라 **`text-brand-ink`**를 쓴다 (1.3 참고).
 - 팔레트 원색이 꼭 필요하면 `bg-cream-100`, `text-sand-600`처럼 팔레트 클래스를 쓴다. 이때는 다크 모드 값도 직접 챙겨야 한다.
-- 토큰 정의 위치: `src/index.css` (`@theme` 팔레트, `:root` 라이트, `.dark` 다크).
+- 토큰 정의 위치: `src/app/styles/index.css` (`@theme` 팔레트, `:root` 라이트, `.dark` 다크).
 - 테마: `useTheme()`으로 현재 테마를 읽거나 바꾼다.
 - 폰트 로딩: `index.html`에서 Pretendard(jsDelivr), Gowun Batang·Courier Prime·Nanum Gothic Coding(Google Fonts)을 불러온다.
 

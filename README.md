@@ -22,7 +22,7 @@ pnpm dev               # http://localhost:5173
 | `pnpm dev`                          | 개발 서버                           |
 | `pnpm build`                        | 타입 체크 + 프로덕션 빌드 (`dist/`) |
 | `pnpm preview`                      | 빌드 결과 미리보기                  |
-| `pnpm lint`                         | ESLint                              |
+| `pnpm lint`                         | ESLint + FSD 규칙 검사(steiger)     |
 | `pnpm typecheck`                    | TypeScript 타입 체크                |
 | `pnpm format` / `pnpm format:check` | Prettier 포맷 적용 / 확인           |
 

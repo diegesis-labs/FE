@@ -135,7 +135,7 @@ import { ThemeToggle } from '@/features/theme-toggle/ui/ThemeToggle'
 
 ```bash
 pnpm dev            # 개발 서버
-pnpm lint           # ESLint
+pnpm lint           # ESLint + FSD 규칙 검사(steiger)
 pnpm typecheck      # 타입 체크
 pnpm build          # 타입 체크 + 빌드
 pnpm format         # Prettier

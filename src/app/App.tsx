@@ -1,9 +1,11 @@
 import { QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router/dom'
 
-import { queryClient } from '@/app/query-client'
-import { router } from '@/app/router'
-import { ThemeProvider } from '@/shared/theme/ThemeProvider'
+import { ThemeProvider } from '@/shared/lib/theme'
+
+import { queryClient } from './api/query-client'
+import { router } from './router/router'
+import './styles/index.css'
 
 export function App() {
   return (

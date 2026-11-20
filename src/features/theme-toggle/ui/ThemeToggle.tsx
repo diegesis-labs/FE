@@ -1,7 +1,7 @@
 import { Monitor, Moon, Sun } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
-import { useTheme, type Theme } from '@/shared/theme/theme-context'
+import { useTheme, type Theme } from '@/shared/lib/theme'
+import { Button } from '@/shared/ui/button'
 
 const NEXT: Record<Theme, Theme> = { system: 'light', light: 'dark', dark: 'system' }
 const LABEL: Record<Theme, string> = {

@@ -1,11 +1,11 @@
 # Phase 04: 가드레일 lint
 
-- 상태: 승인됨
+- 상태: 리뷰 중 (리뷰 계획 작성 전)
 - 선행 phase: [03 FSD 구조로 전환](03-fsd-migration.md) (레이어 폴더가 있어야 레이어별 규칙을 걸 수 있다)
 - 관련 이슈: [#8 가드레일 lint: 코드 규칙을 ESLint로 강제](https://github.com/diegesis-labs/FE/issues/8)
 - 브랜치: `setup/8-guardrail-lint` (`main`의 `17ae620`에서 만듦. `setup/2-init`은 PR #5로 머지됐다)
-- 계획 커밋: (승인 후 기록)
-- 구현 커밋: (구현 후 기록)
+- 계획 커밋: `9dbb1c1`
+- 구현 커밋: `6bf180a` (그 전에 `main` 머지 `78046c2`로 Phase 03 반영)
 - 리뷰 문서: [04-guardrail-lint-review.md](../reviews/04-guardrail-lint-review.md) (리뷰 단계에서 작성)
 
 ## 목표
@@ -161,13 +161,13 @@ export default defineConfig([
 
 ## 작업 단계
 
-- [ ] 1. `index.css`에 `--color-*: initial;`을 넣고, 빌드한 CSS에 기본 색 변수가 없는지와 화면이 그대로인지 확인한다.
-- [ ] 2. `eslint.config.js`에 규칙 옵션 상수와 규칙 블록을 추가한다.
-- [ ] 3. `pnpm lint`를 돌려 기존 코드의 위반을 확인한다. 위반이 있으면 규칙이 맞는지 먼저 따지고, 코드를 고칠지 규칙 범위를 고칠지 phase 문서에 적는다.
-- [ ] 4. `scripts/check-guardrails.mjs`와 사례를 만들고 `package.json`의 `lint`에 넣는다.
-- [ ] 5. 설정에서 규칙 하나를 일부러 지워 보고 `pnpm lint:guardrails`가 실패하는지 확인한 뒤 되돌린다.
-- [ ] 6. `docs/guardrails.md`를 쓰고 CLAUDE.md, `docs/architecture.md`를 고친다.
-- [ ] 7. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`를 통과시킨다.
+- [x] 1. `index.css`에 `--color-*: initial;`을 넣고, 빌드한 CSS에 기본 색 변수가 없는지와 화면이 그대로인지 확인한다.
+- [x] 2. `eslint.config.js`에 규칙 옵션 상수와 규칙 블록을 추가한다.
+- [x] 3. `pnpm lint`를 돌려 기존 코드의 위반을 확인한다. 위반이 있으면 규칙이 맞는지 먼저 따지고, 코드를 고칠지 규칙 범위를 고칠지 phase 문서에 적는다.
+- [x] 4. `scripts/check-guardrails.mjs`와 사례를 만들고 `package.json`의 `lint`에 넣는다.
+- [x] 5. 설정에서 규칙 하나를 일부러 지워 보고 `pnpm lint:guardrails`가 실패하는지 확인한 뒤 되돌린다.
+- [x] 6. `docs/guardrails.md`를 쓰고 CLAUDE.md, `docs/architecture.md`를 고친다.
+- [x] 7. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`를 통과시킨다.
 
 ## 완료 기준
 
@@ -196,3 +196,4 @@ export default defineConfig([
 - 2026-11-20: 작성
 - 2026-11-20: Tailwind 기본 팔레트 끄기를 범위에 넣음 (사용자 결정). 기본 색 클래스 lint 추가. PR #5 머지로 브랜치를 `main`에서 새로 따기로 함
 - 2026-11-20: 승인. 이슈 #8 생성, 브랜치 `setup/8-guardrail-lint`
+- 2026-11-20: 구현 완료. 계획과 다른 점: (1) 시작 전에 `main`을 머지해 Phase 03의 FSD 레이어 위에서 작업 (`78046c2`). (2) 금지 목록을 조금 넓힘: `useInsertionEffect`, 전역 객체 `self`, HTTP 라이브러리 `node-fetch`·`cross-fetch`. Tailwind 기본 색 이름은 설치된 `tailwindcss/theme.css`에서 읽어 `mauve`·`olive`·`mist`·`taupe`까지 넣음. (3) 자체 검사 사례 28개. 규칙을 지워 보는 확인은 세 가지로 함: 제품 레이어 블록에서 색 규칙을 빼면(덮어쓰기 함정) 6개, 타이머 규칙을 빼면 2개, `noInlineConfig`를 빼면 1개 사례가 실패. (4) 기존 코드에서 새 규칙에 걸린 곳은 없었음. (5) 기본 팔레트를 끈 뒤 빌드 CSS에서 빠진 클래스는 `bg-red-500`, `text-stone-600`, `text-white`뿐이고 모두 문서 예시 문구에서 생긴 것. headless 브라우저로 `main`과 홈(라이트·다크)·404 스크린샷을 비교해 픽셀 동일

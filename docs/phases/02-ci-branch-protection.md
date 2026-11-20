@@ -1,9 +1,9 @@
 # Phase 02: CI와 브랜치 보호
 
-- 상태: 리뷰 중 (PR #5 머지 후 확인 대기)
+- 상태: 완료 (2026-11-20, PR #5 머지 `17ae620`)
 - 선행 phase: [01 디자인 팔레트](01-design-palette.md) (완료)
 - 관련 이슈: [#2 FE 아키텍처 설계 및 기술스택 선정](https://github.com/diegesis-labs/FE/issues/2) (레포 초기 세팅의 일부)
-- 브랜치: `setup/2-init` (열려 있는 [PR #5](https://github.com/diegesis-labs/FE/pull/5)에 이어서 올린다. 아래 "열린 질문 3" 참고)
+- 브랜치: `setup/2-init` ([PR #5](https://github.com/diegesis-labs/FE/pull/5)로 머지됨. 아래 "열린 질문 3" 참고). 완료 기록은 `docs/2-phase02-complete`
 - 계획 커밋: `6388ab2`
 - 구현 커밋: `2d0e17b`, `984c2da` (ruleset 파일 보정)
 - 리뷰 문서: [02-ci-branch-protection-review.md](../reviews/02-ci-branch-protection-review.md)
@@ -195,15 +195,15 @@ npm 패키지는 없음. GitHub Actions 3개(`actions/checkout`, `actions/setup-
 
 ## 완료 기준
 
-- [ ] PR #5에서 CI(`check`)가 자동으로 실행되고 통과한다.
-- [ ] 워크플로의 모든 `uses:`가 40자리 커밋 SHA로 고정되어 있고, 워크플로 권한이 `contents: read`뿐이다.
-- [ ] `main`에 직접 푸시하면 거부된다 (`git push`가 ruleset 위반으로 실패하는지 확인).
-- [ ] CI가 실패하는 PR은 머지할 수 없다. 일부러 lint 오류를 넣은 확인용 PR을 열어 `mergeStateStatus`가 `BLOCKED`인지 확인한 뒤 닫고 브랜치를 지운다.
-- [ ] 머지 버튼에 merge commit 방식만 보인다 (레포 설정 API로 squash·rebase가 꺼졌는지 확인).
-- [ ] `gh api repos/diegesis-labs/FE/rulesets`로 읽은 실제 ruleset이 `.github/rulesets/main.json`과 같은 내용이다.
-- [ ] 태그로 지정한 액션은 실행이 거부된다 (Actions 설정 API의 `sha_pinning_required: true` 확인).
-- [ ] PR 템플릿이 새 PR 작성 화면에 나온다.
-- [ ] `CLAUDE.md`와 `architecture.md`에 CI·머지 규칙이 적혀 있다.
+- [x] PR #5에서 CI(`check`)가 자동으로 실행되고 통과한다.
+- [x] 워크플로의 모든 `uses:`가 40자리 커밋 SHA로 고정되어 있고, 워크플로 권한이 `contents: read`뿐이다.
+- [x] `main`에 직접 푸시하면 거부된다 (`git push`가 ruleset 위반으로 실패하는지 확인).
+- [x] CI가 실패하는 PR은 머지할 수 없다. 일부러 lint 오류를 넣은 확인용 PR을 열어 `mergeStateStatus`가 `BLOCKED`인지 확인한 뒤 닫고 브랜치를 지운다.
+- [x] 머지 버튼에 merge commit 방식만 보인다 (레포 설정 API로 squash·rebase가 꺼졌는지 확인).
+- [x] `gh api repos/diegesis-labs/FE/rulesets`로 읽은 실제 ruleset이 `.github/rulesets/main.json`과 같은 내용이다.
+- [x] 태그로 지정한 액션은 실행이 거부된다 (Actions 설정 API의 `sha_pinning_required: true` 확인). 설정값만 확인, 실제 거부는 시험하지 않음 (리뷰 3절)
+- [x] PR 템플릿이 새 PR 작성 화면에 나온다.
+- [x] `CLAUDE.md`와 `architecture.md`에 CI·머지 규칙이 적혀 있다.
 
 ## 위험과 열린 질문
 
@@ -222,3 +222,4 @@ npm 패키지는 없음. GitHub Actions 3개(`actions/checkout`, `actions/setup-
   - 캐시: 계획의 `setup-node` `cache: pnpm` 대신 `pnpm/action-setup`의 `cache: true`를 쓰고 `setup-node`의 패키지 매니저 캐시는 끔. `setup-node`의 pnpm 캐시는 pnpm이 먼저 설치되어 있어야 하는데, pnpm 설치를 `pnpm/action-setup`이 맡기 때문
   - ruleset 필수 상태 검사에 `integration_id: 15368`(GitHub Actions)을 붙임. 다른 앱이나 API가 같은 이름(`check`)의 상태를 올려 검사를 통과시키는 것을 막기 위함
   - GitHub이 기본값으로 채운 `pull_request` 파라미터 3개를 ruleset 파일에도 적어서 파일과 실제 설정을 일치시킴
+- 2026-11-20: PR #5 머지(`17ae620`) 후 PR 템플릿 인식과 Dependabot 실행을 확인하고 완료로 닫음

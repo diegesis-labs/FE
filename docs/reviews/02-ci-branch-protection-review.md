@@ -4,7 +4,7 @@
 - 리뷰 대상: 브랜치 `setup/2-init`, 기준 커밋 `984c2da` (구현 커밋 `2d0e17b` + ruleset 파일 보정 `984c2da`)
 - 리뷰 계획 커밋: `936d59f`
 - 작성일: 2026-11-19
-- 결과: 수정 후 통과 (PR #5 머지 후 확인할 2건 제외, 3절 참고)
+- 결과: 수정 후 통과 (2026-11-20 PR #5 머지 후 남은 확인까지 마침. 태그 액션 실제 거부만 미시험, 3절)
 
 ## 1. 리뷰 계획
 
@@ -45,7 +45,7 @@
 | 5   | 머지 버튼에 merge commit 방식만 보인다                                       | 레포 설정 API에서 `allow_squash_merge`, `allow_rebase_merge`가 `false`인지 확인                                            | 통과. `allow_squash_merge: false`, `allow_rebase_merge: false`, `allow_merge_commit: true`, `delete_branch_on_merge: true`                                              |
 | 6   | 실제 ruleset이 `.github/rulesets/main.json`과 같다                           | ruleset API 응답과 파일을 스크립트로 항목별 비교                                                                           | 통과. ruleset API 응답과 파일을 항목별로 비교해 차이 0건 (처음 비교 때 GitHub 기본값 3개가 파일에 없어서 `984c2da`에서 보정함)                                          |
 | 7   | 태그로 지정한 액션은 실행이 거부된다                                         | Actions 설정 API의 `sha_pinning_required: true` 확인. 실제 거부는 태그를 쓴 워크플로를 돌려야 해서 이번에는 설정값만 확인  | 부분 통과. `sha_pinning_required: true` 확인. 태그를 쓴 워크플로가 실제로 거부되는지는 시험하지 않음 (3절)                                                              |
-| 8   | PR 템플릿이 새 PR 작성 화면에 나온다                                         | 템플릿은 **기본 브랜치(`main`)에 있어야** 적용된다. 지금 `main`에는 아직 없으므로 PR #5 머지 후 확인                       | **확인 못 함**. 템플릿은 `main`에 있어야 적용되는데 아직 PR #5가 머지되지 않음 (3절)                                                                                    |
+| 8   | PR 템플릿이 새 PR 작성 화면에 나온다                                         | 템플릿은 **기본 브랜치(`main`)에 있어야** 적용된다. 지금 `main`에는 아직 없으므로 PR #5 머지 후 확인                       | 통과 (2026-11-20). `main` 머지 후 community profile API가 `.github/pull_request_template.md`를 이 레포의 PR 템플릿으로 인식함. 웹 작성 화면 자체는 직접 보지 않음       |
 | 9   | `CLAUDE.md`와 `architecture.md`에 CI·머지 규칙이 적혀 있다                   | 두 문서의 해당 절 확인, 문서 내용과 실제 설정(1.1 표) 대조                                                                 | 통과. `CLAUDE.md` "CI와 머지" 절, `architecture.md` 6장이 실제 설정(1.1 표)과 일치. 긴급 절차가 빠져 있어서 추가함 (발견 사항 1)                                        |
 
 ### 1.3 공통 확인 항목
@@ -82,10 +82,14 @@
 
 ## 3. 확인 못 한 것
 
-- **PR 템플릿 적용** (완료 기준 8): 템플릿과 Dependabot 설정은 기본 브랜치(`main`)에 들어가야 동작한다. PR #5가 머지된 뒤 새 PR 작성 화면과 Dependabot 탭에서 확인한다.
-- **Dependabot 설정 검증**: 같은 이유로 `main`에 들어간 뒤 GitHub이 설정 파일을 읽어 오류가 없는지(Insights → Dependency graph → Dependabot) 확인한다.
 - **태그로 지정한 액션의 실제 거부** (완료 기준 7): 설정값은 확인했지만, 태그를 쓴 워크플로를 실제로 돌려 보지는 않았다. 일부러 규칙을 어긴 워크플로를 만들어야 해서 이번에는 하지 않았다.
+
+### PR #5 머지 후 확인한 것 (2026-11-20)
+
+- **PR 템플릿** (완료 기준 8): `gh api repos/diegesis-labs/FE/community/profile`의 `files.pull_request_template`이 `main`의 `.github/pull_request_template.md`를 가리킨다. 웹의 새 PR 작성 화면은 직접 보지 않았다.
+- **Dependabot 설정**: 머지 직후 `Dependabot Updates` 실행이 성공했다. 로그의 작업 정의에 `cooldown.default-days: 3`, 그룹 `actions`, 커밋 접두사 `chore`가 설정대로 들어갔고, 액션 3개 모두 "No update needed"로 끝났다. Dependabot PR은 없다.
+- **`main` 푸시 CI**: 머지 커밋 `17ae620`에서 CI(`check`)가 성공했다.
 
 ## 4. 결론
 
-완료 기준 9개 중 7개 통과, 1개 부분 통과(태그 액션 거부는 설정값만 확인), 1개(PR 템플릿)는 PR #5 머지 후 확인한다. 높음·중간 심각도 문제는 없고, 낮음 4건은 문서 보완과 기록으로 처리했다. PR #5 머지 후 3절의 항목을 확인하면 phase를 완료로 닫는다.
+완료 기준 9개 중 8개 통과, 1개 부분 통과(태그 액션 거부는 설정값만 확인). 높음·중간 심각도 문제는 없고, 낮음 4건은 문서 보완과 기록으로 처리했다. PR #5 머지 후 남은 확인(PR 템플릿, Dependabot)을 마치고 2026-11-20 phase를 완료로 닫았다.

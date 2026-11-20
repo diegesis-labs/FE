@@ -131,6 +131,53 @@ const CASES = [
     code: `// eslint-disable-next-line no-restricted-globals -- 쓸 일 없음\nexport const a = 1`,
     expect: 'unused-disable',
   },
+  // 리뷰 04에서 추가: 규칙마다 통과 사례, 클래스 밖의 색 값, 알려진 동작
+  {
+    file: 'src/pages/x/api/x.ts',
+    code: `import { useQuery } from '@tanstack/react-query'\nimport { apiClient } from '@/shared/api'\nvoid useQuery\nvoid apiClient`,
+    expect: null,
+  },
+  {
+    file: 'src/pages/x/ui/X.tsx',
+    code: `export const c = 'w-[320px] grid-cols-[1fr_auto] bg-(--sidebar-width)'`,
+    expect: null,
+  },
+  {
+    file: 'src/pages/x/ui/X.tsx',
+    code: `export const X = () => <div style={{ color: '#333' }} />`,
+    expect: 'no-restricted-syntax',
+  },
+  {
+    file: 'src/shared/ui/x.tsx',
+    code: `export const s = { border: '1px solid #cccccc' }`,
+    expect: 'no-restricted-syntax',
+  },
+  {
+    file: 'src/pages/x/ui/X.tsx',
+    code: `export const c = 'bg-[rgb(0,0,0)]'`,
+    expect: 'no-restricted-syntax',
+  },
+  {
+    file: 'src/app/x.ts',
+    code: `export const c = 'oklch(0.5 0.1 20)'`,
+    expect: 'no-restricted-syntax',
+  },
+  {
+    file: 'src/pages/x/ui/X.tsx',
+    code: `export const X = () => <a href="#main">본문으로</a>`,
+    expect: null,
+  },
+  { file: 'src/pages/x/ui/X.tsx', code: `export const t = '#1 이야기 (2)'`, expect: null },
+  {
+    file: 'src/pages/x/ui/X.tsx',
+    code: `import * as React from 'react'\nvoid React`,
+    expect: 'no-restricted-imports',
+  },
+  {
+    file: 'src/shared/lib/x.ts',
+    code: `// eslint-disable-next-line no-restricted-globals -- shared는 주석으로 끌 수 있다\nfetch('/a')`,
+    expect: null,
+  },
 ]
 
 const eslint = new ESLint()

@@ -23,6 +23,9 @@ const TAILWIND_PALETTE =
 const OUR_PALETTE_CLASS = String.raw`\b[a-z-]+-(${OUR_PALETTE})-\d+\b`
 const TAILWIND_PALETTE_CLASS = String.raw`\b[a-z-]+-((${TAILWIND_PALETTE})-\d+|white|black)\b`
 const HEX_ARBITRARY = String.raw`\[#[0-9a-fA-F]`
+// 인라인 style 등 클래스 밖의 색 값: '#333', '1px solid #ccc', 'rgb(0 0 0)', 'oklch(…)'
+const HEX_VALUE = String.raw`(^|[\s(,])#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b`
+const COLOR_FUNCTION = String.raw`\b(rgba?|hsla?|hwb|lab|lch|oklab|oklch)\(`
 
 const MSG = {
   palette:
@@ -39,14 +42,15 @@ const MSG = {
 }
 
 const colorSyntax = [
-  ...[OUR_PALETTE_CLASS, TAILWIND_PALETTE_CLASS, HEX_ARBITRARY].flatMap((pattern, i) => {
-    const message = [MSG.palette, MSG.tailwindPalette, MSG.hex][i]
-    return [
-      { selector: `Literal[value=/${pattern}/]`, message },
-      { selector: `TemplateElement[value.raw=/${pattern}/]`, message },
-    ]
-  }),
-]
+  [OUR_PALETTE_CLASS, MSG.palette],
+  [TAILWIND_PALETTE_CLASS, MSG.tailwindPalette],
+  [HEX_ARBITRARY, MSG.hex],
+  [HEX_VALUE, MSG.hex],
+  [COLOR_FUNCTION, MSG.hex],
+].flatMap(([pattern, message]) => [
+  { selector: `Literal[value=/${pattern}/]`, message },
+  { selector: `TemplateElement[value.raw=/${pattern}/]`, message },
+])
 const effectSyntax = [
   {
     selector:

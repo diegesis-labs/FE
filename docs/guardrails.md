@@ -13,19 +13,20 @@
 
 ## 코드 규칙
 
-| CLAUDE.md 규칙                                | 강제 수단                                                                                          | 위치                                              |
-| --------------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| BE 호출은 `@/shared/api`의 `apiClient`만 쓴다 | ESLint: `shared/api` 밖에서 `fetch`, `window.fetch` 등 금지 (`no-restricted-globals`·`properties`) | `eslint.config.js`                                |
-| axios 같은 HTTP 라이브러리를 추가하지 않는다  | ESLint: `axios`, `ky`, `ofetch` 등 import 금지 (`no-restricted-imports`)                           | `eslint.config.js`                                |
-| 색은 의미 토큰 클래스만 쓴다                  | ESLint: 팔레트 클래스, Tailwind 기본 색 클래스, `[#hex]` 임의값 금지 (`no-restricted-syntax`)      | `eslint.config.js`                                |
-| (위와 같음)                                   | CSS: Tailwind 기본 팔레트를 꺼서 `red-500`, `white` 같은 클래스가 생기지 않음                      | `src/app/styles/index.css` (`--color-*: initial`) |
-| 제품 코드에서 Effect·타이머를 쓰지 않는다     | ESLint: `pages`·`widgets`·`features`·`entities`에서 `useEffect`, `setTimeout` 등 금지              | `eslint.config.js`                                |
-| 규칙을 주석으로 끄지 않는다                   | ESLint: 제품 레이어에서 `eslint-disable` 무효(`noInlineConfig`), 쓰이지 않는 disable 주석 에러     | `eslint.config.js`                                |
-| 서버 데이터는 TanStack Query로 다룬다         | 일부: Effect 금지가 "Effect 안에서 fetch" 패턴을 막는다. TanStack Query 권장 규칙                  | `eslint.config.js`                                |
-| 쿼리 키는 슬라이스의 `api/`에서 함께 정의한다 | 없음                                                                                               | –                                                 |
-| shadcn 컴포넌트는 `shared/ui`에 생긴다        | 설정                                                                                               | `components.json`                                 |
-| 사용자에게 보이는 문구는 한국어로 쓴다        | 없음                                                                                               | –                                                 |
-| 가드레일 규칙이 실제로 걸린다                 | 가드레일 자체 검사 (`pnpm lint:guardrails`)                                                        | `scripts/check-guardrails.mjs`                    |
+| CLAUDE.md 규칙                                              | 강제 수단                                                                                                                                                                                                                                                    | 위치                                              |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| BE 호출은 `@/shared/api`의 `apiClient`만 쓴다               | ESLint: `shared/api` 밖에서 `fetch`, `window.fetch` 등 금지 (`no-restricted-globals`·`properties`)                                                                                                                                                           | `eslint.config.js`                                |
+| axios 같은 HTTP 라이브러리를 추가하지 않는다                | ESLint: `axios`, `ky`, `ofetch` 등 import 금지 (`no-restricted-imports`)                                                                                                                                                                                     | `eslint.config.js`                                |
+| 색은 의미 토큰 클래스만 쓴다                                | ESLint: 팔레트 클래스, Tailwind 기본 색 클래스, `[#hex]`·`[rgb(…)]` 임의값, 문자열 안의 `#333`·`rgb()`·`oklch()` 같은 색 값 금지 (`no-restricted-syntax`). 동적으로 조립한 클래스(`` `bg-${tone}-700` ``)는 못 잡는다 (Tailwind도 이런 클래스는 만들지 않음) | `eslint.config.js`                                |
+| (위와 같음)                                                 | CSS: Tailwind 기본 팔레트를 꺼서 `red-500`, `white` 같은 클래스가 생기지 않음                                                                                                                                                                                | `src/app/styles/index.css` (`--color-*: initial`) |
+| 제품 코드에서 Effect·타이머를 쓰지 않는다                   | ESLint: `pages`·`widgets`·`features`·`entities`에서 `useEffect`(별칭·`import * as React` 포함), `setTimeout`, `window.setTimeout` 등 금지. `const w = window; w.setTimeout()`처럼 변수에 담아 부르면 못 잡는다                                               | `eslint.config.js`                                |
+| 규칙을 주석으로 끄지 않는다                                 | ESLint: 제품 레이어에서 `eslint-disable` 무효(`noInlineConfig`), 쓰이지 않는 disable 주석 에러                                                                                                                                                               | `eslint.config.js`                                |
+| 서버 데이터는 TanStack Query로 다룬다                       | 일부: Effect 금지가 "Effect 안에서 fetch" 패턴을 막는다. TanStack Query 권장 규칙                                                                                                                                                                            | `eslint.config.js`                                |
+| 쿼리 키는 슬라이스의 `api/`에서 함께 정의한다               | 없음                                                                                                                                                                                                                                                         | –                                                 |
+| shadcn 컴포넌트는 `shared/ui`에 생긴다                      | 설정                                                                                                                                                                                                                                                         | `components.json`                                 |
+| shadcn 컴포넌트를 추가한 뒤 디자인 시스템 4장에 맞게 고친다 | 일부: shadcn 기본 코드의 기본 색(`bg-black/50` 등)은 ESLint가 잡는다. 모서리·그림자 같은 나머지는 없음                                                                                                                                                       | `eslint.config.js`                                |
+| 사용자에게 보이는 문구는 한국어로 쓴다                      | 없음                                                                                                                                                                                                                                                         | –                                                 |
+| 가드레일 규칙이 실제로 걸린다                               | 가드레일 자체 검사 (`pnpm lint:guardrails`)                                                                                                                                                                                                                  | `scripts/check-guardrails.mjs`                    |
 
 ## 아키텍처 (FSD)
 
@@ -41,17 +42,21 @@
 
 ## 작업 순서와 Git
 
-| CLAUDE.md 규칙                                            | 강제 수단                        | 위치                         |
-| --------------------------------------------------------- | -------------------------------- | ---------------------------- |
-| `main`은 PR로만 바뀐다 (직접 푸시, force push, 삭제 금지) | ruleset                          | `.github/rulesets/main.json` |
-| CI(`check`) 통과, 리뷰 대화 해결 후에만 머지한다          | ruleset                          | `.github/rulesets/main.json` |
-| 머지는 merge commit으로만 한다                            | 레포 설정, ruleset               | `.github/rulesets/main.json` |
-| PR 전에 format·lint·typecheck·build를 통과시킨다          | CI가 같은 명령을 돌린다          | `.github/workflows/ci.yml`   |
-| 워크플로 액션은 커밋 SHA로 고정한다                       | 레포 설정 `sha_pinning_required` | GitHub 레포 설정             |
-| phase 문서를 승인받고 코드보다 먼저 커밋한다              | 없음                             | –                            |
-| 한 커밋에 계획 문서와 코드를 섞지 않는다                  | 없음                             | –                            |
-| 커밋 메시지는 `종류(범위): 설명` 형식                     | 없음                             | –                            |
-| 브랜치 이름은 `<종류>/<이슈번호>-<설명>`                  | 없음                             | –                            |
+| CLAUDE.md 규칙                                               | 강제 수단                                              | 위치                               |
+| ------------------------------------------------------------ | ------------------------------------------------------ | ---------------------------------- |
+| `main`은 PR로만 바뀐다 (직접 푸시, force push, 삭제 금지)    | ruleset                                                | `.github/rulesets/main.json`       |
+| CI(`check`) 통과, 리뷰 대화 해결 후에만 머지한다             | ruleset                                                | `.github/rulesets/main.json`       |
+| 머지는 merge commit으로만 한다                               | 레포 설정, ruleset                                     | `.github/rulesets/main.json`       |
+| PR 전에 format·lint·typecheck·build를 통과시킨다             | CI가 같은 명령을 돌린다                                | `.github/workflows/ci.yml`         |
+| 워크플로 액션은 커밋 SHA로 고정한다                          | 레포 설정 `sha_pinning_required`                       | GitHub 레포 설정                   |
+| phase 문서를 승인받고 코드보다 먼저 커밋한다                 | 없음                                                   | –                                  |
+| 한 커밋에 계획 문서와 코드를 섞지 않는다                     | 없음                                                   | –                                  |
+| 커밋 메시지는 `종류(범위): 설명` 형식                        | 없음                                                   | –                                  |
+| 브랜치 이름은 `<종류>/<이슈번호>-<설명>`                     | 없음                                                   | –                                  |
+| PR 설명에 관련 이슈, phase 문서, 리뷰 문서 링크를 넣는다     | 일부: PR 템플릿이 칸을 보여 준다. 비워도 막지 않음     | `.github/pull_request_template.md` |
+| 커밋·푸시는 작업 순서에 적힌 시점에만, 작업 브랜치에 한다    | 일부: `main` 직접 푸시는 ruleset이 막는다. 시점은 없음 | `.github/rulesets/main.json`       |
+| PR 머지, force push는 사용자가 요청할 때만 한다              | 일부: force push는 ruleset이 막는다. 머지 시점은 없음  | `.github/rulesets/main.json`       |
+| ruleset은 파일을 먼저 고치고 API로 적용해 둘을 같게 유지한다 | 없음                                                   | –                                  |
 
 ## 의존성 보안
 

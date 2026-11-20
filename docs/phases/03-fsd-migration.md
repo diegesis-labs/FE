@@ -1,12 +1,12 @@
 # Phase 03: FSD 구조로 전환
 
-- 상태: 리뷰 중 (리뷰 계획 작성 전)
+- 상태: 완료 (2026-11-20, 리뷰 수정 후 통과. 머지는 PR [#9](https://github.com/diegesis-labs/FE/pull/9))
 - 선행 phase: [01 디자인 팔레트](01-design-palette.md) (완료), [02 CI와 브랜치 보호](02-ci-branch-protection.md) (완료. CI에서 FSD 검사까지 돌리기 위해 먼저 끝나야 시작)
 - 관련 이슈: [#2 FE 아키텍처 설계 및 기술스택 선정](https://github.com/diegesis-labs/FE/issues/2)
 - 브랜치: `setup/2-fsd-migration` (`main`의 `0039d14`에서 만듦. #2 초기 세팅 브랜치 `setup/2-init`은 PR #5로 머지됐다)
 - 계획 커밋: `ed78831`, `4798bb3` (계획 변경: `app/providers` → `app/api`)
 - 구현 커밋: `b7a3d43`
-- 리뷰 문서: [03-fsd-migration-review.md](../reviews/03-fsd-migration-review.md) (리뷰 단계에서 작성)
+- 리뷰 문서: [03-fsd-migration-review.md](../reviews/03-fsd-migration-review.md)
 
 ## 목표
 
@@ -93,14 +93,14 @@ pages/home ──> shared/api, shared/ui
 
 ## 완료 기준
 
-- [ ] `src/components/`, `src/lib/`, `src/shared/theme/`가 더 이상 없다.
-- [ ] 레이어 6개(`app`, `pages`, `widgets`, `features`, `entities`, `shared`)만 `src/` 아래에 있다 (`main.tsx`, `vite-env.d.ts` 제외).
-- [ ] `pages`, `widgets`, `features`의 모든 슬라이스에 `index.ts`가 있고, 슬라이스 밖에서는 `index.ts`로만 import 한다.
-- [ ] `pnpm lint`(ESLint + steiger), `pnpm typecheck`, `pnpm build`가 통과한다.
-- [ ] 일부러 규칙을 어긴 import(예: `shared`에서 `features` import)를 넣으면 `pnpm lint:fsd`가 실패한다. 확인 후 되돌린다.
-- [ ] shadcn CLI로 추가한 컴포넌트가 `src/shared/ui/`에 생긴다.
-- [ ] 개발 서버에서 홈 화면, 404 화면, 테마 전환이 이전과 똑같이 동작한다.
-- [ ] 문서의 폴더 구조와 경로가 실제 코드와 일치한다.
+- [x] `src/components/`, `src/lib/`, `src/shared/theme/`가 더 이상 없다.
+- [x] 레이어 6개(`app`, `pages`, `widgets`, `features`, `entities`, `shared`)만 `src/` 아래에 있다 (`main.tsx`, `vite-env.d.ts` 제외).
+- [x] `pages`, `widgets`, `features`의 모든 슬라이스에 `index.ts`가 있고, 슬라이스 밖에서는 `index.ts`로만 import 한다.
+- [x] `pnpm lint`(ESLint + steiger), `pnpm typecheck`, `pnpm build`가 통과한다.
+- [x] 일부러 규칙을 어긴 import(예: `shared`에서 `features` import)를 넣으면 `pnpm lint:fsd`가 실패한다. 확인 후 되돌린다.
+- [x] shadcn CLI로 추가한 컴포넌트가 `src/shared/ui/`에 생긴다.
+- [x] 개발 서버에서 홈 화면, 404 화면, 테마 전환이 이전과 똑같이 동작한다.
+- [x] 문서의 폴더 구조와 경로가 실제 코드와 일치한다.
 
 ## 위험과 열린 질문
 
@@ -116,3 +116,4 @@ pages/home ──> shared/api, shared/ui
 - 2026-11-20: 승인
 - 2026-11-20: 계획 변경 - steiger 첫 실행 결과 반영. `app/providers` → `app/api` (`fsd/segments-by-purpose`: 세그먼트 이름은 내용물이 아니라 목적을 나타내야 함). `fsd/insignificant-slice`는 끈다 (위험에서 예상한 경우)
 - 2026-11-20: 구현 완료. 작업 단계 8은 `pnpm dlx shadcn@latest` 대신 이미 설치된 `shadcn` 4.23.0(`pnpm exec shadcn add badge`)으로 확인함. 레포에 고정된 버전으로 확인하려고 `@latest`를 새로 내려받지 않았다. `badge.tsx`가 `src/shared/ui/`에 생겼고 지웠다. steiger 설치 때 `tsconfck`가 TypeScript ^5를 원한다는 peer 경고가 났지만 검사는 정상 동작한다
+- 2026-11-20: 리뷰에서 `fsd/import-locality`가 steiger recommended에서 꺼져 있어 "슬라이스 안에서는 상대 경로" 규칙이 검사되지 않는 것을 찾아 켬 (`249f4eb`). 완료 처리

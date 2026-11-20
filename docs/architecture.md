@@ -114,7 +114,7 @@ export function useStory(id: string) {
 
 1. `pnpm install --frozen-lockfile` (lockfile 버전만 설치, `pnpm-workspace.yaml` 보안 설정 적용)
 2. `pnpm format:check`
-3. `pnpm lint` (ESLint + steiger FSD 검사)
+3. `pnpm lint` (ESLint + steiger FSD 검사 + 가드레일 자체 검사, [guardrails.md](guardrails.md))
 4. `pnpm typecheck`
 5. `pnpm build`
 

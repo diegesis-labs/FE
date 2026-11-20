@@ -7,8 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "eslint . && pnpm lint:fsd",
+    "lint": "eslint . && pnpm lint:fsd && pnpm lint:guardrails",
     "lint:fsd": "steiger ./src",
+    "lint:guardrails": "node scripts/check-guardrails.mjs",
     "typecheck": "tsc -b",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

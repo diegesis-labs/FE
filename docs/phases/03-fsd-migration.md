@@ -1,11 +1,11 @@
 # Phase 03: FSD 구조로 전환
 
-- 상태: 승인됨
+- 상태: 리뷰 중 (리뷰 계획 작성 전)
 - 선행 phase: [01 디자인 팔레트](01-design-palette.md) (완료), [02 CI와 브랜치 보호](02-ci-branch-protection.md) (완료. CI에서 FSD 검사까지 돌리기 위해 먼저 끝나야 시작)
 - 관련 이슈: [#2 FE 아키텍처 설계 및 기술스택 선정](https://github.com/diegesis-labs/FE/issues/2)
 - 브랜치: `setup/2-fsd-migration` (`main`의 `0039d14`에서 만듦. #2 초기 세팅 브랜치 `setup/2-init`은 PR #5로 머지됐다)
-- 계획 커밋: (승인 후 기록)
-- 구현 커밋: (구현 후 기록)
+- 계획 커밋: `ed78831`, `4798bb3` (계획 변경: `app/providers` → `app/api`)
+- 구현 커밋: `b7a3d43`
 - 리뷰 문서: [03-fsd-migration-review.md](../reviews/03-fsd-migration-review.md) (리뷰 단계에서 작성)
 
 ## 목표
@@ -82,14 +82,14 @@ pages/home ──> shared/api, shared/ui
 
 ## 작업 단계
 
-- [ ] 1. 폴더를 만들고 파일을 옮긴다 (`git mv`로 이력 유지).
-- [ ] 2. 슬라이스별 `index.ts`를 만들고 import 경로를 Public API 기준으로 고친다.
-- [ ] 3. 헤더를 `widgets/header`로, 헬스체크 쿼리를 `pages/home/api`로 분리한다.
-- [ ] 4. `components.json`, `.prettierrc.json`, `eslint.config.js` 경로를 고친다.
-- [ ] 5. `steiger`를 설치하고 설정 파일(`steiger.config.ts`)과 `lint:fsd` 스크립트를 추가한다.
-- [ ] 6. `architecture.md` 2장(폴더 구조), `design-system.md` 7장, `README.md`의 경로를 고친다.
-- [ ] 7. `pnpm lint`, `pnpm typecheck`, `pnpm build`를 통과시킨다.
-- [ ] 8. `pnpm dlx shadcn@latest add` 가 `shared/ui`에 파일을 만드는지 시험 삼아 확인하고, 시험 파일은 지운다.
+- [x] 1. 폴더를 만들고 파일을 옮긴다 (`git mv`로 이력 유지).
+- [x] 2. 슬라이스별 `index.ts`를 만들고 import 경로를 Public API 기준으로 고친다.
+- [x] 3. 헤더를 `widgets/header`로, 헬스체크 쿼리를 `pages/home/api`로 분리한다.
+- [x] 4. `components.json`, `.prettierrc.json`, `eslint.config.js` 경로를 고친다.
+- [x] 5. `steiger`를 설치하고 설정 파일(`steiger.config.ts`)과 `lint:fsd` 스크립트를 추가한다.
+- [x] 6. `architecture.md` 2장(폴더 구조), `design-system.md` 7장, `README.md`의 경로를 고친다.
+- [x] 7. `pnpm lint`, `pnpm typecheck`, `pnpm build`를 통과시킨다.
+- [x] 8. `pnpm dlx shadcn@latest add` 가 `shared/ui`에 파일을 만드는지 시험 삼아 확인하고, 시험 파일은 지운다.
 
 ## 완료 기준
 
@@ -115,3 +115,4 @@ pages/home ──> shared/api, shared/ui
 - 2026-11-20: 브랜치를 `setup/2-init` → `setup/2-fsd-migration`으로 변경. PR #5가 머지되어 `main`에서 새로 땀. 이 phase가 끝나면 Phase 04 가드레일 lint([#8](https://github.com/diegesis-labs/FE/issues/8))를 시작할 수 있다
 - 2026-11-20: 승인
 - 2026-11-20: 계획 변경 - steiger 첫 실행 결과 반영. `app/providers` → `app/api` (`fsd/segments-by-purpose`: 세그먼트 이름은 내용물이 아니라 목적을 나타내야 함). `fsd/insignificant-slice`는 끈다 (위험에서 예상한 경우)
+- 2026-11-20: 구현 완료. 작업 단계 8은 `pnpm dlx shadcn@latest` 대신 이미 설치된 `shadcn` 4.23.0(`pnpm exec shadcn add badge`)으로 확인함. `@latest`를 내려받으면 3일 지연 설치 조건을 거치지 않기 때문. `badge.tsx`가 `src/shared/ui/`에 생겼고 지웠다. steiger 설치 때 `tsconfck`가 TypeScript ^5를 원한다는 peer 경고가 났지만 검사는 정상 동작한다

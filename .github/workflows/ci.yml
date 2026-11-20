@@ -1,0 +1,49 @@
+# PR과 main 푸시 때 포맷, lint, 타입 체크, 빌드를 검사한다.
+# 규칙: docs/phases/02-ci-branch-protection.md, docs/architecture.md 6장
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# 워크플로 토큰은 코드 읽기만 허용한다.
+permissions:
+  contents: read
+
+# 같은 브랜치에 새 커밋이 오면 이전 실행을 취소한다.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    # 이 job 이름(check)이 main ruleset의 필수 상태 검사 이름이다. 바꾸면 ruleset도 같이 바꿀 것.
+    name: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # 액션은 태그 대신 커밋 SHA로 고정한다 (태그 바꿔치기 대비). 버전은 주석으로 남긴다.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          # pnpm 캐시는 아래 pnpm/action-setup이 맡는다.
+          package-manager-cache: false
+
+      # package.json의 packageManager(pnpm 버전)를 읽어 설치한다.
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          cache: true
+
+      # lockfile에 적힌 버전만 설치한다. pnpm-workspace.yaml의 보안 설정도 그대로 적용된다.
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm build

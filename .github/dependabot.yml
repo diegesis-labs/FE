@@ -1,0 +1,17 @@
+# GitHub Actions 버전 업데이트만 켠다. npm 패키지는 수동으로 올린다.
+# 이유: docs/phases/02-ci-branch-protection.md "위험과 열린 질문" 5
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    # 배포된 지 3일이 지난 버전만 제안한다 (pnpm minimumReleaseAge와 같은 기준).
+    cooldown:
+      default-days: 3
+    groups:
+      actions:
+        patterns: ['*']
+    commit-message:
+      prefix: chore
+      include: scope

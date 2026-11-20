@@ -1,0 +1,201 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+/* 디자인 시스템: docs/design-system.md */
+
+@custom-variant dark (&:is(.dark *));
+
+/* 팔레트와 서체. 컴포넌트에서는 가능하면 아래 의미 토큰(bg-background 등)을 쓴다. */
+@theme {
+  /* 라이트 바탕 (#4 Warm Cream, Off White) */
+  --color-cream-50: #fffef1;
+  --color-cream-100: #f7f5ef;
+  --color-cream-200: #ebeade;
+  /* 따뜻한 회색 (Tailwind 기본 stone과 겹치지 않도록 sand로 이름 붙임) */
+  --color-sand-300: #d5d5cb;
+  --color-sand-400: #bcbbb4;
+  --color-sand-600: #6b6b60;
+  /* 글자, 기본 버튼 */
+  --color-charcoal-500: #666666;
+  --color-charcoal-800: #333333;
+  --color-charcoal-900: #252525;
+  /* 다크 바탕, 음악 포인트 (#4 Piano Bench) */
+  --color-pine-200: #c9d0c6;
+  --color-pine-300: #b9c2b8;
+  --color-pine-700: #175248;
+  --color-pine-800: #0e463e;
+  --color-pine-900: #073a33;
+  --color-pine-950: #012e29;
+  /* 브랜드 포인트 컬러 (#4 Instrument Wood). 500은 면, 600은 글자 */
+  --color-wood-200: #e8bd9a;
+  --color-wood-300: #e3b48e;
+  --color-wood-500: #a55e36;
+  --color-wood-600: #8a5530;
+  --color-wood-700: #74462a;
+  /* 장식 전용 (#4 Wall Brown). 글자에 쓰지 않는다 */
+  --color-oak-400: #ae8969;
+  /* 오류 (Tailwind 기본 red와 겹치지 않도록 brick으로 이름 붙임) */
+  --color-brick-300: #f5ae9f;
+  --color-brick-600: #b33a27;
+
+  --font-sans:
+    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-display: 'Gowun Batang', 'Pretendard Variable', serif;
+  /* 타자기 포인트 서체: 날짜, 짧은 인용 같은 작은 문구에만 */
+  --font-typewriter: 'Courier Prime', 'Nanum Gothic Coding', ui-monospace, monospace;
+
+  --ease-out: cubic-bezier(0, 0, 0.58, 1);
+  --default-transition-duration: 250ms;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-ink: var(--brand-ink);
+  --color-accent-music: var(--accent-music);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  color-scheme: light;
+  /* 모서리는 각지게. rounded-full(원형)은 영향 없음. */
+  --radius: 0rem;
+  --background: var(--color-cream-50);
+  --foreground: var(--color-charcoal-800);
+  --card: var(--color-cream-50);
+  --card-foreground: var(--color-charcoal-800);
+  --popover: var(--color-cream-50);
+  --popover-foreground: var(--color-charcoal-800);
+  --primary: var(--color-charcoal-800);
+  --primary-foreground: var(--color-cream-50);
+  --primary-hover: var(--color-charcoal-900);
+  --brand: var(--color-wood-500);
+  --brand-foreground: var(--color-cream-50);
+  --brand-hover: var(--color-wood-600);
+  --brand-ink: var(--color-wood-600);
+  --accent-music: var(--color-pine-950);
+  --secondary: var(--color-cream-100);
+  --secondary-foreground: var(--color-charcoal-800);
+  --muted: var(--color-cream-100);
+  --muted-foreground: var(--color-charcoal-500);
+  --accent: var(--color-cream-200);
+  --accent-foreground: var(--color-charcoal-800);
+  --destructive: var(--color-brick-600);
+  --destructive-foreground: var(--color-cream-50);
+  --border: rgb(51 51 51 / 0.2);
+  --input: rgb(51 51 51 / 0.2);
+  --ring: rgb(51 51 51 / 0.35);
+  --chart-1: var(--color-charcoal-800);
+  --chart-2: var(--color-sand-600);
+  --chart-3: var(--color-oak-400);
+  --chart-4: var(--color-wood-500);
+  --chart-5: var(--color-pine-950);
+  --sidebar: var(--color-cream-100);
+  --sidebar-foreground: var(--color-charcoal-800);
+  --sidebar-primary: var(--color-charcoal-800);
+  --sidebar-primary-foreground: var(--color-cream-50);
+  --sidebar-accent: var(--color-cream-200);
+  --sidebar-accent-foreground: var(--color-charcoal-800);
+  --sidebar-border: rgb(51 51 51 / 0.2);
+  --sidebar-ring: rgb(51 51 51 / 0.35);
+}
+
+/* 다크 모드 (docs/design-system.md 1.2 참고) */
+.dark {
+  color-scheme: dark;
+  --background: var(--color-pine-950);
+  --foreground: var(--color-cream-50);
+  --card: var(--color-pine-900);
+  --card-foreground: var(--color-cream-50);
+  --popover: var(--color-pine-900);
+  --popover-foreground: var(--color-cream-50);
+  --primary: var(--color-cream-50);
+  --primary-foreground: var(--color-pine-950);
+  --primary-hover: var(--color-cream-200);
+  --brand: var(--color-wood-300);
+  --brand-foreground: var(--color-pine-950);
+  --brand-hover: var(--color-wood-200);
+  --brand-ink: var(--color-wood-300);
+  --accent-music: var(--color-pine-200);
+  --secondary: var(--color-pine-800);
+  --secondary-foreground: var(--color-cream-50);
+  --muted: var(--color-pine-800);
+  --muted-foreground: var(--color-pine-300);
+  --accent: var(--color-pine-700);
+  --accent-foreground: var(--color-cream-50);
+  --destructive: var(--color-brick-300);
+  --destructive-foreground: var(--color-pine-950);
+  --border: rgb(255 254 241 / 0.16);
+  --input: rgb(255 254 241 / 0.16);
+  --ring: rgb(255 254 241 / 0.4);
+  --chart-1: var(--color-cream-50);
+  --chart-2: var(--color-pine-300);
+  --chart-3: var(--color-oak-400);
+  --chart-4: var(--color-wood-300);
+  --chart-5: var(--color-pine-200);
+  --sidebar: var(--color-pine-900);
+  --sidebar-foreground: var(--color-cream-50);
+  --sidebar-primary: var(--color-cream-50);
+  --sidebar-primary-foreground: var(--color-pine-950);
+  --sidebar-accent: var(--color-pine-700);
+  --sidebar-accent-foreground: var(--color-cream-50);
+  --sidebar-border: rgb(255 254 241 / 0.16);
+  --sidebar-ring: rgb(255 254 241 / 0.4);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-background text-sm leading-normal text-foreground;
+  }
+  a {
+    @apply underline underline-offset-2;
+  }
+}

@@ -115,4 +115,4 @@ pages/home ──> shared/api, shared/ui
 - 2026-11-20: 브랜치를 `setup/2-init` → `setup/2-fsd-migration`으로 변경. PR #5가 머지되어 `main`에서 새로 땀. 이 phase가 끝나면 Phase 04 가드레일 lint([#8](https://github.com/diegesis-labs/FE/issues/8))를 시작할 수 있다
 - 2026-11-20: 승인
 - 2026-11-20: 계획 변경 - steiger 첫 실행 결과 반영. `app/providers` → `app/api` (`fsd/segments-by-purpose`: 세그먼트 이름은 내용물이 아니라 목적을 나타내야 함). `fsd/insignificant-slice`는 끈다 (위험에서 예상한 경우)
-- 2026-11-20: 구현 완료. 작업 단계 8은 `pnpm dlx shadcn@latest` 대신 이미 설치된 `shadcn` 4.23.0(`pnpm exec shadcn add badge`)으로 확인함. `@latest`를 내려받으면 3일 지연 설치 조건을 거치지 않기 때문. `badge.tsx`가 `src/shared/ui/`에 생겼고 지웠다. steiger 설치 때 `tsconfck`가 TypeScript ^5를 원한다는 peer 경고가 났지만 검사는 정상 동작한다
+- 2026-11-20: 구현 완료. 작업 단계 8은 `pnpm dlx shadcn@latest` 대신 이미 설치된 `shadcn` 4.23.0(`pnpm exec shadcn add badge`)으로 확인함. 레포에 고정된 버전으로 확인하려고 `@latest`를 새로 내려받지 않았다. `badge.tsx`가 `src/shared/ui/`에 생겼고 지웠다. steiger 설치 때 `tsconfck`가 TypeScript ^5를 원한다는 peer 경고가 났지만 검사는 정상 동작한다

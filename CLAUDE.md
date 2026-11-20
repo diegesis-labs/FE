@@ -127,15 +127,24 @@ import { ThemeToggle } from '@/features/theme-toggle/ui/ThemeToggle'
 - import는 `@/` 별칭으로 레이어부터 쓴다 (`@/entities/story`).
 - BE 호출은 항상 `@/shared/api`의 `apiClient`를 쓴다. axios 같은 HTTP 라이브러리를 추가하지 않는다.
 - 서버 데이터는 TanStack Query로 다루고, 쿼리 키는 슬라이스의 `api/`에서 함께 정의한다.
-- 색은 의미 토큰 클래스(`bg-background`, `text-muted-foreground`, `text-brand` 등)만 쓴다. `#333` 같은 값을 직접 쓰지 않는다. 의미 토큰을 쓰면 다크 모드는 저절로 맞춰진다.
+- 색은 의미 토큰 클래스(`bg-background`, `text-muted-foreground`, `text-brand` 등)만 쓴다. `#333` 같은 값이나 팔레트 클래스(`bg-pine-700`)를 직접 쓰지 않는다. 의미 토큰을 쓰면 다크 모드는 저절로 맞춰진다. Tailwind 기본 팔레트(`red-500`, `white` 등)는 꺼져 있다.
+- `pages`, `widgets`, `features`, `entities`에서는 `useEffect`와 타이머(`setTimeout`, `requestAnimationFrame` 등)를 쓰지 않는다. 서버 데이터는 TanStack Query, 파생 값은 렌더 중 계산, 외부 구독은 `shared/lib`에 목적이 드러나는 훅으로 만든다.
 - shadcn 컴포넌트 추가: `pnpm dlx shadcn@latest add <name>` (`shared/ui`에 생긴다). 추가한 뒤 디자인 시스템 4장에 맞게 수정한다.
 - 사용자에게 보이는 문구는 한국어로 쓴다.
+
+### 가드레일
+
+위 규칙 중 기계로 검사할 수 있는 것은 `pnpm lint`가 막는다. 규칙마다 무엇이 강제하는지는 [docs/guardrails.md](docs/guardrails.md)에 있다.
+
+- 같은 실수를 두 번 고치게 되면, 이 문서에 한 줄을 더하기 전에 lint나 테스트로 만들 수 있는지 먼저 본다.
+- 규칙을 어기는 이유를 주석으로 남기지 않는다. 규칙이 틀렸으면 phase를 열어 규칙을 고친다. 제품 레이어에서는 `eslint-disable` 주석이 동작하지 않는다.
+- ESLint 가드레일을 바꾸면 `scripts/check-guardrails.mjs`의 사례도 같이 고친다.
 
 ## 명령
 
 ```bash
 pnpm dev            # 개발 서버
-pnpm lint           # ESLint + FSD 규칙 검사(steiger)
+pnpm lint           # ESLint + FSD 규칙 검사(steiger) + 가드레일 자체 검사
 pnpm typecheck      # 타입 체크
 pnpm build          # 타입 체크 + 빌드
 pnpm format         # Prettier

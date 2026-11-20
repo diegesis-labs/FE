@@ -6,8 +6,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* 팔레트와 서체. 컴포넌트에서는 가능하면 아래 의미 토큰(bg-background 등)을 쓴다. */
+/* 팔레트와 서체. 컴포넌트에서는 아래 의미 토큰(bg-background 등)만 쓴다. */
 @theme {
+  /* Tailwind 기본 팔레트(red-500, white 등)를 끈다. 우리 팔레트와 의미 토큰만 남긴다 (phase 04). */
+  --color-*: initial;
+
   /* 라이트 바탕 (#4 Warm Cream, Off White) */
   --color-cream-50: #fffef1;
   --color-cream-100: #f7f5ef;

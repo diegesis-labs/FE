@@ -49,10 +49,13 @@
 | -------- | ------------- | -------------- | ------------------------------------------------------------------------------ |
 | app      | –             | `mocks/`       | MSW 핸들러, 목 데이터, `enableMocking()`                                       |
 | app      | –             | `router/`      | `/` → 책 목록, `/books/:bookId` → 책 페이지                                    |
+| app      | –             | `layouts/`     | `ScrollRestoration` 추가: 챕터를 바꾸면 맨 위로                                |
+| app      | –             | `api/`         | 쿼리 재시도: 4xx는 다시 시도하지 않음                                          |
 | pages    | `book-list`   | ui             | 랜딩. 책 카드 목록과 상태 표시                                                 |
 | pages    | `book-reader` | ui, lib        | 책 정보, 챕터 목록, 챕터 본문, 이전/다음 챕터. Phase 07에서 페이지 리더로 바뀜 |
 | entities | `book`        | model, api, ui | 타입, `bookKeys`, `booksQuery`/`bookQuery`/`chapterQuery`, `BookCard`          |
-| shared   | –             | `api/`         | `ApiError`에 BE 에러 본문(`code`, `message`) 읽기 추가                         |
+| shared   | –             | `api/`         | `ApiError`에 BE 에러 본문(`code`, `message`) 읽기 추가, `describeError()`      |
+| shared   | –             | `ui/`          | `error-state.tsx`: 에러 안내 + 다시 시도 (두 페이지에서 씀)                    |
 | pages    | `home`        | –              | 삭제 (책 목록이 랜딩이 됨). `health` 쿼리도 함께 삭제                          |
 
 - 목은 엔티티 타입을 써야 해서 `shared`에 둘 수 없다. 모든 레이어를 import 할 수 있는 `app/mocks/`에 둔다.
@@ -71,8 +74,10 @@
 
 - 챕터 본문은 바뀌지 않으므로 `staleTime: Infinity`. 다음 챕터는 미리 받아 둔다(`prefetchQuery`, 이벤트 핸들러에서).
 - 목 켜기: `.env.local`에 `VITE_API_MOCK=true`. `src/main.tsx`가 `import.meta.env.DEV && VITE_API_MOCK === 'true'`일 때만 `@/app`의 `enableMocking()`을 기다린 뒤 렌더한다. 목 코드는 동적 import라 배포 번들에 들어가지 않는다.
-- 처리하지 못한 요청은 실제 네트워크로 보낸다(`onUnhandledRequest: 'bypass'`). 목에는 400ms 정도 지연을 넣어 로딩 상태를 볼 수 있게 한다.
+- 처리하지 못한 요청은 실제 네트워크로 보낸다(`onUnhandledFrame: 'bypass'`. MSW 3에서 이름이 바뀜). 목에는 400ms 정도 지연을 넣어 로딩 상태를 볼 수 있게 한다.
 - 목에서 에러 상태를 볼 수 있도록 없는 `book_id`는 404(`NOT_FOUND`)를 돌려준다.
+- 빈 목록·401·500은 `localStorage`의 `diegesis-mock` 값(`empty`, `unauthorized`, `error`)으로 바꿔 본다. 핸들러 코드를 고치지 않고 리뷰·시연할 수 있게 한다.
+- 4xx 응답은 다시 요청해도 같으므로 TanStack Query가 재시도하지 않게 한다. 재시도 1번(기본 1초 대기) 때문에 401·404 안내가 늦게 떴다.
 
 ### 화면과 상태
 
@@ -87,7 +92,7 @@
 
 - 위: "← 책 목록" 링크, 책 제목, 저자.
 - 챕터 선택: 챕터 목록 링크(현재 챕터 표시, `aria-current`).
-- 본문: `max-w-165`, `body-lg`(16px / 1.6), 문단마다 `<p>`. 문장은 `<span data-sentence-idx>`로 감싸 Phase 07에서 그대로 쓴다.
+- 본문: `max-w-165`, 16px, 줄 간격 1.8(Phase 07 리더와 같게), 문단마다 `<p>`. 문장은 `<span data-sentence-idx>`로 감싸 Phase 07에서 그대로 쓴다.
 - 아래: 이전/다음 챕터 버튼. 첫·마지막 챕터에서는 숨긴다.
 - 로딩·에러는 책 정보와 본문을 따로 보여 준다 (책 정보는 떴는데 본문만 실패할 수 있음).
 - 잘못된 `?chapter` 값(숫자가 아님, 범위 밖)은 1장으로 바꾼다.
@@ -104,7 +109,8 @@
 - 최신 3.0.7, 2026-11-18 배포 → `minimumReleaseAge`(3일) 통과.
 - `postinstall` 스크립트 없음 → `allowBuilds: {}`를 바꾸지 않아도 된다.
 - 하위 의존성 12개(`@mswjs/interceptors`, `yargs`, `tough-cookie` 등). dev 의존성이라 배포 번들에는 들어가지 않는다.
-- `public/mockServiceWorker.js`는 `pnpm exec msw init public`으로 만들어 커밋한다.
+- `public/mockServiceWorker.js`는 `pnpm exec msw init public --save`로 만들어 커밋한다 (`package.json`에 `msw.workerDirectory`가 생김). 생성 파일이라 고치지 않고, ESLint `globalIgnores`와 `.prettierignore`에 넣는다.
+- 설치 때 나오는 peer 경고(`tsconfck`가 TypeScript 5를 원함)는 기존 `steiger` 쪽 경고이고 `msw`와는 상관없다.
 
 ## 작업 단계
 
@@ -140,3 +146,12 @@
 
 - 2026-11-22: 작성
 - 2026-11-22: 승인. 이슈 #13 생성
+- 2026-11-22: 계획 변경 (구현 중 발견)
+  - 에러 안내가 두 페이지에서 쓰여 `shared/api`의 `describeError()`와 `shared/ui/error-state.tsx`로 내렸다.
+  - 4xx 쿼리 재시도를 끈다 (`app/api/query-client.ts`). 401·404 안내가 1초 넘게 늦게 떴다.
+  - 챕터를 바꿔도 스크롤이 아래에 남아 `RootLayout`에 `ScrollRestoration`을 넣었다.
+  - `apiClient`의 기본 주소를 `??`에서 `||`로 고쳤다. `.env.example`처럼 `VITE_API_BASE_URL=`(빈 값)이면 `/api` 없이 요청하던 기존 버그.
+  - MSW 3에서 `onUnhandledRequest`가 `onUnhandledFrame`으로 바뀌었다.
+  - `mockServiceWorker.js`를 ESLint·Prettier 검사에서 뺀다 (생성 파일, `eslint.config.js` 한 줄).
+  - 목 시나리오(빈 목록, 401, 500)를 `localStorage`로 바꿀 수 있게 했다.
+  - 목 데이터 작품을 「날개」 대신 「메밀꽃 필 무렵」(이효석)으로 바꿨다. 위키문헌에서 「날개」 원문을 받지 못했다.

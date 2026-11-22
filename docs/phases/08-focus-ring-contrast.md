@@ -1,11 +1,11 @@
 # Phase 08: 포커스 표시 대비
 
-- 상태: 승인됨
+- 상태: 리뷰 중
 - 선행 phase: 없음 (06이 먼저 `main`에 머지되면 06의 책 카드·책 페이지 링크까지 이 phase에서 정리한다. 작업 단계 5 참고)
 - 관련 이슈: [#15 포커스 표시 대비](https://github.com/diegesis-labs/FE/issues/15)
 - 브랜치: `design/15-focus-ring-contrast`
-- 계획 커밋: (승인 후 이 문서만 커밋·푸시한 해시)
-- 구현 커밋: (구현 완료 후 커밋 해시)
+- 계획 커밋: `e80c768`
+- 구현 커밋: `aed20b0`
 - 리뷰 문서: [08-focus-ring-contrast-review.md](../reviews/08-focus-ring-contrast-review.md) (리뷰 단계에서 작성)
 
 ## 목표
@@ -84,13 +84,13 @@
 
 ## 작업 단계
 
-- [ ] 1. `index.css`: `--ring`·`--sidebar-ring`을 라이트 `var(--color-charcoal-500)`, 다크 `var(--color-pine-300)`으로 바꾼다.
-- [ ] 2. `index.css` `@layer base`: `* { outline-ring/50 }`을 `outline-ring`으로, `:focus-visible { outline-2 outline-offset-2 }`를 추가한다.
-- [ ] 3. `button.tsx`: 자체 포커스 링 클래스를 뺀다.
-- [ ] 4. `docs/design-system.md` 1.2, 1.5, 1.7, 4.6을 고친다. 대비 값은 위 계산을 옮긴다.
-- [ ] 5. 구현 시작 전에 06이 `main`에 머지됐으면 `main`을 받아 `BookCard`, `BookReaderPage`의 자체 포커스 링도 빼고 전역 표시로 통일한다. 머지 전이면 건너뛰고 PR에 후속 작업으로 남긴다.
-- [ ] 6. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`.
-- [ ] 7. 브라우저에서 라이트·다크로 Tab을 돌며 헤더 워드마크, 테마 버튼, 404 "홈으로" 링크(outline 버튼), (06 머지 시) 책 카드·글자 링크의 포커스 표시를 스크린샷으로 남기고, 계산한 색이 실제로 그려지는지 `getComputedStyle`로 확인한다.
+- [x] 1. `index.css`: `--ring`·`--sidebar-ring`을 라이트 `var(--color-charcoal-500)`, 다크 `var(--color-pine-300)`으로 바꾼다.
+- [x] 2. `index.css` `@layer base`: `* { outline-ring/50 }`을 `outline-ring`으로, `:focus-visible { outline-2 outline-offset-2 }`를 추가한다.
+- [x] 3. `button.tsx`: 자체 포커스 링 클래스를 뺀다.
+- [x] 4. `docs/design-system.md` 1.2, 1.5, 1.7, 4.6을 고친다. 대비 값은 위 계산을 옮긴다.
+- [x] 5. (건너뜀: 구현 시작 때 `main`은 `c7b7231`로 06 머지 전. PR에 후속 작업으로 남긴다) 구현 시작 전에 06이 `main`에 머지됐으면 `main`을 받아 `BookCard`, `BookReaderPage`의 자체 포커스 링도 빼고 전역 표시로 통일한다. 머지 전이면 건너뛰고 PR에 후속 작업으로 남긴다.
+- [x] 6. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`.
+- [x] 7. 브라우저에서 라이트·다크로 Tab을 돌며 헤더 워드마크, 테마 버튼, 404 "홈으로" 링크(outline 버튼), (06 머지 시) 책 카드·글자 링크의 포커스 표시를 스크린샷으로 남기고, 계산한 색이 실제로 그려지는지 `getComputedStyle`로 확인한다.
 
 ## 완료 기준
 
@@ -109,4 +109,5 @@
 
 ## 변경 기록
 
-- 2026-11-22: 작성
+- 2026-11-22: 작성, 승인
+- 2026-11-22: 구현 완료 (`aed20b0`). 작업 단계 5는 06 머지 전이라 건너뜀

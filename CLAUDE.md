@@ -149,6 +149,8 @@ pnpm lint           # ESLint + FSD 규칙 검사(steiger) + 가드레일 자체 
 pnpm typecheck      # 타입 체크
 pnpm build          # 타입 체크 + 빌드
 pnpm format         # Prettier
+pnpm test:scripts   # 작업 절차 검사·Claude Code 훅 테스트
+pnpm check:process  # 현재 브랜치의 작업 절차 검사 (PR 설명은 --body-file pr.md)
 ```
 
 pnpm이 없으면 `corepack enable`을 먼저 실행한다 (버전은 `package.json`의 `packageManager`로 고정).
@@ -165,13 +167,15 @@ pnpm이 없으면 `corepack enable`을 먼저 실행한다 (버전은 `package.j
 - PR 설명에 관련 이슈(`Closes #N`), phase 문서, 리뷰 문서 링크를 넣는다.
 - 커밋·푸시는 위 "작업 순서"에 적힌 시점에만, **작업 브랜치에** 한다. 그 밖의 커밋·푸시는 사용자가 요청할 때만 한다.
 - `main`에 직접 푸시, force push, PR 머지는 사용자가 명시적으로 요청할 때만 한다.
-- 커밋 메시지는 `종류(범위): 설명` 형식으로 쓴다 (`feat`, `fix`, `refactor`, `docs`, `chore`, `style`).
+- 커밋 메시지는 `종류(범위): 설명` 형식으로 쓴다 (`feat`, `fix`, `refactor`, `docs`, `chore`, `style`, `ci`). CI·워크플로 변경은 `ci`.
 - 한 커밋에 계획 문서와 코드를 섞지 않는다.
 
 ### CI와 머지
 
 - `main`은 ruleset으로 보호된다: PR 필수, CI(`check`) 통과 필수, 리뷰 댓글 해결 필수, force push·삭제 금지. 관리자도 우회할 수 없다. 자세한 내용은 [docs/architecture.md](docs/architecture.md) 6장.
-- PR을 올리기 전에 로컬에서 `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`를 통과시킨다. CI도 같은 명령을 돌린다.
+- PR을 올리기 전에 로컬에서 `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`를 통과시킨다. CI도 같은 명령을 돌린다.
+- CI는 PR마다 작업 절차도 검사한다 (`scripts/check-process.mjs`): 커밋 메시지 형식, 브랜치 이름, 계획·리뷰 문서와 다른 파일이 한 커밋에 섞였는지, 코드를 바꾼 첫 커밋 시점에 phase 문서가 승인됐는지, PR 설명에 `Refs #N`·phase 문서·(draft가 아니면) 리뷰 문서가 있는지. PR 설명을 고치면 다시 돈다.
+- phase가 필요 없는 작은 수정(위 "예외")은 PR 설명에 `- Phase: 없음 — 이유`를 쓴다. 이유를 비울 수 없고 CI 로그에 남는다. 이슈 링크는 예외 없이 필요하다.
 - 머지는 **merge commit으로만** 한다. squash·rebase는 커밋 해시를 바꿔서 phase·리뷰 문서에 적은 해시가 끊긴다.
 - 워크플로의 액션은 태그가 아니라 **커밋 SHA로 고정**한다 (`uses: owner/action@<40자리 SHA> # vX.Y.Z`). 레포 설정이 태그 사용을 거부한다.
 - ruleset을 바꿀 때는 `.github/rulesets/main.json`을 먼저 고치고 API로 적용해서, 파일과 실제 설정을 항상 같게 유지한다. ruleset 변경과 일시 비활성화는 사용자 승인을 받고, 비활성화했다면 기록을 남긴다 ([architecture.md](docs/architecture.md) 6장 "긴급할 때").

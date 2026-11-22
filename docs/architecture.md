@@ -106,21 +106,25 @@ export function useStory(id: string) {
 
 ## 6. CI와 브랜치 규칙
 
-> 관련 phase: [02 CI와 브랜치 보호](phases/02-ci-branch-protection.md)
+> 관련 phase: [02 CI와 브랜치 보호](phases/02-ci-branch-protection.md), [05 작업 절차 CI 검사](phases/05-process-check.md)
 
 ### CI (GitHub Actions)
 
-`.github/workflows/ci.yml`이 `main`을 향한 PR과 `main` 푸시 때 실행된다. job 이름은 `check`이고, 순서대로 실행한다.
+`.github/workflows/ci.yml`이 `main`을 향한 PR과 `main` 푸시 때 실행된다. PR은 열림, 새 커밋, 다시 열림, **설명 수정**, draft 해제 때 실행된다. job 이름은 `check`이고, 순서대로 실행한다.
 
-1. `pnpm install --frozen-lockfile` (lockfile 버전만 설치, `pnpm-workspace.yaml` 보안 설정 적용)
-2. `pnpm format:check`
-3. `pnpm lint` (ESLint + steiger FSD 검사 + 가드레일 자체 검사, [guardrails.md](guardrails.md))
-4. `pnpm typecheck`
-5. `pnpm build`
+1. 체크아웃 (`fetch-depth: 0`, 작업 절차 검사가 PR의 커밋을 하나씩 본다)
+2. `pnpm install --frozen-lockfile` (lockfile 버전만 설치, `pnpm-workspace.yaml` 보안 설정 적용)
+3. 작업 절차 검사 (PR일 때만): `node scripts/check-process.mjs --event "$GITHUB_EVENT_PATH"`. 커밋 메시지, 브랜치 이름, 계획 문서와 코드 분리, phase 승인 순서, PR 설명 링크 ([Phase 05](phases/05-process-check.md), [guardrails.md](guardrails.md))
+4. `pnpm format:check`
+5. `pnpm lint` (ESLint + steiger FSD 검사 + 가드레일 자체 검사, [guardrails.md](guardrails.md))
+6. `pnpm typecheck`
+7. `pnpm build`
+8. `pnpm test:scripts` (작업 절차 검사와 Claude Code 훅의 테스트)
 
 보안 설정:
 
 - 워크플로 토큰 권한은 `contents: read`뿐이다. 비밀값은 쓰지 않고, `pull_request_target`도 쓰지 않는다.
+- PR 제목·설명·브랜치 이름은 외부 입력이라 `${{ github.event.pull_request.* }}`를 `run:`에 넣지 않는다. 작업 절차 검사는 이벤트 JSON 파일을 직접 읽고, `git`은 셸 없이 인자 배열로 부른다.
 - 액션은 커밋 SHA로 고정한다. 레포 설정(`sha_pinning_required`)이 태그로 지정한 액션의 실행을 거부한다.
 - Dependabot이 매주 GitHub Actions 업데이트를 PR로 올린다. 배포된 지 3일 지난 버전만 제안한다. npm 패키지는 자동 업데이트하지 않는다.
 

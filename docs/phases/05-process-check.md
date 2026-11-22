@@ -1,6 +1,6 @@
 # Phase 05: 작업 절차 CI 검사
 
-- 상태: 승인됨
+- 상태: 진행 중
 - 선행 phase: [04 가드레일 lint](04-guardrail-lint.md) (완료)
 - 관련 이슈: [#11 작업 절차 CI 검사](https://github.com/diegesis-labs/FE/issues/11)
 - 브랜치: `setup/11-process-check` (`main`의 `c7b7231`에서 만듦)
@@ -148,14 +148,14 @@ pnpm test:scripts             # 검사 스크립트 테스트
 
 ## 작업 단계
 
-- [ ] 1. `scripts/check-process.mjs`에 검사 함수 5개를 순수 함수로 만들고(입력: 커밋 목록·파일 목록·문서 내용·PR 정보), 진입점에서 `git`과 이벤트 JSON으로 입력을 모은다.
-- [ ] 2. `scripts/check-process.test.mjs`에 검사마다 통과·실패 사례를 만든다. 위 "지금 이력에 적용하면" 표의 실제 사례(`ci:` 커밋, PR #10 설명 등)를 포함한다.
-- [ ] 3. `package.json`에 `check:process`, `test:scripts`를 추가한다.
-- [ ] 4. 지난 PR #9, #10의 커밋 범위로 `check:process`를 돌려 통과하는지 확인한다 (PR 설명은 `gh pr view`로 받은 파일).
+- [x] 1. `scripts/check-process.mjs`에 검사 함수 5개를 순수 함수로 만들고(입력: 커밋 목록·파일 목록·문서 내용·PR 정보), 진입점에서 `git`과 이벤트 JSON으로 입력을 모은다.
+- [x] 2. `scripts/check-process.test.mjs`에 검사마다 통과·실패 사례를 만든다. 위 "지금 이력에 적용하면" 표의 실제 사례(`ci:` 커밋, PR #10 설명 등)를 포함한다.
+- [x] 3. `package.json`에 `check:process`, `test:scripts`를 추가한다.
+- [x] 4. 지난 PR #9, #10의 커밋 범위로 `check:process`를 돌려 통과하는지 확인한다 (PR 설명은 `gh pr view`로 받은 파일).
 - [ ] 5. `ci.yml`을 고친다. 이 phase의 PR에서 검사가 실제로 돌고 통과하는지, 일부러 어긴 커밋을 넣으면 실패하는지 확인한다 (확인용 커밋은 되돌린다).
-- [ ] 6. `.claude/settings.json`과 `.claude/hooks/guard.mjs`를 만들고, `scripts/claude-guard.test.mjs`에 위 표의 판정마다 사례를 만든다.
-- [ ] 7. `docs/guardrails.md`, CLAUDE.md, `docs/architecture.md` 6장, PR 템플릿을 고친다.
-- [ ] 8. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`를 통과시킨다.
+- [x] 6. `.claude/settings.json`과 `.claude/hooks/guard.mjs`를 만들고, `scripts/claude-guard.test.mjs`에 위 표의 판정마다 사례를 만든다.
+- [x] 7. `docs/guardrails.md`, CLAUDE.md, `docs/architecture.md` 6장, PR 템플릿을 고친다.
+- [x] 8. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`를 통과시킨다.
 
 ## 완료 기준
 
@@ -185,3 +185,4 @@ pnpm test:scripts             # 검사 스크립트 테스트
 - 2026-11-20: 작성
 - 2026-11-20: 승인. 커밋 종류에 `ci` 추가하기로 함. 이슈 #11 생성, 브랜치 `setup/11-process-check`
 - 2026-11-22: 계획 변경 - Claude Code 프로젝트 훅 추가 (사용자 요청). CI는 푸시 뒤에야 잡으므로, force push·머지·섞인 커밋처럼 되돌리기 어려운 동작을 Claude가 실행하기 전에 막는다. 범위 5, "Claude Code 훅" 절, 작업 단계 6, 완료 기준 2개, 위험 6을 더함. 계획 커밋 해시 기록
+- 2026-11-22: 구현 (단계 5의 PR 확인 전). 지난 PR #9, #10은 통과. 이 phase 전의 PR #5는 검사 3(`_template.md`와 CLAUDE.md를 함께 바꾼 커밋 2개), 4, 5에서 실패하며, 소급 적용하지 않으므로 그대로 둔다

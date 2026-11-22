@@ -29,25 +29,28 @@
 
 ```
 src/
-├── main.tsx                  # Vite 진입점. @/app만 import
+├── main.tsx                  # Vite 진입점. @/app만 import (목을 켜고 렌더)
 ├── app/                      # 앱 초기화
 │   ├── App.tsx               # Provider 조립, 전역 스타일 import
 │   ├── index.ts
 │   ├── api/query-client.ts   # TanStack Query 기본 설정
 │   ├── layouts/RootLayout.tsx
+│   ├── mocks/                # 개발용 MSW 목 API (3장 "목 API")
 │   ├── router/router.tsx     # 모든 라우트 정의
 │   └── styles/index.css      # 전역 스타일, 디자인 토큰
 ├── pages/                    # 라우트 하나 = 슬라이스 하나
-│   ├── home/                 # ui/HomePage.tsx, api/health.ts, index.ts
+│   ├── book-list/            # / 랜딩, 책 목록
+│   ├── book-reader/          # /books/:bookId 책 읽기
 │   ├── not-found/
 │   └── route-error/          # 라우터 ErrorBoundary
 ├── widgets/
 │   └── header/               # 워드마크 + 테마 버튼
 ├── features/
 │   └── theme-toggle/         # 사용자 동작 "테마 바꾸기"
-├── entities/                 # (아직 없음. BE API가 정해지면 추가)
+├── entities/
+│   └── book/                 # 책 타입, 쿼리(목록·정보·챕터), 책 카드
 └── shared/
-    ├── api/                  # apiClient(fetch 래퍼), ApiError
+    ├── api/                  # apiClient(fetch 래퍼), ApiError, describeError
     ├── lib/
     │   ├── theme/            # ThemeProvider, useTheme
     │   └── utils.ts          # cn()
@@ -62,34 +65,51 @@ src/
 
 ## 3. BE API 연동
 
-- 모든 요청은 `apiClient`(`src/shared/api/client.ts`)를 거친다. JSON 직렬화, 쿼리스트링, 에러(`ApiError`, `status`/`body` 포함)를 한곳에서 처리한다.
+- BE의 엔드포인트와 요청·응답 형식은 BE 레포의 [docs/API.md](https://github.com/diegesis-labs/BE/blob/main/docs/API.md)가 기준이다. BE가 구현되면 `/api/openapi.json`이 세부 형식의 기준이 된다.
+- 모든 요청은 `apiClient`(`src/shared/api/client.ts`)를 거친다. JSON 직렬화, 쿼리스트링, 에러(`ApiError`, `status`/`body`/`code` 포함)를 한곳에서 처리한다. BE 에러 본문 `{ code, message, detail }`의 `message`가 `ApiError.message`가 된다.
+- 화면에 에러를 보여 줄 때는 `describeError()`(문구)나 `shared/ui/error-state.tsx`(안내 + 다시 시도)를 쓴다. 4xx는 다시 요청해도 같으므로 쿼리가 재시도하지 않는다 (`app/api/query-client.ts`).
 - 기본 주소는 `VITE_API_BASE_URL`, 비어 있으면 같은 도메인의 `/api`로 보낸다.
 - 개발 중엔 Vite 개발 서버가 `/api`를 `API_PROXY_TARGET`(기본 `http://localhost:8080`)으로 넘긴다. 그래서 로컬에서는 CORS 설정 없이 BE에 붙을 수 있다.
 - 쿠키 기반 인증을 쓸 수 있도록 `credentials: 'include'`로 보낸다. 배포 환경에서 FE와 BE 도메인이 다르면 BE에서 CORS(`Access-Control-Allow-Credentials`, 허용 origin)를 맞춰야 한다.
 - 서버 데이터는 TanStack Query로 가져온다. 기능별로 아래처럼 쿼리 훅을 만든다.
 
 ```ts
-// src/features/story/api.ts
-export const storyKeys = {
-  all: ['stories'] as const,
-  detail: (id: string) => ['stories', id] as const,
+// src/entities/book/api/book-queries.ts
+export const bookKeys = {
+  all: ['books'] as const,
+  detail: (bookId: string) => ['books', bookId] as const,
 }
 
-export function useStory(id: string) {
-  return useQuery({
-    queryKey: storyKeys.detail(id),
-    queryFn: () => apiClient.get<Story>(`/stories/${id}`),
+export const bookDetailQuery = (bookId: string) =>
+  queryOptions({
+    queryKey: bookKeys.detail(bookId),
+    queryFn: () => apiClient.get<BookDetail>(`/books/${encodeURIComponent(bookId)}`),
   })
-}
+
+// 쓰는 곳: const book = useQuery(bookDetailQuery(bookId))
 ```
 
-### BE와 합의할 것 (TODO)
+### 목 API (MSW)
 
-- [ ] API 기본 경로(`/api` 접두사 여부)와 로컬 포트
-- [ ] 인증 방식: 쿠키 세션 vs 토큰(Authorization 헤더)
-- [ ] 에러 응답 형식 (예: `{ code, message }`)
-- [ ] API 스펙 공유 방식 (OpenAPI 문서가 있으면 타입 자동 생성 검토)
-- [ ] 헬스체크 엔드포인트 (홈 화면의 "BE 연결 확인" 버튼이 `/health`를 호출함)
+BE가 구현되기 전에는 [MSW](https://mswjs.io)로 BE API 문서 형식 그대로 응답하는 목을 쓴다. 네트워크 단에서 가로채므로 화면 코드는 실제 BE와 똑같이 `apiClient`를 쓴다.
+
+- 켜기: `.env.local`에 `VITE_API_MOCK=true`를 넣고 `pnpm dev`. 배포 빌드(`pnpm build`)에서는 값과 상관없이 꺼지고, 목 코드는 번들에 들어가지 않는다.
+- 위치: `src/app/mocks/` (`handlers.ts`, `fixtures/books.json`, `enable-mocking.ts`). 목은 엔티티 타입을 쓰므로 모든 레이어를 import 할 수 있는 `app`에 둔다.
+- 목 데이터: 저작권 보호 기간이 끝난 한국 단편 3편을 위키문헌에서 가져와 3장씩 나눴다. 출처는 `handlers.ts` 머리 주석에 있다.
+- 시나리오: 브라우저 콘솔에서 `localStorage.setItem('diegesis-mock', 'empty' | 'unauthorized' | 'error')` 후 새로고침. 되돌리기는 `localStorage.removeItem('diegesis-mock')`. 없는 책(`/books/nope`)은 404.
+- `public/mockServiceWorker.js`는 `msw init`이 만드는 파일이라 고치지 않는다. MSW를 올리면 `pnpm exec msw init public`으로 다시 만든다. 배포 결과에도 복사되지만, 등록하는 코드가 번들에 없어서 동작하지 않는다.
+- BE에 새 엔드포인트가 생기면 화면을 만들기 전에 목 핸들러부터 추가한다.
+
+### BE와 합의할 것
+
+BE [docs/API.md](https://github.com/diegesis-labs/BE/blob/main/docs/API.md) 1절에서 답을 받았다.
+
+- [x] API 기본 경로와 로컬 포트: 모든 경로에 `/api`, 로컬 `8080`. 지금 설정 그대로.
+- [x] 인증 방식: Google 로그인 후 BE가 심는 HttpOnly 쿠키. FE는 `credentials: 'include'`만 하면 된다. 401이면 로그인 화면으로 보낸다 (로그인 화면은 아직 없음).
+- [x] 에러 응답 형식: `{ code, message, detail }`. `ApiError`가 읽는다.
+- [x] API 스펙 공유: BE가 `/api/openapi.json`을 제공한다. BE 구현 후 타입 자동 생성을 검토한다. 그 전에는 `entities`에 BE 형식(snake_case) 그대로 타입을 쓴다.
+- [x] 헬스체크: `GET /api/health` → `{ "status": "ok" }`.
+- [ ] BE API.md 5절에 남은 것 (곡 구간 끝 처리, 크로스페이드, 위치 알림 묶기, 설정 화면 위치, 허용 목록 밖 계정 화면): 음악 phase에서 정한다.
 
 ## 4. 의존성 보안 (공급망 공격 대비)
 

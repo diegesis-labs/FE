@@ -122,7 +122,8 @@ const guardrails = [
 ]
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  // mockServiceWorker.js: `msw init`이 만드는 파일. 고치지 않는다 (docs/phases/06-book-list.md).
+  globalIgnores(['dist', 'public/mockServiceWorker.js']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

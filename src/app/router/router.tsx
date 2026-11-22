@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router'
 
-import { HomePage } from '@/pages/home'
+import { BookListPage } from '@/pages/book-list'
+import { BookReaderPage } from '@/pages/book-reader'
 import { NotFoundPage } from '@/pages/not-found'
 import { RouteErrorPage } from '@/pages/route-error'
 
@@ -14,7 +15,8 @@ export const router = createBrowserRouter([
     Component: RootLayout,
     ErrorBoundary: RouteErrorPage,
     children: [
-      { index: true, Component: HomePage },
+      { index: true, Component: BookListPage },
+      { path: 'books/:bookId', Component: BookReaderPage },
       { path: '*', Component: NotFoundPage },
     ],
   },

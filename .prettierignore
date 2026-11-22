@@ -1,2 +1,4 @@
 dist
 pnpm-lock.yaml
+# msw init이 만드는 파일. 고치지 않는다.
+public/mockServiceWorker.js

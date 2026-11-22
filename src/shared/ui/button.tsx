@@ -3,9 +3,9 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from 'cn'
 import { Slot } from 'radix-ui'
 
-// 디자인 시스템 4.1 버튼: 각진 모서리, 그림자 없음, 색만 0.25초 전환.
+// 디자인 시스템 4.1 버튼: 각진 모서리, 그림자 없음, 색만 0.25초 전환. 포커스 표시는 전역 :focus-visible(4.6)을 쓴다.
 const buttonVariants = cva(
-  "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-none text-sm font-medium whitespace-nowrap no-underline transition-colors duration-250 ease-out outline-none focus-visible:ring-[3px] focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-none text-sm font-medium whitespace-nowrap no-underline transition-colors duration-250 ease-out disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {

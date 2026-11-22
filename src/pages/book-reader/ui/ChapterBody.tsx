@@ -1,19 +1,22 @@
+import { Fragment } from 'react'
+
 import type { Chapter } from '@/entities/book'
 
 /**
  * 챕터 본문. 문장마다 문장 번호(`data-sentence-idx`)를 단 span으로 감싼다.
- * Phase 07 리더가 이 번호로 화면에 보이는 문장 범위를 계산한다.
+ * 리더는 이 span들의 위치로 쪽마다 보이는 문장 범위를 계산한다.
+ * 문장 사이 공백은 span 밖에 둔다. 공백이 앞 줄 끝에 남으면 문장이 앞 쪽에서 시작한 것처럼 재지기 때문이다.
  */
 export function ChapterBody({ chapter }: { chapter: Chapter }) {
   return (
-    <div className="space-y-5 text-base leading-[1.8] break-keep">
+    <div className="space-y-4 text-base leading-[1.8] break-keep">
       {chapter.paragraphs.map((paragraph) => (
         <p key={paragraph.paragraph_no}>
           {paragraph.sentences.map((sentence, i) => (
-            <span key={sentence.idx} data-sentence-idx={sentence.idx}>
+            <Fragment key={sentence.idx}>
               {i > 0 && ' '}
-              {sentence.text}
-            </span>
+              <span data-sentence-idx={sentence.idx}>{sentence.text}</span>
+            </Fragment>
           ))}
         </p>
       ))}

@@ -40,7 +40,7 @@ src/
 │   └── styles/index.css      # 전역 스타일, 디자인 토큰
 ├── pages/                    # 라우트 하나 = 슬라이스 하나
 │   ├── book-list/            # / 랜딩, 책 목록
-│   ├── book-reader/          # /books/:bookId 책 읽기
+│   ├── book-reader/          # /books/:bookId 이북 리더 (헤더 없이 화면 전체, 3장 아래 "리더")
 │   ├── not-found/
 │   └── route-error/          # 라우터 ErrorBoundary
 ├── widgets/
@@ -52,6 +52,7 @@ src/
 └── shared/
     ├── api/                  # apiClient(fetch 래퍼), ApiError, describeError
     ├── lib/
+    │   ├── dom/              # 브라우저 구독 훅: 요소 크기, 미디어 쿼리, 글꼴 로딩, 창 keydown
     │   ├── theme/            # ThemeProvider, useTheme
     │   └── utils.ts          # cn()
     └── ui/                   # shadcn/ui 컴포넌트 (pnpm dlx shadcn add <name>)
@@ -110,6 +111,15 @@ BE [docs/API.md](https://github.com/diegesis-labs/BE/blob/main/docs/API.md) 1절
 - [x] API 스펙 공유: BE가 `/api/openapi.json`을 제공한다. BE 구현 후 타입 자동 생성을 검토한다. 그 전에는 `entities`에 BE 형식(snake_case) 그대로 타입을 쓴다.
 - [x] 헬스체크: `GET /api/health` → `{ "status": "ok" }`.
 - [ ] BE API.md 5절에 남은 것 (곡 구간 끝 처리, 크로스페이드, 위치 알림 묶기, 설정 화면 위치, 허용 목록 밖 계정 화면): 음악 phase에서 정한다.
+
+### 리더 (Phase 07)
+
+`/books/:bookId`는 일반 레이아웃(`RootLayout`) 밖의 라우트다. 자세한 설계는 [phase 07](phases/07-book-reader.md).
+
+- 챕터 글을 CSS 다단으로 쪽(단) 너비만큼씩 이어 놓고, 보이는 영역이 한 쪽 또는 두 쪽(가로 1024px 이상)만 잘라 보여 준다. 쪽을 넘기면 띠가 `translateX`로 미끄러진다.
+- 위치는 URL `?chapter=N&s=M`(보이는 첫 문장 번호)이 기준이다. 화면 크기가 바뀌어도 같은 문장이 보이는 쪽으로 돌아온다.
+- 화면에 보이는 문장 범위는 무대 요소의 `data-chapter`·`data-first-sentence`·`data-last-sentence`에 있다. 음악 phase에서 위치 알림(`POST /books/{id}/position`)에 쓴다.
+- 제품 레이어에서 Effect를 쓰지 않으려고, 쪽 재기는 ref 콜백에서, 크기·미디어 쿼리·글꼴은 `shared/lib/dom`의 구독 훅으로, 슬라이드 끝은 `transitionend`로 처리한다.
 
 ## 4. 의존성 보안 (공급망 공격 대비)
 

@@ -85,6 +85,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-overlay: var(--overlay);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -129,6 +130,8 @@
   --border: rgb(51 51 51 / 0.2);
   --input: rgb(51 51 51 / 0.2);
   --ring: rgb(51 51 51 / 0.35);
+  /* 모달·서랍 뒤 배경 (design-system 1.2 overlay) */
+  --overlay: rgb(37 37 37 / 0.5);
   --chart-1: var(--color-charcoal-800);
   --chart-2: var(--color-sand-600);
   --chart-3: var(--color-oak-400);
@@ -172,6 +175,7 @@
   --border: rgb(255 254 241 / 0.16);
   --input: rgb(255 254 241 / 0.16);
   --ring: rgb(255 254 241 / 0.4);
+  --overlay: rgb(0 0 0 / 0.6);
   --chart-1: var(--color-cream-50);
   --chart-2: var(--color-pine-300);
   --chart-3: var(--color-oak-400);

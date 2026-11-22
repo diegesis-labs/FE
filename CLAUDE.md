@@ -139,6 +139,7 @@ import { ThemeToggle } from '@/features/theme-toggle/ui/ThemeToggle'
 - 같은 실수를 두 번 고치게 되면, 이 문서에 한 줄을 더하기 전에 lint나 테스트로 만들 수 있는지 먼저 본다.
 - 규칙을 어기는 이유를 주석으로 남기지 않는다. 규칙이 틀렸으면 phase를 열어 규칙을 고친다. 제품 레이어에서는 `eslint-disable` 주석이 동작하지 않는다.
 - ESLint 가드레일을 바꾸면 `scripts/check-guardrails.mjs`의 사례도 같이 고친다.
+- Claude Code에는 `.claude/settings.json`의 훅이 추가로 걸린다: 섞인 커밋·`main` 커밋·squash 머지를 막고, force push·PR 머지·가드레일 설정 수정 전에 사용자 확인을 받고, 고친 `src/` 파일을 바로 ESLint로 검사한다. 훅이 막으면 우회하지 말고 원인을 고친다. 훅을 바꾸면 `scripts/claude-guard.test.mjs`도 같이 고친다.
 
 ## 명령
 

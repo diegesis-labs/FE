@@ -10,7 +10,7 @@ type BookCardProps = {
 
 /**
  * 책 카드 (디자인 시스템 4.3). API에 표지 이미지가 없어서 muted 면에 제목을 얹은 글자 표지를 쓴다.
- * 카드 전체가 링크 하나다.
+ * 카드 전체가 링크 하나다. 제목은 페이지 제목(h1) 바로 아래 단계인 h2로 둔다.
  */
 export function BookCard({ book, to }: BookCardProps) {
   return (
@@ -26,7 +26,7 @@ export function BookCard({ book, to }: BookCardProps) {
         <p className="font-typewriter text-xs text-muted-foreground">{book.author}</p>
       </div>
       <div className="space-y-1">
-        <h3 className="text-base font-medium group-hover:underline">{book.title}</h3>
+        <h2 className="text-base font-medium group-hover:underline">{book.title}</h2>
         <p className="text-sm text-muted-foreground">
           {book.author} · {book.chapter_count}장
         </p>

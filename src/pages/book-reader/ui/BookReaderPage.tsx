@@ -11,6 +11,9 @@ import { ChapterBody, ChapterBodySkeleton } from './ChapterBody'
 
 const chapterHref = (chapterNo: number) => ({ search: `?chapter=${chapterNo}` })
 
+// 글자 링크도 버튼과 같은 포커스 링을 쓴다. 전역 기본 outline(`outline-ring/50`)은 너무 옅다.
+const FOCUS_RING = 'outline-none focus-visible:ring-[3px] focus-visible:ring-ring'
+
 /**
  * 책 읽기 화면. Phase 06에서는 챕터 본문을 위에서 아래로 보여 주는 임시 화면이고,
  * Phase 07에서 페이지 넘김 리더로 바뀐다.
@@ -23,7 +26,7 @@ export function BookReaderPage() {
     <div className="mx-auto max-w-165 space-y-10">
       <Link
         to="/"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground no-underline hover:underline"
+        className={`inline-flex items-center gap-1 text-sm text-muted-foreground no-underline hover:underline ${FOCUS_RING}`}
       >
         <ArrowLeft aria-hidden className="size-4" strokeWidth={1.5} />책 목록
       </Link>
@@ -86,11 +89,11 @@ function BookContent({ book }: { book: BookDetail }) {
                 <Link
                   to={chapterHref(c.chapter_no)}
                   aria-current={isCurrent ? 'page' : undefined}
-                  className={
+                  className={`${FOCUS_RING} ${
                     isCurrent
                       ? 'font-medium text-brand-ink underline underline-offset-4'
                       : 'text-muted-foreground no-underline hover:underline'
-                  }
+                  }`}
                 >
                   {c.title}
                 </Link>

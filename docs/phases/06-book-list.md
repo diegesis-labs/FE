@@ -1,11 +1,11 @@
 # Phase 06: 책 목록 랜딩과 책 데이터 연결
 
-- 상태: 승인됨
+- 상태: 리뷰 중 (리뷰 계획 작성 전)
 - 선행 phase: 없음 ([05 작업 절차 CI 검사](05-process-check.md)와 독립. `main`에서 분기)
 - 관련 이슈: [#13 책 목록 랜딩과 책 데이터 연결](https://github.com/diegesis-labs/FE/issues/13)
 - 브랜치: `feat/13-book-list` (`main`의 `c7b7231`에서 만듦)
-- 계획 커밋: (승인 후 이 문서만 커밋·푸시한 해시)
-- 구현 커밋: (구현 완료 후 커밋 해시)
+- 계획 커밋: `cf7260a` (계획 변경 `8184ca3`)
+- 구현 커밋: `ee77320`
 - 리뷰 문서: [06-book-list-review.md](../reviews/06-book-list-review.md) (리뷰 단계에서 작성)
 
 ## 목표
@@ -114,14 +114,14 @@
 
 ## 작업 단계
 
-- [ ] 1. 이슈 생성, `main`에서 브랜치 생성
-- [ ] 2. `ApiError`에 BE 에러 본문 읽기(`code`, `message`) 추가
-- [ ] 3. `entities/book`: 타입, 쿼리 키·옵션, `BookCard`
-- [ ] 4. `msw` 설치, 워커 파일 생성, `app/mocks`(핸들러·목 데이터·`enableMocking`), `main.tsx` 연결, `.env.example`에 `VITE_API_MOCK` 추가
-- [ ] 5. `pages/book-list` 랜딩, 라우터 연결, `pages/home` 삭제
-- [ ] 6. `pages/book-reader` 임시 책 페이지, 라우터 연결
-- [ ] 7. 문서 갱신: `architecture.md` 2장 폴더 구조, 3장 목 사용법과 BE 합의 항목(BE 답 반영)
-- [ ] 8. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build` 통과, 브라우저로 확인
+- [x] 1. 이슈 생성, `main`에서 브랜치 생성
+- [x] 2. `ApiError`에 BE 에러 본문 읽기(`code`, `message`) 추가
+- [x] 3. `entities/book`: 타입, 쿼리 키·옵션, `BookCard`
+- [x] 4. `msw` 설치, 워커 파일 생성, `app/mocks`(핸들러·목 데이터·`enableMocking`), `main.tsx` 연결, `.env.example`에 `VITE_API_MOCK` 추가
+- [x] 5. `pages/book-list` 랜딩, 라우터 연결, `pages/home` 삭제
+- [x] 6. `pages/book-reader` 임시 책 페이지, 라우터 연결
+- [x] 7. 문서 갱신: `architecture.md` 2장 폴더 구조, 3장 목 사용법과 BE 합의 항목(BE 답 반영)
+- [x] 8. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build` 통과, 브라우저로 확인
 
 ## 완료 기준
 
@@ -146,7 +146,7 @@
 
 - 2026-11-22: 작성
 - 2026-11-22: 승인. 이슈 #13 생성
-- 2026-11-22: 계획 변경 (구현 중 발견)
+- 2026-11-22: 계획 변경 (구현 중 발견, `8184ca3`)
   - 에러 안내가 두 페이지에서 쓰여 `shared/api`의 `describeError()`와 `shared/ui/error-state.tsx`로 내렸다.
   - 4xx 쿼리 재시도를 끈다 (`app/api/query-client.ts`). 401·404 안내가 1초 넘게 늦게 떴다.
   - 챕터를 바꿔도 스크롤이 아래에 남아 `RootLayout`에 `ScrollRestoration`을 넣었다.
@@ -155,3 +155,4 @@
   - `mockServiceWorker.js`를 ESLint·Prettier 검사에서 뺀다 (생성 파일, `eslint.config.js` 한 줄).
   - 목 시나리오(빈 목록, 401, 500)를 `localStorage`로 바꿀 수 있게 했다.
   - 목 데이터 작품을 「날개」 대신 「메밀꽃 필 무렵」(이효석)으로 바꿨다. 위키문헌에서 「날개」 원문을 받지 못했다.
+- 2026-11-22: 구현 완료 (`ee77320`). 브라우저(내장 브라우저, Chromium)로 확인한 것: 목록 3권 표시(375px 2열, 768px 3열, 1440px 4열), 라이트·다크, 「봄·봄」 진입 시 이어 읽기 2장, 다음 챕터 이동 후 `?chapter=3`과 스크롤 맨 위, 문장 번호가 챕터를 넘어 이어짐(2장 84–183, 3장 184–279), `?chapter=abc`는 1장, `/books/nope` 404 안내, 빈 목록·401·500 안내(401·404는 재시도 없이 약 0.4초), 로딩 스켈레톤과 `aria-busy`, Tab으로 카드 포커스 링 표시 후 Enter로 진입. `pnpm build` 결과 JS에 목 데이터·핸들러 없음(`dist/mockServiceWorker.js`만 복사됨). `VITE_API_MOCK` 없이 켜지 않는지는 코드로만 확인했고 화면 확인은 리뷰에서 한다. 05 브랜치의 `check-process.mjs`로 이 브랜치를 검사해 1~4번 통과. 계획 변경 커밋에 스테이징된 파일 삭제가 섞인 것을 푸시 전에 발견해 다시 커밋함.

@@ -4,7 +4,7 @@
 
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { after, describe, test } from 'node:test'
@@ -115,6 +115,39 @@ describe('edit', () => {
     const { dir } = makeRepo('feat/1-x')
     temps.push(dir)
     assert.equal(decision(run('edit', { file_path: join(dir, 'docs', 'x.md') }, dir)), 'pass')
+  })
+})
+
+// 표에서 훅 스크립트가 아니라 settings.json 권한 규칙이 맡는 판정. Claude Code가 직접 적용하므로 규칙이 있는지만 본다.
+describe('settings.json', () => {
+  const settings = JSON.parse(readFileSync(join(repo, '.claude', 'settings.json'), 'utf8'))
+  const { deny, ask } = settings.permissions
+
+  for (const rule of [
+    'Edit(./pnpm-workspace.yaml)',
+    'Edit(./eslint.config.js)',
+    'Edit(./steiger.config.ts)',
+    'Edit(./scripts/check-guardrails.mjs)',
+    'Edit(./.github/**)',
+    'Bash(pnpm add *)',
+    'Bash(pnpm update *)',
+  ]) {
+    test(`${rule} → ask`, () => assert.ok(ask.includes(rule)))
+  }
+  for (const rule of ['Read(./.env)', 'Read(./.env.local)', 'Read(./.env.*.local)']) {
+    test(`${rule} → deny`, () => assert.ok(deny.includes(rule)))
+  }
+
+  test('훅 3개가 guard.mjs의 bash·edit·lint로 등록돼 있다', () => {
+    const commands = (event) =>
+      settings.hooks[event].flatMap((h) => h.hooks.map((x) => `${h.matcher} ${x.command}`))
+    assert.ok(commands('PreToolUse').some((c) => /^Bash .*guard\.mjs" bash$/.test(c)))
+    assert.ok(
+      commands('PreToolUse').some((c) => /^Edit\|Write\|MultiEdit .*guard\.mjs" edit$/.test(c)),
+    )
+    assert.ok(
+      commands('PostToolUse').some((c) => /^Edit\|Write\|MultiEdit .*guard\.mjs" lint$/.test(c)),
+    )
   })
 })
 

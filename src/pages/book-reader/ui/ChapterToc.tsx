@@ -32,7 +32,7 @@ export function ChapterToc({ reader }: { reader: Reader }) {
             {book.title} · {book.author}
           </SheetDescription>
         </SheetHeader>
-        <nav aria-label="챕터" className="overflow-y-auto px-6 pb-6">
+        <nav aria-label="챕터" className="overflow-y-auto px-6 pt-1 pb-6">
           <ol className="divide-y border-y">
             {book.chapters.map((c) => {
               const current = c.chapter_no === position?.chapterNo
@@ -45,7 +45,7 @@ export function ChapterToc({ reader }: { reader: Reader }) {
                       goToChapter(c.chapter_no)
                       setOpen(false)
                     }}
-                    className={`flex w-full cursor-pointer items-center py-3 text-left text-sm transition-colors duration-250 ease-out outline-none hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring ${
+                    className={`flex w-full cursor-pointer items-center py-3 text-left text-sm transition-colors duration-250 ease-out hover:bg-accent ${
                       current ? 'font-medium text-brand-ink' : ''
                     }`}
                   >

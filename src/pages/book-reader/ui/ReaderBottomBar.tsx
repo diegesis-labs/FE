@@ -41,10 +41,7 @@ export function ReaderBottomBar({ reader }: { reader: Reader }) {
         {atBookEnd && (
           <p className="text-xs">
             마지막 페이지입니다 ·{' '}
-            <Link
-              to="/"
-              className="underline underline-offset-2 outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
-            >
+            <Link to="/" className="underline underline-offset-2">
               책 목록으로
             </Link>
           </p>

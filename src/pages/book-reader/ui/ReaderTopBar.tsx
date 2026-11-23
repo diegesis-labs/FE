@@ -6,15 +6,13 @@ import { ThemeToggle } from '@/features/theme-toggle'
 import type { Reader } from '../model/use-reader'
 import { ChapterToc } from './ChapterToc'
 
-const FOCUS_RING = 'outline-none focus-visible:ring-[3px] focus-visible:ring-ring'
-
 export function ReaderTopBar({ reader }: { reader: Reader }) {
   const { book, position } = reader
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b px-2 md:px-6">
       <Link
         to="/"
-        className={`inline-flex size-10 shrink-0 items-center justify-center text-muted-foreground no-underline hover:text-foreground md:w-auto md:gap-1 md:px-2 ${FOCUS_RING}`}
+        className="inline-flex size-10 shrink-0 items-center justify-center text-muted-foreground no-underline hover:text-foreground md:w-auto md:gap-1 md:px-2"
       >
         <ArrowLeft aria-hidden className="size-5" strokeWidth={1.5} />
         <span className="sr-only md:not-sr-only md:text-sm">책 목록</span>

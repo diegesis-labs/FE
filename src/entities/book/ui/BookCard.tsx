@@ -14,10 +14,7 @@ type BookCardProps = {
  */
 export function BookCard({ book, to }: BookCardProps) {
   return (
-    <Link
-      to={to}
-      className="group block space-y-3 no-underline outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
-    >
+    <Link to={to} className="group block space-y-3 no-underline">
       <div
         aria-hidden
         className="flex aspect-[3/4] flex-col justify-between bg-muted p-4 transition-colors duration-300 ease-out group-hover:bg-accent md:p-5"

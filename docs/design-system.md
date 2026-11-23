@@ -76,11 +76,10 @@ Tailwind 기본 팔레트(`stone`, `red` 등)와 이름이 겹치지 않게 지�
 
 선과 오버레이는 글자색에 투명도를 줘서 만든다. 바탕색이 바뀌어도 자연스럽게 어울린다.
 
-| 토큰          | 라이트                 | 다크                      | 용도                                    |
-| ------------- | ---------------------- | ------------------------- | --------------------------------------- |
-| `line`        | `rgb(51 51 51 / 0.2)`  | `rgb(255 254 241 / 0.16)` | 기본 테두리 (입력창, 보조 버튼, 구분선) |
-| `line-strong` | `rgb(51 51 51 / 0.35)` | `rgb(255 254 241 / 0.4)`  | 포커스 링                               |
-| `overlay`     | `rgb(37 37 37 / 0.5)`  | `rgb(0 0 0 / 0.6)`        | 모달 뒤 배경                            |
+| 토큰      | 라이트                | 다크                      | 용도                                    |
+| --------- | --------------------- | ------------------------- | --------------------------------------- |
+| `line`    | `rgb(51 51 51 / 0.2)` | `rgb(255 254 241 / 0.16)` | 기본 테두리 (입력창, 보조 버튼, 구분선) |
+| `overlay` | `rgb(37 37 37 / 0.5)` | `rgb(0 0 0 / 0.6)`        | 모달 뒤 배경                            |
 
 ### 1.3 브랜드 포인트 컬러 (wood)
 
@@ -111,26 +110,26 @@ Instrument Wood는 크림 바탕에서 글자 대비가 4.87로 기준(4.5)에 �
 
 컴포넌트에서는 팔레트 값을 직접 쓰지 말고 **의미 토큰**을 쓴다. 의미 토큰을 쓰면 다크 모드가 저절로 맞춰진다.
 
-| 의미 토큰                | 라이트         | 다크                 | 설명               |
-| ------------------------ | -------------- | -------------------- | ------------------ |
-| `background`             | `cream-50`     | `pine-950`           | 페이지 바탕        |
-| `foreground`             | `charcoal-800` | `cream-50`           | 기본 글자          |
-| `card` / `popover`       | `cream-50`     | `pine-900`           | 카드, 팝오버       |
-| `primary`                | `charcoal-800` | `cream-50`           | 기본 버튼 배경     |
-| `primary-foreground`     | `cream-50`     | `pine-950`           | 기본 버튼 글자     |
-| `primary-hover`          | `charcoal-900` | `cream-200`          | 기본 버튼 hover    |
-| `brand`                  | `wood-500`     | `wood-300`           | 브랜드 면          |
-| `brand-foreground`       | `cream-50`     | `pine-950`           | 브랜드 면 위 글자  |
-| `brand-hover`            | `wood-600`     | `wood-200`           | 브랜드 버튼 hover  |
-| `brand-ink`              | `wood-600`     | `wood-300`           | 브랜드 색 글자     |
-| `accent-music`           | `pine-950`     | `pine-200`           | 음악 포인트        |
-| `secondary` / `muted`    | `cream-100`    | `pine-800`           | 보조 면, 비활성 면 |
-| `muted-foreground`       | `charcoal-500` | `pine-300`           | 보조 글자          |
-| `accent`                 | `cream-200`    | `pine-700`           | hover, 선택 상태   |
-| `destructive`            | `brick-600`    | `brick-300`          | 오류, 삭제         |
-| `destructive-foreground` | `cream-50`     | `pine-950`           | 오류 색 위 글자    |
-| `border` / `input`       | `line`         | `line` (다크)        | 테두리             |
-| `ring`                   | `line-strong`  | `line-strong` (다크) | 포커스 링          |
+| 의미 토큰                | 라이트         | 다크          | 설명               |
+| ------------------------ | -------------- | ------------- | ------------------ |
+| `background`             | `cream-50`     | `pine-950`    | 페이지 바탕        |
+| `foreground`             | `charcoal-800` | `cream-50`    | 기본 글자          |
+| `card` / `popover`       | `cream-50`     | `pine-900`    | 카드, 팝오버       |
+| `primary`                | `charcoal-800` | `cream-50`    | 기본 버튼 배경     |
+| `primary-foreground`     | `cream-50`     | `pine-950`    | 기본 버튼 글자     |
+| `primary-hover`          | `charcoal-900` | `cream-200`   | 기본 버튼 hover    |
+| `brand`                  | `wood-500`     | `wood-300`    | 브랜드 면          |
+| `brand-foreground`       | `cream-50`     | `pine-950`    | 브랜드 면 위 글자  |
+| `brand-hover`            | `wood-600`     | `wood-200`    | 브랜드 버튼 hover  |
+| `brand-ink`              | `wood-600`     | `wood-300`    | 브랜드 색 글자     |
+| `accent-music`           | `pine-950`     | `pine-200`    | 음악 포인트        |
+| `secondary` / `muted`    | `cream-100`    | `pine-800`    | 보조 면, 비활성 면 |
+| `muted-foreground`       | `charcoal-500` | `pine-300`    | 보조 글자          |
+| `accent`                 | `cream-200`    | `pine-700`    | hover, 선택 상태   |
+| `destructive`            | `brick-600`    | `brick-300`   | 오류, 삭제         |
+| `destructive-foreground` | `cream-50`     | `pine-950`    | 오류 색 위 글자    |
+| `border` / `input`       | `line`         | `line` (다크) | 테두리             |
+| `ring`                   | `charcoal-500` | `pine-300`    | 포커스 링 (4.6)    |
 
 ### 1.6 다크 모드
 
@@ -178,6 +177,17 @@ MVP에 포함한다. #4의 **Piano Bench 초록**을 바탕으로 쓴다. 밤의
 | 기본 (`primary`)     | 크림 / 차콜 12.45, hover 15.11   | 초록 / 크림 14.53, hover 12.19   |
 | 브랜드 (`brand`)     | 크림 / wood-500 4.87, hover 6.05 | 초록 / wood-300 7.85, hover 8.55 |
 | 위험 (`destructive`) | 크림 / brick-600 5.83            | 초록 / brick-300 8.03            |
+
+**포커스 링** (비텍스트, WCAG 1.4.11 기준 3:1)
+
+포커스 링은 요소에서 2px 띄워 그리므로(4.6) 맞닿는 색은 늘 페이지 바탕이다. 그래서 바탕 면 위 대비만 본다. 선(`line`)처럼 투명색을 쓰면 바탕마다 대비가 달라져서, 불투명색을 쓴다.
+
+| 모드   | `ring` 값      | 바탕                                              | 대비                      | 판정 |
+| ------ | -------------- | ------------------------------------------------- | ------------------------- | ---- |
+| 라이트 | `charcoal-500` | `cream-50` / `cream-100` / `cream-200`            | 5.66 / 5.27 / 4.75        | 통과 |
+| 다크   | `pine-300`     | `pine-950` / `pine-900` / `pine-800` / `pine-700` | 8.06 / 6.90 / 5.84 / 4.91 | 통과 |
+
+이전 값(phase 08에서 바꿈)은 라이트 `rgb(51 51 51 / 0.35)` 1.99 / 1.96 / 1.93, 다크 `rgb(255 254 241 / 0.4)` 3.51 / 3.29 / 3.04 / **2.79**로 라이트 전체와 다크 `pine-700`에서 모자랐다. 링을 면에 붙여 그렸다면 `brand` 버튼 면(`wood-500`)과 1.16, `destructive` 면(`brick-600`)과 1.03으로 구분되지 않는다. 띄워 그리는 이유다.
 
 ## 2. 레이아웃
 
@@ -295,6 +305,14 @@ shadcn/ui 컴포넌트를 쓰되, 아래 규칙에 맞게 `src/shared/ui/`의 �
 - 안내/성공: `bg-accent` + `text-foreground`.
 - 오류: `text-destructive` 글자, 필요하면 `bg-destructive` + `text-destructive-foreground`.
 - 토스트는 `bg-primary` + `text-primary-foreground`(라이트에선 차콜, 다크에선 크림), 화면 아래에 띄운다.
+
+### 4.6 포커스 표시
+
+- 키보드 포커스(`:focus-visible`)는 **2px 실선 `ring` outline을 요소 바깥으로 2px 띄워** 그린다. `index.css`의 `@layer base`에 전역으로 있어서 링크, 버튼, 카드 모두 따로 클래스를 주지 않아도 된다.
+- 마우스 클릭으로는 나오지 않는다.
+- 컴포넌트에서 `outline-none`으로 끄고 `ring-[3px]` 같은 box-shadow 링을 따로 주지 않는다. 그림자를 쓰지 않는 원칙(2.3)과 맞지 않고, 고대비 모드(forced-colors)에서는 box-shadow가 사라진다. `pnpm lint`가 이런 클래스(`outline-none`, `outline-hidden`, `focus-visible:ring-*` 등)를 막는다 ([guardrails.md](guardrails.md)).
+- 바깥 outline이 잘리는 곳(스크롤 목록, `overflow-hidden` 안)에서는 `focus-visible:-outline-offset-2`로 요소 안쪽에 그린다. 이때 링은 요소 면과 맞닿으므로 그 면 위 대비를 본다. `background`, `accent`는 1.7 표에서 3:1을 넘는다.
+- 대비 값은 1.7 "포커스 링" 표.
 
 ## 5. 모션
 

@@ -129,7 +129,7 @@ import { ThemeToggle } from '@/features/theme-toggle/ui/ThemeToggle'
 - 서버 데이터는 TanStack Query로 다루고, 쿼리 키는 슬라이스의 `api/`에서 함께 정의한다.
 - 색은 의미 토큰 클래스(`bg-background`, `text-muted-foreground`, `text-brand` 등)만 쓴다. `#333` 같은 값이나 팔레트 클래스(`bg-pine-700`)를 직접 쓰지 않는다. 의미 토큰을 쓰면 다크 모드는 저절로 맞춰진다. Tailwind 기본 팔레트(`red-500`, `white` 등)는 꺼져 있다.
 - `pages`, `widgets`, `features`, `entities`에서는 `useEffect`와 타이머(`setTimeout`, `requestAnimationFrame` 등)를 쓰지 않는다. 서버 데이터는 TanStack Query, 파생 값은 렌더 중 계산, 외부 구독은 `shared/lib`에 목적이 드러나는 훅으로 만든다.
-- shadcn 컴포넌트 추가: `pnpm dlx shadcn@latest add <name>` (`shared/ui`에 생긴다). 추가한 뒤 디자인 시스템 4장에 맞게 수정한다.
+- shadcn 컴포넌트 추가: `pnpm dlx shadcn@latest add <name>` (`shared/ui`에 생긴다). 추가한 뒤 디자인 시스템 4장에 맞게 수정한다. 받은 컴포넌트에 들어 있는 `outline-none`, `focus-visible:ring-*`은 지운다 (포커스 표시는 전역, 4.6. `pnpm lint`가 잡는다).
 - 사용자에게 보이는 문구는 한국어로 쓴다.
 
 ### 가드레일

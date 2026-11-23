@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router'
 
-import { HomePage } from '@/pages/home'
+import { BookListPage } from '@/pages/book-list'
+import { BookReaderPage } from '@/pages/book-reader'
 import { NotFoundPage } from '@/pages/not-found'
 import { RouteErrorPage } from '@/pages/route-error'
 
@@ -14,8 +15,14 @@ export const router = createBrowserRouter([
     Component: RootLayout,
     ErrorBoundary: RouteErrorPage,
     children: [
-      { index: true, Component: HomePage },
+      { index: true, Component: BookListPage },
       { path: '*', Component: NotFoundPage },
     ],
+  },
+  {
+    // 리더는 일반 헤더·여백 없이 화면 전체를 쓴다 (Phase 07).
+    path: '/books/:bookId',
+    Component: BookReaderPage,
+    ErrorBoundary: RouteErrorPage,
   },
 ])

@@ -94,11 +94,11 @@ export const bookDetailQuery = (bookId: string) =>
 
 BE가 구현되기 전에는 [MSW](https://mswjs.io)로 BE API 문서 형식 그대로 응답하는 목을 쓴다. 네트워크 단에서 가로채므로 화면 코드는 실제 BE와 똑같이 `apiClient`를 쓴다.
 
-- 켜기: `.env.local`에 `VITE_API_MOCK=true`를 넣고 `pnpm dev`. 배포 빌드(`pnpm build`)에서는 값과 상관없이 꺼지고, 목 코드는 번들에 들어가지 않는다.
+- 켜기: `.env.local`에 `VITE_API_MOCK=true`를 넣고 `pnpm dev`. 빌드도 같은 값으로 정한다: `VITE_API_MOCK=true pnpm build`이면 배포 결과에서도 목이 켜지고(데모 모드, 5장), 값이 없으면 목 코드가 번들에 들어가지 않는다. 목 코드와 데이터는 따로 떨어진 파일(`browser-*.js`, gzip 약 184KB)로 들어가 목이 켜질 때만 받는다.
 - 위치: `src/app/mocks/` (`handlers.ts`, `fixtures/books.json`, `enable-mocking.ts`). 목은 엔티티 타입을 쓰므로 모든 레이어를 import 할 수 있는 `app`에 둔다.
 - 목 데이터: 저작권 보호 기간이 끝난 한국 단편 3편을 위키문헌에서 가져와 3장씩 나눴다. 출처는 `handlers.ts` 머리 주석에 있다.
 - 시나리오: 브라우저 콘솔에서 `localStorage.setItem('diegesis-mock', 'empty' | 'unauthorized' | 'error')` 후 새로고침. 되돌리기는 `localStorage.removeItem('diegesis-mock')`. 없는 책(`/books/nope`)은 404.
-- `public/mockServiceWorker.js`는 `msw init`이 만드는 파일이라 고치지 않는다. MSW를 올리면 `pnpm exec msw init public`으로 다시 만든다. 배포 결과에도 복사되지만, 등록하는 코드가 번들에 없어서 동작하지 않는다.
+- `public/mockServiceWorker.js`는 `msw init`이 만드는 파일이라 고치지 않는다. MSW를 올리면 `pnpm exec msw init public`으로 다시 만든다. 배포 결과에는 늘 복사되고, 데모 모드일 때만 등록된다.
 - BE에 새 엔드포인트가 생기면 화면을 만들기 전에 목 핸들러부터 추가한다.
 
 ### BE와 합의할 것
@@ -132,7 +132,31 @@ BE [docs/API.md](https://github.com/diegesis-labs/BE/blob/main/docs/API.md) 1절
 
 ## 5. 배포
 
-정적 파일(`dist/`)만 나오므로 Vercel, Netlify, Cloudflare Pages 같은 정적 호스팅에 올리면 된다. SPA라서 모든 경로를 `index.html`로 돌려주는 rewrite 설정이 필요하다. 배포처는 아직 정하지 않았다.
+> 관련 phase: [10 Vercel 배포](phases/10-vercel-deploy.md)
+
+Vercel에 정적 파일(`dist/`)로 올린다. 주소: <https://diegesis-fe.vercel.app>
+
+프로젝트 이름은 `diegesis`인데 `diegesis.vercel.app`은 다른 사람이 쓰고 있어서, production 주소로 `diegesis-fe.vercel.app`을 프로젝트 도메인에 따로 붙였다. 자동으로 붙은 `diegesis-indol.vercel.app`도 같은 배포를 가리킨다. Node 버전은 `engines`(`24.x`)와 프로젝트 설정 모두 24.x다.
+
+- **연결**: Vercel 프로젝트 `diegesis`(개인 Hobby 팀 `def-uk`)가 이 레포와 Git으로 연결돼 있다. `main`에 머지되면 production, PR마다 Preview 주소가 생긴다. Preview는 Vercel 기본 보호로 팀 구성원만 볼 수 있다.
+- **설정 파일**: `vercel.json`이 기준이다 (설치·빌드 명령, 출력 폴더, rewrite, 헤더). 대시보드에서 같은 값을 따로 고치지 않는다.
+  - SPA rewrite: 실제 파일이 없는 경로는 모두 `index.html`로 보낸다 (`/api/` 제외). 없는 경로는 앱의 404 화면이 보여 준다.
+  - 헤더: `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy`. `/assets/`는 파일 이름에 해시가 있어 1년 `immutable` 캐시. CSP는 아직 없다.
+  - 설치는 CI와 같이 `pnpm install --frozen-lockfile`. `pnpm-workspace.yaml` 보안 설정도 그대로 적용된다.
+- **환경 변수** (Vercel 프로젝트 설정): `VITE_API_MOCK=true`(Production, Preview, 데모 모드), `ENABLE_EXPERIMENTAL_COREPACK=1`(`packageManager`의 pnpm 버전을 쓰게 함).
+- **CI와의 관계**: 배포는 Vercel이 한다. GitHub Actions에는 배포 비밀값이 없고, Vercel의 커밋 상태는 필수 검사가 아니다 (필수는 `check` 하나).
+
+### 데모 모드 (BE가 생기기 전)
+
+BE가 아직 없어서 배포된 화면은 MSW 목(3장 "목 API")으로 동작한다. 데이터는 저작권이 끝난 단편 3편이다.
+
+### BE가 생기면
+
+BE INFRA.md의 구성 A(FE와 BE가 한 주소를 함께 씀)로 붙인다. 쿠키 로그인이 같은 사이트에서 동작하고 CORS 설정이 필요 없다.
+
+1. `vercel.json`의 `rewrites` **맨 앞에** `{ "source": "/api/:path*", "destination": "https://<BE 주소>/api/:path*" }`를 더한다.
+2. Vercel 환경 변수에서 `VITE_API_MOCK`을 지운다.
+3. 이미 방문한 브라우저에 남은 MSW 서비스 워커를 정리한다 (등록 해제 코드 또는 `public/mockServiceWorker.js` 삭제. [phase 10](phases/10-vercel-deploy.md) 위험 4).
 
 ## 6. CI와 브랜치 규칙
 

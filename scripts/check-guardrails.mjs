@@ -178,6 +178,77 @@ const CASES = [
     code: `// eslint-disable-next-line no-restricted-globals -- shared는 주석으로 끌 수 있다\nfetch('/a')`,
     expect: null,
   },
+  // 포커스 표시 (docs/phases/09-focus-style-guardrail.md): 끄거나 자체 링을 그리면 금지, 안쪽 outline·테두리 링은 허용
+  {
+    file: 'src/entities/x/ui/X.tsx',
+    code: 'export const X = () => <a className="block outline-none" />',
+    expect: 'no-restricted-syntax',
+  },
+  {
+    file: 'src/shared/ui/x.tsx',
+    code: "export const c = 'outline-hidden'",
+    expect: 'no-restricted-syntax',
+  },
+  {
+    file: 'src/pages/x/ui/X.tsx',
+    code: "export const c = 'focus-visible:outline-none'",
+    expect: 'no-restricted-syntax',
+  },
+  {
+    file: 'src/shared/ui/x.tsx',
+    code: "export const c = 'inline-flex focus-visible:ring-[3px] focus-visible:ring-ring/50'",
+    expect: 'no-restricted-syntax',
+  },
+  {
+    file: 'src/features/x/ui/X.tsx',
+    code: "export const c = 'focus:ring-2'",
+    expect: 'no-restricted-syntax',
+  },
+  {
+    file: 'src/widgets/x/ui/X.tsx',
+    code: "export const c = 'focus-within:ring-ring'",
+    expect: 'no-restricted-syntax',
+  },
+  {
+    file: 'src/app/x.ts',
+    code: "export const c = 'focus-visible:ring-offset-2'",
+    expect: 'no-restricted-syntax',
+  },
+  {
+    file: 'src/pages/x/ui/X.tsx',
+    code: "export const c = 'md:focus-visible:ring'",
+    expect: 'no-restricted-syntax',
+  },
+  {
+    file: 'src/shared/ui/x.tsx',
+    code: "export const c = 'data-[state=open]:focus-visible:ring-2'",
+    expect: 'no-restricted-syntax',
+  },
+  {
+    file: 'src/pages/x/ui/X.tsx',
+    code: 'export const c = `p-2 ${1} outline-none`',
+    expect: 'no-restricted-syntax',
+  },
+  {
+    file: 'src/pages/x/ui/X.tsx',
+    code: "export const c = 'ring-1 ring-border focus-visible:border-ring'",
+    expect: null,
+  },
+  {
+    file: 'src/shared/ui/x.tsx',
+    code: "export const c = 'focus-visible:-outline-offset-2 outline-offset-2'",
+    expect: null,
+  },
+  {
+    file: 'src/shared/ui/x.tsx',
+    code: "export const c = 'aria-invalid:ring-destructive/20 aria-invalid:border-destructive'",
+    expect: null,
+  },
+  {
+    file: 'src/pages/x/ui/X.tsx',
+    code: "export const c = 'group-focus-visible:underline focus-visible:bg-accent'",
+    expect: null,
+  },
 ]
 
 const eslint = new ESLint()

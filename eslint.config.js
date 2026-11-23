@@ -26,12 +26,20 @@ const HEX_ARBITRARY = String.raw`\[#[0-9a-fA-F]`
 // 인라인 style 등 클래스 밖의 색 값: '#333', '1px solid #ccc', 'rgb(0 0 0)', 'oklch(…)'
 const HEX_VALUE = String.raw`(^|[\s(,])#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b`
 const COLOR_FUNCTION = String.raw`\b(rgba?|hsla?|hwb|lab|lch|oklab|oklch)\(`
+// 포커스 표시를 끄거나 따로 그리는 클래스 (design-system 4.6, docs/phases/09-focus-style-guardrail.md)
+// 클래스 하나의 시작: 문자열 처음이나 공백 뒤, 앞에 변형 접두사(`md:`, `data-[state=open]:` 등)가 붙을 수 있다.
+const CLASS_START = String.raw`(^|\s)(\S*:)?!?`
+const OUTLINE_OFF = String.raw`${CLASS_START}outline-(none|hidden)!?(\s|$)`
+// focus, focus-visible, focus-within 변형이 붙은 ring, ring-2, ring-[3px], ring-ring/50, ring-offset-2
+const FOCUS_RING = String.raw`${CLASS_START}focus(-visible|-within)?:(\S*:)?!?ring(-|!|\s|$)`
 
 const MSG = {
   palette:
     '팔레트 색을 직접 쓰지 마세요. 의미 토큰(bg-background, text-muted-foreground, text-brand 등)을 쓰세요. docs/design-system.md 1.5',
   tailwindPalette:
     'Tailwind 기본 색은 꺼져 있어서 이 클래스는 아무 스타일도 만들지 않습니다. 의미 토큰(bg-background, text-foreground 등)을 쓰세요. docs/design-system.md 1.5',
+  focus:
+    '포커스 표시를 끄거나 따로 그리지 마세요. 클래스를 지우면 전역 :focus-visible outline(2px, 2px 띄움)이 붙습니다. 스크롤 영역처럼 바깥 outline이 잘리면 focus-visible:-outline-offset-2로 안쪽에 그리세요. docs/design-system.md 4.6',
   hex: '색 값을 직접 쓰지 마세요. 의미 토큰(bg-background, text-brand 등)을 쓰세요. docs/design-system.md 1.5',
   fetch: 'fetch를 직접 쓰지 마세요. @/shared/api의 apiClient를 쓰세요.',
   httpLib: 'HTTP 라이브러리를 추가하지 않습니다. @/shared/api의 apiClient를 쓰세요.',
@@ -50,6 +58,10 @@ const colorSyntax = [
 ].flatMap(([pattern, message]) => [
   { selector: `Literal[value=/${pattern}/]`, message },
   { selector: `TemplateElement[value.raw=/${pattern}/]`, message },
+])
+const focusSyntax = [OUTLINE_OFF, FOCUS_RING].flatMap((pattern) => [
+  { selector: `Literal[value=/${pattern}/]`, message: MSG.focus },
+  { selector: `TemplateElement[value.raw=/${pattern}/]`, message: MSG.focus },
 ])
 const effectSyntax = [
   {
@@ -92,10 +104,10 @@ const timerProperties = GLOBAL_OBJECTS.flatMap((object) =>
 const guardrails = [
   { linterOptions: { reportUnusedDisableDirectives: 'error' } },
   {
-    // 모든 소스: 색 규칙, HTTP 라이브러리 금지
+    // 모든 소스: 색 규칙, 포커스 표시 규칙, HTTP 라이브러리 금지
     files: SRC,
     rules: {
-      'no-restricted-syntax': ['error', ...colorSyntax],
+      'no-restricted-syntax': ['error', ...colorSyntax, ...focusSyntax],
       'no-restricted-imports': ['error', { paths: httpLibImports }],
     },
   },
@@ -113,7 +125,7 @@ const guardrails = [
     files: PRODUCT_LAYERS,
     linterOptions: { noInlineConfig: true },
     rules: {
-      'no-restricted-syntax': ['error', ...colorSyntax, ...effectSyntax],
+      'no-restricted-syntax': ['error', ...colorSyntax, ...focusSyntax, ...effectSyntax],
       'no-restricted-imports': ['error', { paths: [...httpLibImports, ...effectImports] }],
       'no-restricted-globals': ['error', ...fetchGlobals, ...timerGlobals],
       'no-restricted-properties': ['error', ...fetchProperties, ...timerProperties],

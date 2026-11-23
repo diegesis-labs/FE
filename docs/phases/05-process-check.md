@@ -1,12 +1,12 @@
 # Phase 05: 작업 절차 CI 검사
 
-- 상태: 진행 중
+- 상태: 리뷰 중
 - 선행 phase: [04 가드레일 lint](04-guardrail-lint.md) (완료)
 - 관련 이슈: [#11 작업 절차 CI 검사](https://github.com/diegesis-labs/FE/issues/11)
 - 브랜치: `setup/11-process-check` (`main`의 `c7b7231`에서 만듦)
 - 계획 커밋: `fed0851`
 - 구현 커밋: `849ea7b` (`39b5130`~`849ea7b`)
-- 리뷰 문서: [05-process-check-review.md](../reviews/05-process-check-review.md) (리뷰 단계에서 작성)
+- 리뷰 문서: [05-process-check-review.md](../reviews/05-process-check-review.md)
 
 ## 목표
 

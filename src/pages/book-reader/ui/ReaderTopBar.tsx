@@ -19,10 +19,10 @@ export function ReaderTopBar({ reader }: { reader: Reader }) {
         <ArrowLeft aria-hidden className="size-5" strokeWidth={1.5} />
         <span className="sr-only md:not-sr-only md:text-sm">책 목록</span>
       </Link>
-      <p className="min-w-0 flex-1 truncate text-center text-sm">
+      <h1 className="min-w-0 flex-1 truncate text-center text-sm font-normal">
         <span className="font-display text-base">{book.title}</span>
         {position && <span className="text-muted-foreground"> · {position.meta.title}</span>}
-      </p>
+      </h1>
       <ChapterToc reader={reader} />
       <ThemeToggle />
     </header>

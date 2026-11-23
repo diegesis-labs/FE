@@ -71,7 +71,7 @@ export function PageStage({ reader }: { reader: Reader }) {
       ref={stageRef}
       {...swipe}
       // 가로 끌기는 리더가 받고, 확대는 브라우저에 남긴다.
-      className="relative min-h-0 flex-1 touch-pan-y overflow-hidden select-none"
+      className="relative min-h-0 flex-1 touch-pan-y touch-pinch-zoom overflow-hidden select-none"
       data-chapter={position?.chapterNo}
       data-first-sentence={range?.first}
       data-last-sentence={range?.last}

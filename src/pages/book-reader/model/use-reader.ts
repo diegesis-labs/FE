@@ -16,11 +16,17 @@ const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 
 export type Direction = 1 | -1
 type Destination = { chapterNo: number; anchor: number }
-/** 챕터 경계를 넘을 때의 슬라이드: 밀려 나가는 중(leaving) → 챕터를 바꾸고 들어오는 중(entering) */
+/**
+ * 챕터 경계를 넘을 때의 슬라이드: 밀려 나가는 중(leaving) → 챕터를 바꾸고 들어오는 중(entering).
+ * `at`은 이 슬라이드가 유효한 위치다. 그 사이 뒤로 가기 등으로 위치가 바뀌면 슬라이드는 없던 것으로 본다
+ * (밀려 나가던 띠가 사라져 transitionend가 오지 않으면 leaving에 갇히기 때문).
+ */
 export type ChapterTransition =
-  | { phase: 'leaving'; dir: Direction; destination: Destination }
-  | { phase: 'entering'; dir: Direction }
+  | { phase: 'leaving'; at: string; dir: Direction; destination: Destination }
+  | { phase: 'entering'; at: string; dir: Direction }
   | null
+
+const positionKey = (chapterNo: number, anchor: number) => `${chapterNo}:${anchor}`
 
 /** 사용자가 넘긴 쪽. 같은 표·같은 기준 문장인 동안만 쓰고, 그 밖에는 기준 문장으로 쪽을 다시 찾는다 */
 type TurnedPage = { layoutKey: string; anchor: number; page: number }
@@ -43,7 +49,9 @@ export function useReader(book: BookDetail) {
   const { measureRef, trackRef, layout } = usePagination(chapter.data, geometry, fontsReady)
 
   const [turned, setTurned] = useState<TurnedPage | null>(null)
-  const [transition, setTransition] = useState<ChapterTransition>(null)
+  const [savedTransition, setTransition] = useState<ChapterTransition>(null)
+  const currentKey = position ? positionKey(position.chapterNo, position.anchor) : null
+  const transition = savedTransition?.at === currentKey ? savedTransition : null
 
   const perView = geometry.pagesPerView
   let page = 0
@@ -81,12 +89,16 @@ export function useReader(book: BookDetail) {
   const enterChapter = (destination: Destination, dir: Direction | null) => {
     setSearchParams(positionParams(destination.chapterNo, destination.anchor))
     setTurned(null)
-    setTransition(dir && !reducedMotion ? { phase: 'entering', dir } : null)
+    setTransition(
+      dir && !reducedMotion
+        ? { phase: 'entering', at: positionKey(destination.chapterNo, destination.anchor), dir }
+        : null,
+    )
   }
 
   /** 한 화면(한 쪽 또는 두 쪽) 넘긴다. 챕터 끝이면 이웃 챕터로 */
   const turn = (dir: Direction) => {
-    if (!layout || !position || transition?.phase === 'leaving') return
+    if (!layout || !position || !currentKey || transition?.phase === 'leaving') return
 
     const target = view + dir
     if (target >= 0 && target < viewCount) {
@@ -109,7 +121,7 @@ export function useReader(book: BookDetail) {
     }
     prefetchChapter(neighbor.chapter_no)
     if (reducedMotion) enterChapter(destination, null)
-    else setTransition({ phase: 'leaving', dir, destination })
+    else setTransition({ phase: 'leaving', at: currentKey, dir, destination })
   }
 
   /** 띠의 슬라이드가 끝났을 때. 밀려 나가는 중이었다면 이제 챕터를 바꾼다 */

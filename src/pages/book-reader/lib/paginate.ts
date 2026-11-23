@@ -52,11 +52,16 @@ export function buildPageLayout(
 }
 
 /**
- * 문장 번호가 있는 쪽. `atEnd`면 마지막 쪽.
- * 표에 없는 번호면 그보다 앞에서 가장 가까운 문장의 쪽, 그것도 없으면 첫 쪽.
+ * 기준 문장(화면의 첫 문장)을 보여 줄 쪽. `atEnd`면 마지막 쪽.
+ * 1. 첫 문장이 기준 문장인 가장 앞 쪽. 앞 쪽에서 이어지는 문장이 첫 문장인 쪽도 여기서 찾는다
+ *    (문장이 시작하는 쪽으로 가면 넘겨 보던 쪽보다 한 쪽 앞이 열린다).
+ * 2. 없으면 그 문장이 시작하는 쪽 (크기가 바뀌어 문장이 쪽 중간에서 시작하게 된 경우).
+ * 3. 표에 없는 번호면 그보다 앞에서 가장 가까운 문장의 쪽, 그것도 없으면 첫 쪽.
  */
 export function pageForAnchor(layout: PageLayout, anchor: number, atEnd: boolean): number {
   if (atEnd) return layout.pageCount - 1
+  const leading = layout.ranges.findIndex((range) => range.first === anchor)
+  if (leading !== -1) return leading
   const exact = layout.startPage.get(anchor)
   if (exact !== undefined) return exact
   let best = 0

@@ -27,14 +27,16 @@ const setDrag = (track: HTMLDivElement | null, dx: number, dragging: boolean) =>
   if (!track) return
   // React가 관리하지 않는 값만 바꾼다: CSS 변수, 인라인 transition, data 속성.
   // 기본 위치(transform)와 클래스는 React가 그린다.
+  const offset = parseFloat(track.style.getPropertyValue('--drag-dx') || '0')
   track.style.setProperty('--drag-dx', `${dx}px`)
   if (dragging) {
     track.style.transition = 'none'
     delete track.dataset.settling
   } else {
     // 놓은 뒤에는 제자리 또는 새 쪽으로 미끄러져 간다 (transitionend에서 settling을 지운다).
+    // 끌린 자리가 제자리면 미끄러짐이 없어 transitionend도 오지 않으므로 표시하지 않는다.
     track.style.removeProperty('transition')
-    track.dataset.settling = 'true'
+    if (offset !== 0) track.dataset.settling = 'true'
   }
 }
 
@@ -46,6 +48,8 @@ export function useSwipe({ trackRef, viewportWidth, canPrev, canNext, onTurn }: 
   const gesture = useRef<Gesture | null>(null)
 
   const onPointerDown = (event: PointerEvent<HTMLElement>) => {
+    // 두 번째 손가락(확대 등)은 무시한다. 첫 손가락의 끌기를 덮어쓰면 띠가 끌린 자리에 남는다.
+    if (!event.isPrimary) return
     if (event.pointerType === 'mouse' && event.button !== 0) return
     gesture.current = {
       pointerId: event.pointerId,

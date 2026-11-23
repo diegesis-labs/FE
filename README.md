@@ -8,7 +8,7 @@ Diegesis 웹 프론트엔드. Vite + React + TypeScript SPA.
 
 ## 시작하기
 
-Node 24 이상이 필요하다. pnpm 버전은 `package.json`의 `packageManager`로 고정되어 있으니 Corepack으로 맞춘다.
+Node 24가 필요하다 (`.nvmrc`, `engines`는 `24.x`. Vercel도 같은 버전으로 빌드한다). pnpm 버전은 `package.json`의 `packageManager`로 고정되어 있으니 Corepack으로 맞춘다.
 
 ```bash
 corepack enable        # 처음 한 번

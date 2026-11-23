@@ -1,6 +1,6 @@
 # 가드레일: 규칙과 강제 수단
 
-> 관련 phase: [04 가드레일 lint](phases/04-guardrail-lint.md)
+> 관련 phase: [04 가드레일 lint](phases/04-guardrail-lint.md), [05 작업 절차 CI 검사](phases/05-process-check.md)
 
 [CLAUDE.md](../CLAUDE.md)의 규칙마다 **무엇이 강제하는지** 적은 표다. 강제 수단이 "없음"인 규칙은 글로만 있는 규칙이라, 사람과 에이전트가 읽고 지켜 주기를 바랄 수밖에 없다.
 
@@ -10,6 +10,8 @@
 - 새 lint 규칙은 에러 메시지에 **대신 쓸 것**을 적는다.
 - ESLint 가드레일을 추가하면 `scripts/check-guardrails.mjs`에 "걸려야 하는 사례"와 "통과해야 하는 사례"를 함께 넣는다.
 - 강제 수단이 바뀌면 이 표를 같이 고친다.
+
+"Claude Code 훅"은 `.claude/settings.json`의 권한 규칙과 `.claude/hooks/guard.mjs`다. Claude Code가 명령을 실행하거나 파일을 고치기 **전에** 막거나 사용자 확인을 받는다. Claude에게만 걸리고 사람의 터미널 작업에는 걸리지 않는다. 판정 목록과 빈틈은 [Phase 05](phases/05-process-check.md) "Claude Code 훅" 절에 있다.
 
 ## 코드 규칙
 
@@ -43,28 +45,31 @@
 
 ## 작업 순서와 Git
 
-| CLAUDE.md 규칙                                               | 강제 수단                                              | 위치                               |
-| ------------------------------------------------------------ | ------------------------------------------------------ | ---------------------------------- |
-| `main`은 PR로만 바뀐다 (직접 푸시, force push, 삭제 금지)    | ruleset                                                | `.github/rulesets/main.json`       |
-| CI(`check`) 통과, 리뷰 대화 해결 후에만 머지한다             | ruleset                                                | `.github/rulesets/main.json`       |
-| 머지는 merge commit으로만 한다                               | 레포 설정, ruleset                                     | `.github/rulesets/main.json`       |
-| PR 전에 format·lint·typecheck·build를 통과시킨다             | CI가 같은 명령을 돌린다                                | `.github/workflows/ci.yml`         |
-| 워크플로 액션은 커밋 SHA로 고정한다                          | 레포 설정 `sha_pinning_required`                       | GitHub 레포 설정                   |
-| phase 문서를 승인받고 코드보다 먼저 커밋한다                 | 없음                                                   | –                                  |
-| 한 커밋에 계획 문서와 코드를 섞지 않는다                     | 없음                                                   | –                                  |
-| 커밋 메시지는 `종류(범위): 설명` 형식                        | 없음                                                   | –                                  |
-| 브랜치 이름은 `<종류>/<이슈번호>-<설명>`                     | 없음                                                   | –                                  |
-| PR 설명에 관련 이슈, phase 문서, 리뷰 문서 링크를 넣는다     | 일부: PR 템플릿이 칸을 보여 준다. 비워도 막지 않음     | `.github/pull_request_template.md` |
-| 커밋·푸시는 작업 순서에 적힌 시점에만, 작업 브랜치에 한다    | 일부: `main` 직접 푸시는 ruleset이 막는다. 시점은 없음 | `.github/rulesets/main.json`       |
-| PR 머지, force push는 사용자가 요청할 때만 한다              | 일부: force push는 ruleset이 막는다. 머지 시점은 없음  | `.github/rulesets/main.json`       |
-| ruleset은 파일을 먼저 고치고 API로 적용해 둘을 같게 유지한다 | 없음                                                   | –                                  |
+| CLAUDE.md 규칙                                               | 강제 수단                                                                                                                                                                                                                  | 위치                                                            |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `main`은 PR로만 바뀐다 (직접 푸시, force push, 삭제 금지)    | ruleset                                                                                                                                                                                                                    | `.github/rulesets/main.json`                                    |
+| CI(`check`) 통과, 리뷰 대화 해결 후에만 머지한다             | ruleset                                                                                                                                                                                                                    | `.github/rulesets/main.json`                                    |
+| 머지는 merge commit으로만 한다                               | 레포 설정, ruleset. Claude Code 훅이 squash·rebase 머지 명령을 막는다                                                                                                                                                      | `.github/rulesets/main.json`, `.claude/hooks/guard.mjs`         |
+| PR 전에 format·lint·typecheck·build를 통과시킨다             | CI가 같은 명령을 돌린다                                                                                                                                                                                                    | `.github/workflows/ci.yml`                                      |
+| 워크플로 액션은 커밋 SHA로 고정한다                          | 레포 설정 `sha_pinning_required`                                                                                                                                                                                           | GitHub 레포 설정                                                |
+| phase 문서를 승인받고 코드보다 먼저 커밋한다                 | 일부: CI 검사 4가 코드를 바꾼 첫 커밋 시점에 PR이 가리키는 phase 문서의 `상태:`가 `계획`이 아닌지 본다. 누가 승인했는지는 모른다. 진행 중인 phase 없이 Claude가 `src/`를 고치려 하면 Claude Code 훅이 사용자 확인을 받는다 | `scripts/check-process.mjs`, `.claude/hooks/guard.mjs`          |
+| 한 커밋에 계획 문서와 코드를 섞지 않는다                     | CI 검사 3 (PR의 모든 커밋). Claude Code 훅이 Claude의 `git commit`을 스테이징 기준으로 미리 막는다                                                                                                                         | `scripts/check-process.mjs`, `.claude/hooks/guard.mjs`          |
+| 커밋 메시지는 `종류(범위): 설명` 형식                        | CI 검사 1 (PR의 머지가 아닌 커밋)                                                                                                                                                                                          | `scripts/check-process.mjs`                                     |
+| 브랜치 이름은 `<종류>/<이슈번호>-<설명>`                     | CI 검사 2 (`dependabot/` 제외)                                                                                                                                                                                             | `scripts/check-process.mjs`                                     |
+| PR 설명에 관련 이슈, phase 문서, 리뷰 문서 링크를 넣는다     | CI 검사 5: `Refs`/`Closes #N`, 있는 phase 문서, draft가 아니면 있는 리뷰 문서. 예외 줄 `- Phase: 없음 — 이유`는 이유가 있어야 하고 CI 로그에 남는다. 설명을 고치면 다시 검사                                               | `scripts/check-process.mjs`, `.github/pull_request_template.md` |
+| 커밋·푸시는 작업 순서에 적힌 시점에만, 작업 브랜치에 한다    | 일부: `main` 직접 푸시는 ruleset이 막는다. Claude Code 훅이 `main`에서의 커밋을 막고 `main` 푸시 전에 확인을 받는다. 시점은 없음                                                                                           | `.github/rulesets/main.json`, `.claude/hooks/guard.mjs`         |
+| PR 머지, force push는 사용자가 요청할 때만 한다              | 일부: `main` force push는 ruleset이 막는다. Claude Code 훅이 force push·PR 머지 전에 사용자 확인을 받는다                                                                                                                  | `.github/rulesets/main.json`, `.claude/hooks/guard.mjs`         |
+| ruleset은 파일을 먼저 고치고 API로 적용해 둘을 같게 유지한다 | 일부: Claude Code 훅이 `gh api` ruleset 변경과 `.github/**` 수정 전에 사용자 확인을 받는다                                                                                                                                 | `.claude/hooks/guard.mjs`, `.claude/settings.json`              |
+| Claude Code 훅이 위 판정대로 동작한다                        | 훅 테스트 (`pnpm test:scripts`, CI에서도 실행)                                                                                                                                                                             | `scripts/claude-guard.test.mjs`                                 |
+| 작업 절차 검사가 위 규칙대로 동작한다                        | 검사 테스트 (`pnpm test:scripts`, CI에서도 실행)                                                                                                                                                                           | `scripts/check-process.test.mjs`                                |
 
 ## 의존성 보안
 
-| CLAUDE.md 규칙                                              | 강제 수단        | 위치                  |
-| ----------------------------------------------------------- | ---------------- | --------------------- |
-| 배포된 지 3일이 안 된 버전은 설치하지 않는다                | pnpm 설정        | `pnpm-workspace.yaml` |
-| 의존성의 설치 스크립트는 허용한 것만 실행한다               | pnpm 설정        | `pnpm-workspace.yaml` |
-| `.env*`(`.env.example` 제외)를 커밋하지 않는다              | `.gitignore`     | `.gitignore`          |
-| 새 패키지는 이름·관리 주체·배포일을 확인하고 phase에 적는다 | 없음 (리뷰 항목) | –                     |
-| 클라이언트에 노출되는 값(`VITE_`)을 조심한다                | 없음             | –                     |
+| CLAUDE.md 규칙                                              | 강제 수단                                                         | 위치                    |
+| ----------------------------------------------------------- | ----------------------------------------------------------------- | ----------------------- |
+| 배포된 지 3일이 안 된 버전은 설치하지 않는다                | pnpm 설정                                                         | `pnpm-workspace.yaml`   |
+| 의존성의 설치 스크립트는 허용한 것만 실행한다               | pnpm 설정                                                         | `pnpm-workspace.yaml`   |
+| `.env*`(`.env.example` 제외)를 커밋하지 않는다              | `.gitignore`                                                      | `.gitignore`            |
+| 새 패키지는 이름·관리 주체·배포일을 확인하고 phase에 적는다 | 일부: Claude의 `pnpm add`·`pnpm update`는 사용자 확인 (리뷰 항목) | `.claude/settings.json` |
+| `minimumReleaseAge`·`allowBuilds`를 끄거나 우회하지 않는다  | 일부: Claude가 `pnpm-workspace.yaml`을 고치려 하면 사용자 확인    | `.claude/settings.json` |
+| 클라이언트에 노출되는 값(`VITE_`)을 조심한다                | 없음                                                              | –                       |

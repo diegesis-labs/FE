@@ -1,4 +1,5 @@
-@import 'tailwindcss';
+/* 클래스를 찾는 곳은 src만. 문서와 가드레일 사례에 적은 클래스 이름으로 안 쓰는 CSS가 생기지 않게 한다. */
+@import 'tailwindcss' source('../..');
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 

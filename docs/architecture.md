@@ -134,7 +134,9 @@ BE [docs/API.md](https://github.com/diegesis-labs/BE/blob/main/docs/API.md) 1절
 
 > 관련 phase: [10 Vercel 배포](phases/10-vercel-deploy.md)
 
-Vercel에 정적 파일(`dist/`)로 올린다. 주소: <https://diegesis.vercel.app>
+Vercel에 정적 파일(`dist/`)로 올린다. 주소: <https://diegesis-fe.vercel.app>
+
+프로젝트 이름은 `diegesis`인데 `diegesis.vercel.app`은 다른 사람이 쓰고 있어서, production 주소로 `diegesis-fe.vercel.app`을 프로젝트 도메인에 따로 붙였다. 자동으로 붙은 `diegesis-indol.vercel.app`도 같은 배포를 가리킨다. Node 버전은 `engines`(`24.x`)와 프로젝트 설정 모두 24.x다.
 
 - **연결**: Vercel 프로젝트 `diegesis`(개인 Hobby 팀 `def-uk`)가 이 레포와 Git으로 연결돼 있다. `main`에 머지되면 production, PR마다 Preview 주소가 생긴다. Preview는 Vercel 기본 보호로 팀 구성원만 볼 수 있다.
 - **설정 파일**: `vercel.json`이 기준이다 (설치·빌드 명령, 출력 폴더, rewrite, 헤더). 대시보드에서 같은 값을 따로 고치지 않는다.

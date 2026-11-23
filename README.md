@@ -4,7 +4,7 @@ Diegesis 웹 프론트엔드. Vite + React + TypeScript SPA.
 
 기술스택, 폴더 구조, BE 연동 방식은 [docs/architecture.md](docs/architecture.md)에 정리되어 있다.
 
-배포: <https://diegesis.vercel.app> (Vercel, `main` 머지 때 자동 배포. BE가 생기기 전이라 MSW 목 데이터로 동작한다. [architecture.md](docs/architecture.md) 5장)
+배포: <https://diegesis-fe.vercel.app> (Vercel, `main` 머지 때 자동 배포. BE가 생기기 전이라 MSW 목 데이터로 동작한다. [architecture.md](docs/architecture.md) 5장)
 
 ## 시작하기
 

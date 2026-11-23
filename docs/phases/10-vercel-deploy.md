@@ -1,12 +1,12 @@
 # Phase 10: Vercel 배포
 
-- 상태: 진행 중
+- 상태: 리뷰 중
 - 선행 phase: 없음 (05~09 모두 `main`에 머지됨)
 - 관련 이슈: [#23 Vercel 배포](https://github.com/diegesis-labs/FE/issues/23)
 - 브랜치: `setup/23-vercel-deploy`
 - 계획 커밋: `725e8ce`
 - 구현 커밋: `682bedf` (Git 연동과 Preview 확인 전)
-- 리뷰 문서: [10-vercel-deploy-review.md](../reviews/10-vercel-deploy-review.md) (리뷰 단계에서 작성)
+- 리뷰 문서: [10-vercel-deploy-review.md](../reviews/10-vercel-deploy-review.md)
 
 ## 목표
 

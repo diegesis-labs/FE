@@ -138,9 +138,9 @@ export async function enableMocking() {
 - [x] 이 phase의 PR에 Vercel Preview 배포가 생기고, 빌드 로그의 pnpm이 `12.21.0`, Node가 24.x다.
 - [x] 배포 주소에서 `/`에 책 목록이 보이고, `/books/<id>?chapter=2`를 직접 열거나 새로 고쳐도 리더가 뜬다. 없는 경로는 앱의 404 화면이다.
 - [x] 배포 주소의 응답에 보안 헤더 4개가 있고, `/assets/*`는 `immutable` 캐시, `index.html`은 장기 캐시가 아니다.
-- [ ] `main`에 머지되면 production 배포가 자동으로 생기고, production 주소가 README와 architecture.md 5장에 적혀 있다.
+- [x] `main`에 머지되면 production 배포가 자동으로 생기고, production 주소가 README와 architecture.md 5장에 적혀 있다.
 - [x] `ci.yml`, ruleset, 레포 시크릿이 바뀌지 않았다. 새 의존성이 없다.
-- [x] architecture.md 5장에 BE가 생기면 할 일(`/api` rewrite 추가, 데모 모드 끄기)이 적혀 있다. 주소는 적었고, 머지 뒤 자동 배포는 머지 후 확인 (리뷰 문서 3절).
+- [x] architecture.md 5장에 BE가 생기면 할 일(`/api` rewrite 추가, 데모 모드 끄기)이 적혀 있다.
 
 ## 위험과 열린 질문
 
@@ -159,3 +159,4 @@ export async function enableMocking() {
 - 2026-11-23: 단계 3. Vercel GitHub 앱이 설치돼 `vercel git connect`로 `diegesis-labs/FE`를 연결함. 배포 방식은 Git 연동 유지 (GitHub Actions 배포와 비교 후 사용자 결정: CI에 비밀값을 두지 않는다). PR #24
 - 2026-11-23: 단계 4. 계획과 다른 점: (1) `diegesis.vercel.app`은 다른 사람의 주소라서(보안 헤더 없음, SPA 경로 404) 계획대로 `diegesis-fe.vercel.app`을 쓴다. 프로젝트 이름을 바꾸지 않고 프로젝트 도메인으로 붙임. (2) Vercel이 `engines.node >=24`를 보고 26.x로 빌드해서 `engines`를 `24.x`로 고치고 프로젝트 설정도 24.x로 바꿈(`a99d810`). (3) 새 프로젝트의 첫 배포(`260373e`, PR 브랜치)가 production으로 잡힘. 내용은 이 PR과 같고, `main` 머지 때 production이 다시 만들어진다. 확인: pnpm 12.21.0(Corepack), SPA 경로·없는 경로 200 `text/html`, `/api/books` 404 `text/plain`, 보안 헤더 4개, `/assets/` immutable·`index.html` max-age=0, 목 chunk 배포됨. 화면 렌더링은 Chrome 확장이 응답하지 않아 사용자 확인 대기
 - 2026-11-23: 리뷰 통과 ([리뷰 문서](../reviews/10-vercel-deploy-review.md)). 사용자가 `diegesis-fe.vercel.app`에서 책 목록과 리더를 확인. 남은 일: 머지 뒤 production 자동 배포 확인
+- 2026-11-23: 머지 후 확인. PR #24 머지(`633164b`)로 `main` production 배포가 자동으로 생기고 `diegesis-fe.vercel.app`이 가리킴. 완료 기준 모두 확인

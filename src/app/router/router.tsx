@@ -16,8 +16,13 @@ export const router = createBrowserRouter([
     ErrorBoundary: RouteErrorPage,
     children: [
       { index: true, Component: BookListPage },
-      { path: 'books/:bookId', Component: BookReaderPage },
       { path: '*', Component: NotFoundPage },
     ],
+  },
+  {
+    // 리더는 일반 헤더·여백 없이 화면 전체를 쓴다 (Phase 07).
+    path: '/books/:bookId',
+    Component: BookReaderPage,
+    ErrorBoundary: RouteErrorPage,
   },
 ])

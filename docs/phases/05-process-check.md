@@ -1,6 +1,6 @@
 # Phase 05: 작업 절차 CI 검사
 
-- 상태: 리뷰 중
+- 상태: 완료
 - 선행 phase: [04 가드레일 lint](04-guardrail-lint.md) (완료)
 - 관련 이슈: [#11 작업 절차 CI 검사](https://github.com/diegesis-labs/FE/issues/11)
 - 브랜치: `setup/11-process-check` (`main`의 `c7b7231`에서 만듦)
@@ -159,17 +159,17 @@ pnpm test:scripts             # 검사 스크립트 테스트
 
 ## 완료 기준
 
-- [ ] `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`가 통과한다.
-- [ ] 검사 5가지마다 통과 사례와 실패 사례가 `scripts/check-process.test.mjs`에 있고 모두 기대대로 나온다.
-- [ ] 지난 PR #9, #10의 커밋과 설명으로 돌리면 통과한다.
-- [ ] 이 phase의 PR에서 CI `check`가 절차 검사 단계를 실행하고 통과한다.
-- [ ] 이 phase의 PR에 형식에 맞지 않는 커밋을 일부러 넣으면 CI가 실패하고, 메시지가 무엇을 고칠지 알려준다 (확인 후 되돌림).
-- [ ] PR 설명을 고치면(`edited`) CI가 다시 돈다.
-- [ ] PR 제목·설명·브랜치 이름이 셸 명령으로 해석되지 않는다 (`ci.yml`에 `${{ github.event.pull_request.* }}`를 `run:`에 넣은 곳이 없다).
-- [ ] 새 의존성이 없다.
-- [ ] `docs/guardrails.md`의 "작업 순서와 Git" 절이 실제 검사와 맞다.
-- [ ] `scripts/claude-guard.test.mjs`가 "Claude Code 훅" 표의 판정마다 사례를 갖고 모두 기대대로 나온다.
-- [ ] 새 Claude Code 세션에서 훅이 실제로 돈다 (예: `git push --force --dry-run`에 확인 창이 뜬다, `src/` 파일에 팔레트 클래스를 넣으면 ESLint 오류가 돌아온다).
+- [x] `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`가 통과한다.
+- [x] 검사 5가지마다 통과 사례와 실패 사례가 `scripts/check-process.test.mjs`에 있고 모두 기대대로 나온다.
+- [x] 지난 PR #9, #10의 커밋과 설명으로 돌리면 통과한다.
+- [x] 이 phase의 PR에서 CI `check`가 절차 검사 단계를 실행하고 통과한다.
+- [x] 이 phase의 PR에 형식에 맞지 않는 커밋을 일부러 넣으면 CI가 실패하고, 메시지가 무엇을 고칠지 알려준다 (확인 후 되돌림).
+- [x] PR 설명을 고치면(`edited`) CI가 다시 돈다.
+- [x] PR 제목·설명·브랜치 이름이 셸 명령으로 해석되지 않는다 (`ci.yml`에 `${{ github.event.pull_request.* }}`를 `run:`에 넣은 곳이 없다).
+- [x] 새 의존성이 없다.
+- [x] `docs/guardrails.md`의 "작업 순서와 Git" 절이 실제 검사와 맞다.
+- [x] `scripts/claude-guard.test.mjs`가 "Claude Code 훅" 표의 판정마다 사례를 갖고 모두 기대대로 나온다.
+- [ ] 새 Claude Code 세션에서 훅이 실제로 돈다 (예: `git push --force --dry-run`에 확인 창이 뜬다, `src/` 파일에 팔레트 클래스를 넣으면 ESLint 오류가 돌아온다). 확인 못 함: 키체인 잠금으로 새 세션 인증 실패 (리뷰 문서 3절).
 
 ## 위험과 열린 질문
 
@@ -189,3 +189,4 @@ pnpm test:scripts             # 검사 스크립트 테스트
 - 2026-11-22: 구현 (단계 5의 PR 확인 전). 지난 PR #9, #10은 통과. 이 phase 전의 PR #5는 검사 3(`_template.md`와 CLAUDE.md를 함께 바꾼 커밋 2개), 4, 5에서 실패하며, 소급 적용하지 않으므로 그대로 둔다
 - 2026-11-22: 단계 5 확인 (PR #12). draft에서 CI 통과(run 45032271794). draft 해제 때 리뷰 문서가 없어 검사 5가 실패(run 45033228321)해서 draft로 되돌림. 형식에 맞지 않는 빈 커밋 `1558ab3`을 넣자 검사 1만 실패하며 고칠 형식을 알려줌(run 45033783171). 사용자 승인 후 force push로 `1558ab3` 제거
 - 2026-11-23: `main`(06~09, #22)을 받음(`5b32b2f`, 충돌 없음). 리뷰 중 수정: 훅이 `git -c … push`처럼 `-C`가 아닌 전역 옵션이 붙은 명령과 `-fu`처럼 붙여 쓴 옵션의 force push를 놓치고, 커밋 메시지 안의 `-n`을 `--no-verify`로 보던 것을 고침(`c98e181`). 표에서 `settings.json` 권한 규칙이 맡는 판정의 테스트를 더함(`9b2b36a`). 위험 6에 훅이 걸리는 범위, 위험 7(머지 커밋)을 더함
+- 2026-11-23: 리뷰 수정 후 통과 ([리뷰 문서](../reviews/05-process-check-review.md)). PR #12 draft 해제 후 CI 통과. 남은 일: 새 Claude Code 세션에서 훅이 실제로 걸리는지 확인 (완료 기준 마지막 줄)

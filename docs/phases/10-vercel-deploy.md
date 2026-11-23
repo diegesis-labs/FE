@@ -1,11 +1,11 @@
 # Phase 10: Vercel 배포
 
-- 상태: 승인됨
+- 상태: 진행 중
 - 선행 phase: 없음 (05~09 모두 `main`에 머지됨)
 - 관련 이슈: [#23 Vercel 배포](https://github.com/diegesis-labs/FE/issues/23)
 - 브랜치: `setup/23-vercel-deploy`
-- 계획 커밋: (승인 후 이 문서만 커밋·푸시한 해시)
-- 구현 커밋: (구현 완료 후 커밋 해시)
+- 계획 커밋: `725e8ce`
+- 구현 커밋: `682bedf` (Git 연동과 Preview 확인 전)
 - 리뷰 문서: [10-vercel-deploy-review.md](../reviews/10-vercel-deploy-review.md) (리뷰 단계에서 작성)
 
 ## 목표
@@ -123,12 +123,12 @@ export async function enableMocking() {
 
 ## 작업 단계
 
-- [ ] 1. `enable-mocking.ts`의 조건을 바꾸고 주석을 고친다. `pnpm build`(변수 없음) 결과에 `msw`·`setupWorker`·목 본문이 없는지, `VITE_API_MOCK=true pnpm build && pnpm preview`에서 책 목록·리더가 목으로 동작하는지 확인한다.
-- [ ] 2. `vercel.json`을 만든다. `vercel build`로 로컬에서 같은 설정의 빌드가 되는지 본다.
+- [x] 1. `enable-mocking.ts`의 조건을 바꾸고 주석을 고친다. `pnpm build`(변수 없음) 결과에 `msw`·`setupWorker`·목 본문이 없는지, `VITE_API_MOCK=true pnpm build && pnpm preview`에서 책 목록·리더가 목으로 동작하는지 확인한다.
+- [x] 2. `vercel.json`을 만든다. `vercel build`로 로컬에서 같은 설정의 빌드가 되는지 본다.
 - [ ] 3. 사용자에게 Vercel GitHub 앱 설치를 부탁한다. 설치되면 CLI로 프로젝트를 만들고 레포를 연결하고 환경 변수를 넣는다.
 - [ ] 4. 이 phase의 PR에서 Preview 배포가 만들어지고, 빌드 로그의 pnpm·Node 버전이 맞는지 본다. Preview 주소에서 `/`, `/books/<id>` 직접 열기·새로 고침, 없는 경로, 헤더(`curl -I`)를 확인한다.
-- [ ] 5. architecture.md 3장·5장, `.env.example`, README를 고친다.
-- [ ] 6. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`를 통과시킨다.
+- [x] 5. architecture.md 3장·5장, `.env.example`, README를 고친다.
+- [x] 6. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`를 통과시킨다.
 
 ## 완료 기준
 
@@ -155,3 +155,4 @@ export async function enableMocking() {
 
 - 2026-11-23: 작성
 - 2026-11-23: 승인. 이슈 #23 생성, 브랜치 `setup/23-vercel-deploy`
+- 2026-11-23: 구현 (`682bedf`, 단계 1·2·5·6). 계획과 다른 점: (1) `vercel link`가 `.gitignore`에 `.env*`를 덧붙여 `!.env.example` 예외를 덮어써서, `.vercel`만 남기고 지움. (2) `vercel build`가 로컬에 만드는 `.vercel/output/`을 ESLint가 검사해 실패해서 `eslint.config.js`의 `globalIgnores`에 `.vercel`을 더함. (3) 데모 모드 목 chunk `browser-*.js`는 474KB(gzip 184KB). 변수 없는 빌드는 이전과 같은 해시(`index-DJYhO8OM.js`)로 목이 빠짐. Vercel 프로젝트 `diegesis`(def-uk)를 만들고 환경 변수를 넣고 `vercel build` 성공. 단계 3의 Git 연결은 조직에 Vercel GitHub 앱이 없어 대기. 로컬 브라우저 확인은 Chrome 확장이 응답하지 않아 Preview에서 함

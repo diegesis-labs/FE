@@ -1,12 +1,12 @@
 # Phase 09: 포커스 표시 가드레일
 
-- 상태: 리뷰 중
+- 상태: 완료
 - 선행 phase: [08 포커스 표시 대비](08-focus-ring-contrast.md) (완료, `main`에 머지됨)
 - 관련 이슈: [#19 포커스 표시 가드레일](https://github.com/diegesis-labs/FE/issues/19)
 - 브랜치: `setup/19-focus-style-guardrail`
 - 계획 커밋: `ecc841f`
 - 구현 커밋: `b12e01a`
-- 리뷰 문서: [09-focus-style-guardrail-review.md](../reviews/09-focus-style-guardrail-review.md) (리뷰 단계에서 작성)
+- 리뷰 문서: [09-focus-style-guardrail-review.md](../reviews/09-focus-style-guardrail-review.md)
 
 ## 목표
 
@@ -99,13 +99,13 @@ const FOCUS_RING = String.raw`${CLASS_START}focus(-visible|-within)?:([\w-]+:)*r
 
 ## 완료 기준
 
-- [ ] `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`가 통과한다.
-- [ ] `src/**` 어디서든 `outline-none`·`outline-hidden`, 포커스 변형이 붙은 `ring*` 클래스가 있으면 `pnpm lint`가 에러를 내고, 메시지가 대신 쓸 것(클래스 삭제, `-outline-offset-2`, design-system 4.6)을 알려 준다.
-- [ ] 테두리용 `ring-1`, `focus-visible:border-ring`, `-outline-offset-2`, `aria-invalid:ring-*`는 걸리지 않는다.
-- [ ] `scripts/check-guardrails.mjs`에 위 사례가 있고, 제품 레이어 블록에서 규칙을 빼면 사례가 실패한다.
-- [ ] `src/`에 `outline-none`과 `focus-visible:ring`이 남아 있지 않다 (`grep`).
-- [ ] 책 카드와 리더 글자 링크의 키보드 포커스가 2px `ring` outline, 2px offset, `box-shadow: none`이다 (라이트·다크).
-- [ ] guardrails.md, design-system.md 4.6, CLAUDE.md가 새 규칙을 설명한다.
+- [x] `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`가 통과한다.
+- [x] `src/**` 어디서든 `outline-none`·`outline-hidden`, 포커스 변형이 붙은 `ring*` 클래스가 있으면 `pnpm lint`가 에러를 내고, 메시지가 대신 쓸 것(클래스 삭제, `-outline-offset-2`, design-system 4.6)을 알려 준다.
+- [x] 테두리용 `ring-1`, `focus-visible:border-ring`, `-outline-offset-2`, `aria-invalid:ring-*`는 걸리지 않는다.
+- [x] `scripts/check-guardrails.mjs`에 위 사례가 있고, 제품 레이어 블록에서 규칙을 빼면 사례가 실패한다.
+- [x] `src/`에 `outline-none`과 `focus-visible:ring`이 남아 있지 않다 (`grep`).
+- [x] 책 카드와 리더 글자 링크의 키보드 포커스가 2px `ring` outline, 2px offset, `box-shadow: none`이다 (라이트·다크).
+- [x] guardrails.md, design-system.md 4.6, CLAUDE.md가 새 규칙을 설명한다.
 
 ## 위험과 열린 질문
 
@@ -118,3 +118,4 @@ const FOCUS_RING = String.raw`${CLASS_START}focus(-visible|-within)?:([\w-]+:)*r
 
 - 2026-11-23: 작성, 승인
 - 2026-11-23: 구현 완료 (`b12e01a`). 계획과 다른 점: (1) 정규식의 변형 접두사를 `[\w-]+:` 대신 `\S*:`로 넓혀 `data-[state=open]:` 같은 임의 변형도 잡고, Tailwind의 `!`(important) 앞·뒤 표기도 잡는다. (2) 사례는 걸려야 하는 10개, 통과해야 하는 4개(`group-focus-visible:`·`focus-visible:bg-*` 포함)로 모두 52개. 규칙을 빼 보는 확인: 제품 레이어 블록에서 빼면 6개, `SRC` 블록에서 빼면 `shared`·`app` 사례 4개가 실패. (3) 규칙을 넣자 `main`에서는 계획에 적은 두 파일만 걸렸다. (4) 브라우저 확인: 책 카드(`/`), 리더의 `책 목록`·챕터 링크(`/books/bombom`)를 Tab으로 포커스하면 라이트 `rgb(102,102,102)`·다크 `rgb(185,194,184)` 2px solid, offset 2px, `box-shadow: none`. 카드는 `overflow`가 걸린 부모가 없어 outline이 잘리지 않는다.
+- 2026-11-23: 리뷰 통과 ([리뷰 문서](../reviews/09-focus-style-guardrail-review.md)). 남은 일: Tailwind가 `docs/`·`scripts/`를 스캔해 생기는 안 쓰는 CSS 제거(리뷰 발견 2).

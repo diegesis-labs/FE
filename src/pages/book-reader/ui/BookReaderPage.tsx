@@ -1,144 +1,72 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
-import { Link, useParams, useSearchParams } from 'react-router'
+import { useQuery } from '@tanstack/react-query'
+import { Link, useParams } from 'react-router'
 
-import { type BookDetail, bookDetailQuery, chapterQuery } from '@/entities/book'
+import { type BookDetail, bookDetailQuery } from '@/entities/book'
+import { useWindowKeydown } from '@/shared/lib/dom'
 import { Button } from '@/shared/ui/button'
 import { ErrorState } from '@/shared/ui/error-state'
 
-import { resolveChapterNo } from '../lib/resolve-chapter'
-import { ChapterBody, ChapterBodySkeleton } from './ChapterBody'
+import { keyToDirection, shouldIgnoreKey } from '../lib/keyboard'
+import { useReader } from '../model/use-reader'
+import { PageStage } from './PageStage'
+import { ReaderBottomBar } from './ReaderBottomBar'
+import { ReaderTopBar } from './ReaderTopBar'
 
-const chapterHref = (chapterNo: number) => ({ search: `?chapter=${chapterNo}` })
-
-/**
- * 책 읽기 화면. Phase 06에서는 챕터 본문을 위에서 아래로 보여 주는 임시 화면이고,
- * Phase 07에서 페이지 넘김 리더로 바뀐다.
- */
+/** 책 읽기 화면. 화면 전체를 쓰고 세로 스크롤 없이 쪽을 넘긴다 (Phase 07) */
 export function BookReaderPage() {
   const { bookId = '' } = useParams()
   const book = useQuery(bookDetailQuery(bookId))
 
   return (
-    <div className="mx-auto max-w-165 space-y-10">
-      <Link
-        to="/"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground no-underline hover:underline"
-      >
-        <ArrowLeft aria-hidden className="size-4" strokeWidth={1.5} />책 목록
-      </Link>
-
+    <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
       {book.isPending ? (
-        <div aria-busy="true" className="space-y-3">
+        <div aria-busy="true" className="flex flex-1 flex-col">
           <p className="sr-only">책 정보를 불러오는 중입니다.</p>
-          <div aria-hidden className="h-9 w-2/3 bg-muted" />
-          <div aria-hidden className="h-4 w-1/3 bg-muted" />
+          <div aria-hidden className="h-14 border-b" />
+          <div aria-hidden className="mx-auto mt-10 w-full max-w-165 space-y-3 px-4">
+            <div className="h-6 w-1/2 bg-muted" />
+            <div className="h-4 bg-muted" />
+            <div className="h-4 bg-muted" />
+          </div>
         </div>
       ) : book.isError ? (
-        <ErrorState
-          error={book.error}
-          onRetry={() => void book.refetch()}
-          action={
-            <Button asChild variant="link">
-              <Link to="/">책 목록으로</Link>
-            </Button>
-          }
-        />
+        <div className="mx-auto w-full max-w-165 px-4 py-15">
+          <ErrorState
+            error={book.error}
+            onRetry={() => void book.refetch()}
+            action={
+              <Button asChild variant="link">
+                <Link to="/">책 목록으로</Link>
+              </Button>
+            }
+          />
+        </div>
       ) : (
-        <BookContent book={book.data} />
+        <Reader book={book.data} />
       )}
     </div>
   )
 }
 
-function BookContent({ book }: { book: BookDetail }) {
-  const [searchParams] = useSearchParams()
-  const queryClient = useQueryClient()
-  const chapterNo = resolveChapterNo(book, searchParams.get('chapter'))
-  const chapter = useQuery({
-    ...chapterQuery(book.id, chapterNo ?? 0),
-    enabled: chapterNo !== null,
+function Reader({ book }: { book: BookDetail }) {
+  const reader = useReader(book)
+
+  useWindowKeydown((event) => {
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return
+    if (shouldIgnoreKey(event)) return
+    // 목차 서랍이 열려 있으면 서랍이 키보드를 쓴다.
+    if (document.querySelector('[data-reader-toc][data-state="open"]')) return
+    const dir = keyToDirection(event)
+    if (!dir) return
+    event.preventDefault()
+    if (dir > 0 ? reader.canNext : reader.canPrev) reader.turn(dir)
   })
-
-  const index = book.chapters.findIndex((c) => c.chapter_no === chapterNo)
-  const prev = book.chapters[index - 1]
-  const next = book.chapters[index + 1]
-  const current = book.chapters[index]
-
-  // 다음 챕터로 갈 것 같으면(링크에 마우스·포커스) 본문을 미리 받아 둔다.
-  const prefetchNext = () => {
-    if (next) void queryClient.prefetchQuery(chapterQuery(book.id, next.chapter_no))
-  }
 
   return (
     <>
-      <header className="space-y-2">
-        <h1 className="font-display text-3xl leading-tight md:text-4xl">{book.title}</h1>
-        <p className="text-muted-foreground">{book.author}</p>
-      </header>
-
-      <nav aria-label="챕터">
-        <ol className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
-          {book.chapters.map((c) => {
-            const isCurrent = c.chapter_no === chapterNo
-            return (
-              <li key={c.chapter_no}>
-                <Link
-                  to={chapterHref(c.chapter_no)}
-                  aria-current={isCurrent ? 'page' : undefined}
-                  className={
-                    isCurrent
-                      ? 'font-medium text-brand-ink underline underline-offset-4'
-                      : 'text-muted-foreground no-underline hover:underline'
-                  }
-                >
-                  {c.title}
-                </Link>
-              </li>
-            )
-          })}
-        </ol>
-      </nav>
-
-      <article className="space-y-6">
-        {current && <h2 className="font-display text-2xl leading-snug">{current.title}</h2>}
-        {chapterNo === null ? (
-          <p className="text-muted-foreground">이 책에는 아직 본문이 없습니다.</p>
-        ) : chapter.isPending ? (
-          <ChapterBodySkeleton />
-        ) : chapter.isError ? (
-          <ErrorState error={chapter.error} onRetry={() => void chapter.refetch()} />
-        ) : (
-          <ChapterBody chapter={chapter.data} />
-        )}
-      </article>
-
-      {(prev || next) && (
-        <nav aria-label="챕터 이동" className="flex justify-between gap-4 border-t pt-6">
-          {prev ? (
-            <Button asChild variant="outline">
-              <Link to={chapterHref(prev.chapter_no)}>
-                <ChevronLeft aria-hidden strokeWidth={1.5} />
-                이전 챕터
-              </Link>
-            </Button>
-          ) : (
-            <span />
-          )}
-          {next && (
-            <Button asChild variant="outline">
-              <Link
-                to={chapterHref(next.chapter_no)}
-                onMouseEnter={prefetchNext}
-                onFocus={prefetchNext}
-              >
-                다음 챕터
-                <ChevronRight aria-hidden strokeWidth={1.5} />
-              </Link>
-            </Button>
-          )}
-        </nav>
-      )}
+      <ReaderTopBar reader={reader} />
+      <PageStage reader={reader} />
+      <ReaderBottomBar reader={reader} />
     </>
   )
 }

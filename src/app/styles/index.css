@@ -85,6 +85,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-overlay: var(--overlay);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -130,6 +131,8 @@
   --input: rgb(51 51 51 / 0.2);
   /* 포커스 링: 크림 3종 위 3:1 이상 (design-system 1.7) */
   --ring: var(--color-charcoal-500);
+  /* 모달·서랍 뒤 배경 (design-system 1.2 overlay) */
+  --overlay: rgb(37 37 37 / 0.5);
   --chart-1: var(--color-charcoal-800);
   --chart-2: var(--color-sand-600);
   --chart-3: var(--color-oak-400);
@@ -174,6 +177,7 @@
   --input: rgb(255 254 241 / 0.16);
   /* 포커스 링: pine 4종 위 3:1 이상 (design-system 1.7) */
   --ring: var(--color-pine-300);
+  --overlay: rgb(0 0 0 / 0.6);
   --chart-1: var(--color-cream-50);
   --chart-2: var(--color-pine-300);
   --chart-3: var(--color-oak-400);

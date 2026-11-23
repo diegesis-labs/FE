@@ -1,0 +1,28 @@
+import { ArrowLeft } from 'lucide-react'
+import { Link } from 'react-router'
+
+import { ThemeToggle } from '@/features/theme-toggle'
+
+import type { Reader } from '../model/use-reader'
+import { ChapterToc } from './ChapterToc'
+
+export function ReaderTopBar({ reader }: { reader: Reader }) {
+  const { book, position } = reader
+  return (
+    <header className="flex h-14 shrink-0 items-center gap-2 border-b px-2 md:px-6">
+      <Link
+        to="/"
+        className="inline-flex size-10 shrink-0 items-center justify-center text-muted-foreground no-underline hover:text-foreground md:w-auto md:gap-1 md:px-2"
+      >
+        <ArrowLeft aria-hidden className="size-5" strokeWidth={1.5} />
+        <span className="sr-only md:not-sr-only md:text-sm">책 목록</span>
+      </Link>
+      <h1 className="min-w-0 flex-1 truncate text-center text-sm font-normal">
+        <span className="font-display text-base">{book.title}</span>
+        {position && <span className="text-muted-foreground"> · {position.meta.title}</span>}
+      </h1>
+      <ChapterToc reader={reader} />
+      <ThemeToggle />
+    </header>
+  )
+}

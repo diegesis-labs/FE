@@ -129,7 +129,8 @@
   --destructive-foreground: var(--color-cream-50);
   --border: rgb(51 51 51 / 0.2);
   --input: rgb(51 51 51 / 0.2);
-  --ring: rgb(51 51 51 / 0.35);
+  /* 포커스 링: 크림 3종 위 3:1 이상 (design-system 1.7) */
+  --ring: var(--color-charcoal-500);
   /* 모달·서랍 뒤 배경 (design-system 1.2 overlay) */
   --overlay: rgb(37 37 37 / 0.5);
   --chart-1: var(--color-charcoal-800);
@@ -144,7 +145,7 @@
   --sidebar-accent: var(--color-cream-200);
   --sidebar-accent-foreground: var(--color-charcoal-800);
   --sidebar-border: rgb(51 51 51 / 0.2);
-  --sidebar-ring: rgb(51 51 51 / 0.35);
+  --sidebar-ring: var(--color-charcoal-500);
 }
 
 /* 다크 모드 (docs/design-system.md 1.2 참고) */
@@ -174,7 +175,8 @@
   --destructive-foreground: var(--color-pine-950);
   --border: rgb(255 254 241 / 0.16);
   --input: rgb(255 254 241 / 0.16);
-  --ring: rgb(255 254 241 / 0.4);
+  /* 포커스 링: pine 4종 위 3:1 이상 (design-system 1.7) */
+  --ring: var(--color-pine-300);
   --overlay: rgb(0 0 0 / 0.6);
   --chart-1: var(--color-cream-50);
   --chart-2: var(--color-pine-300);
@@ -188,12 +190,16 @@
   --sidebar-accent: var(--color-pine-700);
   --sidebar-accent-foreground: var(--color-cream-50);
   --sidebar-border: rgb(255 254 241 / 0.16);
-  --sidebar-ring: rgb(255 254 241 / 0.4);
+  --sidebar-ring: var(--color-pine-300);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
+  }
+  /* 포커스 표시는 한 가지: 2px 실선을 2px 띄워서. 링이 버튼 면이 아니라 바탕과만 맞닿는다 (design-system 4.6). */
+  :focus-visible {
+    @apply outline-2 outline-offset-2;
   }
   html {
     @apply font-sans;

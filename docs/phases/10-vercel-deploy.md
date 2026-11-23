@@ -125,7 +125,7 @@ export async function enableMocking() {
 
 - [x] 1. `enable-mocking.ts`의 조건을 바꾸고 주석을 고친다. `pnpm build`(변수 없음) 결과에 `msw`·`setupWorker`·목 본문이 없는지, `VITE_API_MOCK=true pnpm build && pnpm preview`에서 책 목록·리더가 목으로 동작하는지 확인한다.
 - [x] 2. `vercel.json`을 만든다. `vercel build`로 로컬에서 같은 설정의 빌드가 되는지 본다.
-- [ ] 3. 사용자에게 Vercel GitHub 앱 설치를 부탁한다. 설치되면 CLI로 프로젝트를 만들고 레포를 연결하고 환경 변수를 넣는다.
+- [x] 3. 사용자에게 Vercel GitHub 앱 설치를 부탁한다. 설치되면 CLI로 프로젝트를 만들고 레포를 연결하고 환경 변수를 넣는다.
 - [ ] 4. 이 phase의 PR에서 Preview 배포가 만들어지고, 빌드 로그의 pnpm·Node 버전이 맞는지 본다. Preview 주소에서 `/`, `/books/<id>` 직접 열기·새로 고침, 없는 경로, 헤더(`curl -I`)를 확인한다.
 - [x] 5. architecture.md 3장·5장, `.env.example`, README를 고친다.
 - [x] 6. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`를 통과시킨다.
@@ -156,3 +156,4 @@ export async function enableMocking() {
 - 2026-11-23: 작성
 - 2026-11-23: 승인. 이슈 #23 생성, 브랜치 `setup/23-vercel-deploy`
 - 2026-11-23: 구현 (`682bedf`, 단계 1·2·5·6). 계획과 다른 점: (1) `vercel link`가 `.gitignore`에 `.env*`를 덧붙여 `!.env.example` 예외를 덮어써서, `.vercel`만 남기고 지움. (2) `vercel build`가 로컬에 만드는 `.vercel/output/`을 ESLint가 검사해 실패해서 `eslint.config.js`의 `globalIgnores`에 `.vercel`을 더함. (3) 데모 모드 목 chunk `browser-*.js`는 474KB(gzip 184KB). 변수 없는 빌드는 이전과 같은 해시(`index-DJYhO8OM.js`)로 목이 빠짐. Vercel 프로젝트 `diegesis`(def-uk)를 만들고 환경 변수를 넣고 `vercel build` 성공. 단계 3의 Git 연결은 조직에 Vercel GitHub 앱이 없어 대기. 로컬 브라우저 확인은 Chrome 확장이 응답하지 않아 Preview에서 함
+- 2026-11-23: 단계 3. Vercel GitHub 앱이 설치돼 `vercel git connect`로 `diegesis-labs/FE`를 연결함. 배포 방식은 Git 연동 유지 (GitHub Actions 배포와 비교 후 사용자 결정: CI에 비밀값을 두지 않는다). PR #24

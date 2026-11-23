@@ -37,23 +37,36 @@ function decide(decision, reason) {
 }
 
 // ── bash: git·gh 명령 ─────────────────────────────────────────────
+// 따옴표 안의 글자(커밋 메시지 등)는 옵션으로 보지 않도록 빈 따옴표로 바꾼다
+const stripQuoted = (s) => s.replace(/"(?:[^"\\]|\\.)*"|'[^']*'/g, '""')
+
+// git 하위 명령 앞의 전역 옵션: -C <경로>, -c <키=값>, --git-dir=…, --no-pager 같은 것
+const GIT_CMD_RE =
+  /(?:^|\s)git((?:\s+-[Cc]\s+\S+|\s+--[\w-]+(?:=\S+)?|\s+-[a-zA-Z])*)\s+(push|commit)\b(.*)$/
+
 function checkBash(command) {
   // &&, ||, ;, |, 줄바꿈으로 나눈 명령 하나하나를 본다
-  const parts = command.split(/&&|\|\||[;|\n]/).map((s) => s.trim())
+  const parts = stripQuoted(command)
+    .split(/&&|\|\||[;|\n]/)
+    .map((s) => s.trim())
   const branch = git(['branch', '--show-current'])
 
   for (const part of parts) {
-    const gitCmd = part.match(/(?:^|\s)git(?:\s+-C\s+\S+)?\s+(push|commit)\b(.*)$/)
+    const gitCmd = part.match(GIT_CMD_RE)
     if (gitCmd) {
-      const [, sub, rest] = gitCmd
+      const [, , sub, rest] = gitCmd
       const args = ` ${rest} `
 
-      if (/\s--no-verify\s/.test(args) || (sub === 'commit' && /\s-n\s/.test(args))) {
+      // 붙여 쓴 짧은 옵션(-fu, -an)도 본다
+      if (
+        /\s--no-verify\s/.test(args) ||
+        (sub === 'commit' && /\s-[a-zA-Z]*n[a-zA-Z]*\s/.test(args))
+      ) {
         decide('deny', '--no-verify는 쓰지 않습니다. 검사를 건너뛰지 말고 원인을 고치세요.')
       }
 
       if (sub === 'push') {
-        if (/\s(--force(-with-lease)?(=\S*)?|-f|--mirror)\s|\s\+\S/.test(args)) {
+        if (/\s(--force(-with-lease)?(=\S*)?|-[a-zA-Z]*f[a-zA-Z]*|--mirror)\s|\s\+\S/.test(args)) {
           decide(
             'ask',
             'force push입니다. CLAUDE.md: force push는 사용자가 명시적으로 요청할 때만 합니다.',

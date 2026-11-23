@@ -1,11 +1,11 @@
 # Phase 09: 포커스 표시 가드레일
 
-- 상태: 승인됨
+- 상태: 리뷰 중
 - 선행 phase: [08 포커스 표시 대비](08-focus-ring-contrast.md) (완료, `main`에 머지됨)
 - 관련 이슈: [#19 포커스 표시 가드레일](https://github.com/diegesis-labs/FE/issues/19)
 - 브랜치: `setup/19-focus-style-guardrail`
-- 계획 커밋: (승인 후 이 문서만 커밋·푸시한 해시)
-- 구현 커밋: (구현 완료 후 커밋 해시)
+- 계획 커밋: `ecc841f`
+- 구현 커밋: `b12e01a`
 - 리뷰 문서: [09-focus-style-guardrail-review.md](../reviews/09-focus-style-guardrail-review.md) (리뷰 단계에서 작성)
 
 ## 목표
@@ -89,13 +89,13 @@ const FOCUS_RING = String.raw`${CLASS_START}focus(-visible|-within)?:([\w-]+:)*r
 
 ## 작업 단계
 
-- [ ] 1. `eslint.config.js`에 `focusSyntax`와 메시지를 추가하고 `SRC`·제품 레이어 두 블록에 넣는다.
-- [ ] 2. `scripts/check-guardrails.mjs`에 사례를 추가한다 (걸려야 함: `outline-none`, `outline-hidden`, `focus-visible:outline-none`, `focus-visible:ring-[3px]`, `focus:ring-2`, `focus-within:ring-ring/50`, `focus-visible:ring-offset-2`, 템플릿 문자열 안의 위반. 통과해야 함: `ring-1 ring-border`, `focus-visible:border-ring`, `focus-visible:-outline-offset-2`, `aria-invalid:ring-destructive/20`, `outline-offset-2`).
-- [ ] 3. 규칙을 빼 보는 확인: 제품 레이어 블록에서 `focusSyntax`를 빼면 제품 레이어 사례가 실패하는지 본다.
-- [ ] 4. `pnpm lint`로 `main`의 위반 두 곳이 걸리는 것을 확인한 뒤 `BookCard.tsx`, `BookReaderPage.tsx`를 고친다.
-- [ ] 5. 개발 서버에서 책 목록 카드, 리더의 글자 링크를 Tab으로 포커스해 라이트·다크 스크린샷과 `outline-*`·`box-shadow` 값을 확인한다.
-- [ ] 6. guardrails.md, design-system.md 4.6, CLAUDE.md를 고친다.
-- [ ] 7. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`.
+- [x] 1. `eslint.config.js`에 `focusSyntax`와 메시지를 추가하고 `SRC`·제품 레이어 두 블록에 넣는다.
+- [x] 2. `scripts/check-guardrails.mjs`에 사례를 추가한다 (걸려야 함: `outline-none`, `outline-hidden`, `focus-visible:outline-none`, `focus-visible:ring-[3px]`, `focus:ring-2`, `focus-within:ring-ring/50`, `focus-visible:ring-offset-2`, 템플릿 문자열 안의 위반. 통과해야 함: `ring-1 ring-border`, `focus-visible:border-ring`, `focus-visible:-outline-offset-2`, `aria-invalid:ring-destructive/20`, `outline-offset-2`).
+- [x] 3. 규칙을 빼 보는 확인: 제품 레이어 블록에서 `focusSyntax`를 빼면 제품 레이어 사례가 실패하는지 본다.
+- [x] 4. `pnpm lint`로 `main`의 위반 두 곳이 걸리는 것을 확인한 뒤 `BookCard.tsx`, `BookReaderPage.tsx`를 고친다.
+- [x] 5. 개발 서버에서 책 목록 카드, 리더의 글자 링크를 Tab으로 포커스해 라이트·다크 스크린샷과 `outline-*`·`box-shadow` 값을 확인한다.
+- [x] 6. guardrails.md, design-system.md 4.6, CLAUDE.md를 고친다.
+- [x] 7. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`.
 
 ## 완료 기준
 
@@ -117,3 +117,4 @@ const FOCUS_RING = String.raw`${CLASS_START}focus(-visible|-within)?:([\w-]+:)*r
 ## 변경 기록
 
 - 2026-11-23: 작성, 승인
+- 2026-11-23: 구현 완료 (`b12e01a`). 계획과 다른 점: (1) 정규식의 변형 접두사를 `[\w-]+:` 대신 `\S*:`로 넓혀 `data-[state=open]:` 같은 임의 변형도 잡고, Tailwind의 `!`(important) 앞·뒤 표기도 잡는다. (2) 사례는 걸려야 하는 10개, 통과해야 하는 4개(`group-focus-visible:`·`focus-visible:bg-*` 포함)로 모두 52개. 규칙을 빼 보는 확인: 제품 레이어 블록에서 빼면 6개, `SRC` 블록에서 빼면 `shared`·`app` 사례 4개가 실패. (3) 규칙을 넣자 `main`에서는 계획에 적은 두 파일만 걸렸다. (4) 브라우저 확인: 책 카드(`/`), 리더의 `책 목록`·챕터 링크(`/books/bombom`)를 Tab으로 포커스하면 라이트 `rgb(102,102,102)`·다크 `rgb(185,194,184)` 2px solid, offset 2px, `box-shadow: none`. 카드는 `overflow`가 걸린 부모가 없어 outline이 잘리지 않는다.

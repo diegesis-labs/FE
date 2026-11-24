@@ -310,7 +310,8 @@ shadcn/ui 컴포넌트를 쓰되, 아래 규칙에 맞게 `src/shared/ui/`의 �
 
 - 키보드 포커스(`:focus-visible`)는 **2px 실선 `ring` outline을 요소 바깥으로 2px 띄워** 그린다. `index.css`의 `@layer base`에 전역으로 있어서 링크, 버튼, 카드 모두 따로 클래스를 주지 않아도 된다.
 - 마우스 클릭으로는 나오지 않는다.
-- 컴포넌트에서 `outline-none`으로 끄고 `ring-[3px]` 같은 box-shadow 링을 따로 주지 않는다. 그림자를 쓰지 않는 원칙(2.3)과 맞지 않고, 고대비 모드(forced-colors)에서는 box-shadow가 사라진다.
+- 컴포넌트에서 `outline-none`으로 끄고 `ring-[3px]` 같은 box-shadow 링을 따로 주지 않는다. 그림자를 쓰지 않는 원칙(2.3)과 맞지 않고, 고대비 모드(forced-colors)에서는 box-shadow가 사라진다. `pnpm lint`가 이런 클래스(`outline-none`, `outline-hidden`, `focus-visible:ring-*` 등)를 막는다 ([guardrails.md](guardrails.md)).
+- 바깥 outline이 잘리는 곳(스크롤 목록, `overflow-hidden` 안)에서는 `focus-visible:-outline-offset-2`로 요소 안쪽에 그린다. 이때 링은 요소 면과 맞닿으므로 그 면 위 대비를 본다. `background`, `accent`는 1.7 표에서 3:1을 넘는다.
 - 대비 값은 1.7 "포커스 링" 표.
 
 ## 5. 모션

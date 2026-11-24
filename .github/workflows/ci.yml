@@ -1,10 +1,12 @@
-# PR과 main 푸시 때 포맷, lint, 타입 체크, 빌드를 검사한다.
-# 규칙: docs/phases/02-ci-branch-protection.md, docs/architecture.md 6장
+# PR과 main 푸시 때 포맷, lint, 타입 체크, 빌드를 검사한다. PR에서는 작업 절차도 검사한다.
+# 규칙: docs/phases/02-ci-branch-protection.md, docs/phases/05-process-check.md, docs/architecture.md 6장
 name: CI
 
 on:
   pull_request:
     branches: [main]
+    # PR 설명을 고치면 다시 검사한다 (edited). draft를 해제할 때도 (ready_for_review).
+    types: [opened, synchronize, reopened, edited, ready_for_review]
   push:
     branches: [main]
 
@@ -28,6 +30,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # 작업 절차 검사가 PR의 커밋을 하나씩 보려면 전체 이력이 필요하다.
+          fetch-depth: 0
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -43,7 +47,15 @@ jobs:
       # lockfile에 적힌 버전만 설치한다. pnpm-workspace.yaml의 보안 설정도 그대로 적용된다.
       - run: pnpm install --frozen-lockfile
 
+      # PR 제목·설명·브랜치 이름은 외부 입력이다. ${{ github.event.pull_request.* }}를 run:에 넣지 않고
+      # 스크립트가 이벤트 JSON 파일을 직접 읽는다 (셸 명령 주입 방지).
+      - name: 작업 절차 검사
+        if: github.event_name == 'pull_request'
+        run: node scripts/check-process.mjs --event "$GITHUB_EVENT_PATH"
+
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm build
+      # 작업 절차 검사와 Claude Code 훅의 테스트
+      - run: pnpm test:scripts

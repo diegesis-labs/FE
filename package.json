@@ -12,7 +12,9 @@
     "lint:guardrails": "node scripts/check-guardrails.mjs",
     "typecheck": "tsc -b",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "check:process": "node scripts/check-process.mjs",
+    "test:scripts": "node --test scripts/*.test.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.107.1",
@@ -51,7 +53,7 @@
   },
   "packageManager": "pnpm@12.21.0",
   "engines": {
-    "node": ">=24"
+    "node": "24.x"
   },
   "msw": {
     "workerDirectory": [

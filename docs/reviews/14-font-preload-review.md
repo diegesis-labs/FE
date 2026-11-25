@@ -12,14 +12,14 @@
 
 `git diff 85e28b9..80a7308` 기준 (`85e28b9`는 계획 커밋, phase 문서만). 8개 파일.
 
-| 파일                                                         | 변경                                                                                                                                                               | 계획과 비교                                                         |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
-| `shared/lib/dom/use-fonts-ready.ts` → `use-fonts-version.ts` | `useFontsReady`(boolean, `loading`·`loadingdone`에 바뀜)를 `useFontsVersion`(받기가 끝날 때마다 1 증가)으로. 구독이 여럿이어도 한 번만 센다                        | 계획대로                                                            |
-| `shared/lib/dom/use-preload-glyphs.ts`                       | CSS 변수의 글꼴 목록으로 `document.fonts.load`를 부르는 훅 (Effect). 글자는 중복을 빼고 정렬해 비교                                                                | 계획대로                                                            |
-| `shared/lib/dom/index.ts`                                    | export 바꿈                                                                                                                                                        | 계획대로                                                            |
-| `pages/book-reader/model/use-reader.ts`                      | 받아 둔 챕터의 본문·제목 글자 미리 받기. `TurnedPage`에 `chapterNo`, `viewKey`. 미끄러짐 조건을 `viewKey`·기준 문장으로. 다른 챕터로 가면 넘긴 쪽을 렌더 중에 버림 | 계획대로                                                            |
-| `pages/book-reader/model/use-pagination.ts`                  | 키를 `챕터·크기                                                                                                                                                    | 글꼴 횟수`로 나누고, 글꼴만 바뀌면 다시 잴 때까지 옛 쪽 표를 돌려줌 | **계획에 없던 것** (phase 변경 기록에 적음) |
-| `pages/book-reader/ui/NeighborView.tsx`, `PageStage.tsx`     | `fontsReady` → `fontsVersion`                                                                                                                                      | 계획대로                                                            |
+| 파일                                                         | 변경                                                                                                                                                               | 계획과 비교                                 |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------- |
+| `shared/lib/dom/use-fonts-ready.ts` → `use-fonts-version.ts` | `useFontsReady`(boolean, `loading`·`loadingdone`에 바뀜)를 `useFontsVersion`(받기가 끝날 때마다 1 증가)으로. 구독이 여럿이어도 한 번만 센다                        | 계획대로                                    |
+| `shared/lib/dom/use-preload-glyphs.ts`                       | CSS 변수의 글꼴 목록으로 `document.fonts.load`를 부르는 훅 (Effect). 글자는 중복을 빼고 정렬해 비교                                                                | 계획대로                                    |
+| `shared/lib/dom/index.ts`                                    | export 바꿈                                                                                                                                                        | 계획대로                                    |
+| `pages/book-reader/model/use-reader.ts`                      | 받아 둔 챕터의 본문·제목 글자 미리 받기. `TurnedPage`에 `chapterNo`, `viewKey`. 미끄러짐 조건을 `viewKey`·기준 문장으로. 다른 챕터로 가면 넘긴 쪽을 렌더 중에 버림 | 계획대로                                    |
+| `pages/book-reader/model/use-pagination.ts`                  | 키를 "챕터·크기"와 "글꼴 횟수" 두 부분으로 나누고, 글꼴만 바뀌면 다시 잴 때까지 옛 쪽 표를 돌려줌                                                                  | **계획에 없던 것** (phase 변경 기록에 적음) |
+| `pages/book-reader/ui/NeighborView.tsx`, `PageStage.tsx`     | `fontsReady` → `fontsVersion`                                                                                                                                      | 계획대로                                    |
 
 ### 1.2 완료 기준 확인 방법
 

@@ -1,4 +1,4 @@
-# Diegesis FE nginx 설정 (Phase 13). 컨테이너가 뜰 때 envsubst가 ${PORT}를 채워 /etc/nginx/conf.d/diegesis.conf로 만든다.
+# Diegesis FE nginx 설정 (Phase 15). 컨테이너가 뜰 때 envsubst가 ${PORT}를 채워 /etc/nginx/conf.d/diegesis.conf로 만든다.
 # nginx 변수($uri 등)는 환경 변수가 아니므로 envsubst가 건드리지 않는다.
 
 # 접근 로그에 쿼리 문자열을 남기지 않는다. Google 로그인 결과(code, state)가 쿼리로 오기 때문이다.

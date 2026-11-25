@@ -1,4 +1,4 @@
-# Diegesis FE 빌드와 배포 (Phase 13, docs/architecture.md 5장).
+# Diegesis FE 빌드와 배포 (Phase 15, docs/architecture.md 5장).
 # - main push 트리거(fe-main): 빌드 → 올리기 → 배포, production 트래픽을 새 리비전으로
 # - PR 트리거(fe-pr): 같은 빌드 → 올리기 → 트래픽 없이 배포, 주소 태그 pr-<번호>
 # - 로컬 첫 배포: gcloud builds submit --config=cloudbuild.yaml \

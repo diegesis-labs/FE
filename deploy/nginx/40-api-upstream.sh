@@ -1,5 +1,5 @@
 #!/bin/sh
-# /api/ 요청을 어떻게 다룰지 정한다 (Phase 13). nginx 공식 이미지가 시작할 때 /docker-entrypoint.d/ 의 스크립트로 실행한다.
+# /api/ 요청을 어떻게 다룰지 정한다 (Phase 15). nginx 공식 이미지가 시작할 때 /docker-entrypoint.d/ 의 스크립트로 실행한다.
 # - BE_ORIGIN이 비어 있으면 404 (BE가 배포되기 전, 데모 모드)
 # - BE_ORIGIN이 있으면 그 출처로 넘긴다. 예: BE_ORIGIN=https://diegesis-be-123.asia-northeast3.run.app
 # 값이 잘못되면 컨테이너가 뜨지 않게 실패한다. 빈 proxy_pass로 조용히 뜨는 것보다 배포 실패가 낫다.

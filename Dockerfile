@@ -1,4 +1,4 @@
-# Diegesis FE 컨테이너 (Phase 13). Cloud Run에서 nginx가 dist/를 내보내고 /api/ 만 BE로 넘긴다.
+# Diegesis FE 컨테이너 (Phase 15). Cloud Run에서 nginx가 dist/를 내보내고 /api/ 만 BE로 넘긴다.
 # 빌드: docker build --build-arg VITE_API_MOCK=true -t diegesis-fe .
 # 실행: docker run --rm -p 8080:8080 [-e BE_ORIGIN=https://<BE 주소>] diegesis-fe
 

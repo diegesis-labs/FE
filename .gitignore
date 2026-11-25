@@ -30,3 +30,6 @@ dist-ssr
 
 # Vercel CLI 연결 정보 (vercel link)
 .vercel
+
+# Claude Code 개인 설정
+.claude/settings.local.json

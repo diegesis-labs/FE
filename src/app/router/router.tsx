@@ -20,14 +20,17 @@ const MOCK_LOGIN_PATH = '/login/mock'
 // loader의 이동은 모두 replace다. push면 뒤로 가기가 막 떠난 화면으로 돌아가 같은 이동을 되풀이한다.
 const meForLoader = () => ({ ...meQuery(), meta: { authRedirect: false } })
 
-/** 보호된 화면에 들어가기 전에 로그인 상태와 허용 목록을 확인한다 (BE docs/API.md 2.2절). */
+/**
+ * 보호된 화면에 들어가기 전에 로그인 상태와 허용 목록을 확인한다 (BE docs/API.md 2.2절).
+ * 로그인과 무관한 에러(서버 에러, BE가 꺼짐)는 막지 않고 화면으로 넘긴다. 화면의 쿼리가 같은 에러를
+ * 다시 시도 버튼과 함께 보여 주고, 그 쿼리가 401을 받으면 쿼리 캐시가 로그인 화면으로 보낸다.
+ */
 async function requireLogin() {
   try {
     await queryClient.ensureQueryData(meForLoader())
   } catch (error) {
     const to = authRedirectPath(error)
     if (to) throw replace(to)
-    throw error
   }
   return null
 }

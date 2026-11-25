@@ -46,3 +46,14 @@ export function pageGeometry(
     viewportWidth: spread ? pageWidth * 2 + gap : pageWidth,
   }
 }
+
+/** 본문 띠(CSS 다단)의 크기와 단 설정. 쪽 너비만큼씩 단이 오른쪽으로 이어진다 */
+export function columnTrackStyle(geometry: PageGeometry) {
+  return {
+    width: geometry.pageWidth,
+    height: geometry.pageHeight,
+    columnWidth: geometry.pageWidth,
+    columnGap: geometry.gap,
+    columnFill: 'auto',
+  } as const
+}

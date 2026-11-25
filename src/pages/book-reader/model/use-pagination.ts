@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import type { Chapter } from '@/entities/book'
 
@@ -16,7 +16,6 @@ export function usePagination(
   fontsReady: boolean,
 ) {
   const [layout, setLayout] = useState<PageLayout | null>(null)
-  const trackRef = useRef<HTMLDivElement | null>(null)
 
   const ready = chapter !== undefined && geometry.pageWidth > 0 && geometry.pageHeight > 0
   const key = ready
@@ -33,11 +32,10 @@ export function usePagination(
 
   const measureRef = useCallback(
     (element: HTMLDivElement | null) => {
-      trackRef.current = element
       if (element && key) setLayout(measurePages(element, key, pageStride))
     },
     [key, pageStride],
   )
 
-  return { measureRef, trackRef, layout: layout && layout.key === key ? layout : null }
+  return { measureRef, layout: layout && layout.key === key ? layout : null }
 }

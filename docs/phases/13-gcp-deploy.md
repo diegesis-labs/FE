@@ -110,7 +110,7 @@ flowchart LR
 | 설정      | 값                                                                                         |
 | --------- | ------------------------------------------------------------------------------------------ |
 | 리전      | `asia-northeast3` (서울). BE와 같은 리전에 둔다                                            |
-| 서비스    | `diegesis-fe`, 공개(`--allow-unauthenticated`)                                             |
+| 서비스    | `diegesis-fe`, 공개 (`allUsers`에 `run.invoker`, 아래 참고)                                |
 | 크기      | CPU 1, 메모리 256Mi, 동시 요청 80                                                          |
 | 인스턴스  | 최소 0(비용), 최대 2(비용 상한)                                                            |
 | 환경 변수 | `BE_ORIGIN` (지금은 없음. E2에서 넣는다. 런타임 값이라 이미지를 다시 만들지 않는다)        |
@@ -147,7 +147,9 @@ https://diegesis-fe-<프로젝트 번호>.asia-northeast3.run.app
   | `fe-build`  | Cloud Build 빌드·배포 | 저장소 `diegesis`의 `artifactregistry.writer`, 프로젝트의 `run.developer`·`logging.logWriter`, `fe-run`의 `iam.serviceAccountUser`, 소스 버킷 읽기 |
 
 - 로컬에서 `gcloud builds submit`으로 올릴 때 소스를 담는 버킷 `gs://diegesis-front-build-src`(서울, 7일 뒤 자동 삭제)를 따로 둔다. 기본 버킷(`<프로젝트>_cloudbuild`, 미국)을 쓰지 않고, `fe-build`에 이 버킷 읽기만 준다. GitHub 트리거는 버킷을 쓰지 않는다.
+- 서비스 공개(`allUsers`에 `run.invoker`)는 프로젝트 소유자가 처음 한 번 `gcloud run services add-iam-policy-binding`으로 건다. 공개 설정은 서비스에 남아서 배포마다 다시 할 필요가 없다. `fe-build`의 `run.developer`로는 IAM 정책을 바꿀 수 없고, 그 권한(`run.admin`)을 빌드 계정에 주지 않는다. 그래서 `cloudbuild.yaml`에는 `--allow-unauthenticated`를 넣지 않는다.
 - 빌드 로그는 Cloud Logging에만 남긴다 (`CLOUD_LOGGING_ONLY`). 전용 서비스 계정으로 빌드하려면 로그 위치를 정해야 하기 때문이다.
+- Cloud Build의 docker 빌더는 기본이 예전 빌더라서 `DOCKER_BUILDKIT=1`을 켠다 (`Dockerfile`의 `COPY --chmod`).
 - Artifact Registry 정리 정책: 최근 이미지 10개만 남긴다.
 - 예산 알림: 결제 계정에 `diegesis-front` 프로젝트만 보는 월 1만 원 예산을 두고, 50%·90%·100%에서 메일을 받는다 (사용자 결정). 알림일 뿐 비용을 막지는 않는다.
 - **사용자가 직접 할 것**:
@@ -244,3 +246,4 @@ https://diegesis-fe-<프로젝트 번호>.asia-northeast3.run.app
 - 2026-11-25: 승인. 이슈 #33 생성, 브랜치 `setup/33-gcp-deploy`
 - 2026-11-25: 계획 변경 (단계 2 구현 중 확인). (1) 없는 `/assets/` 파일은 `index.html` 대신 404를 주고, 장기 캐시는 성공 응답에만 붙인다. Vercel은 없는 파일에도 `index.html`을 `immutable`로 줄 수 있었다. (2) Cloud Run 요청 로그에는 쿼리가 남는다는 위험 7을 더함. (3) 기반 이미지 digest를 적음
 - 2026-11-25: 계획 변경 (단계 3 시작 전). (1) 첫 배포에 같은 빌드 설정을 쓰려고 `cloudbuild.yaml`을 단계 4에서 3으로 당김. (2) GCP 프로젝트 `diegesis-front`, 예산 월 1만 원 (사용자 결정). (3) 서비스 계정 이름(`fe-run`, `fe-build`)과 권한 표, 로컬 제출용 소스 버킷, 빌드 로그 위치, 빌더 이미지 digest를 적음. (4) 단계 2에서 가짜 BE로 로그인 흐름을 확인한 것을 적음
+- 2026-11-25: 계획 변경 (단계 3 첫 배포에서 확인). (1) 빌드 계정은 서비스를 공개로 바꿀 수 없어(경고 뒤 403) 공개 설정은 소유자가 한 번 걸고 `cloudbuild.yaml`에서 `--allow-unauthenticated`를 뺌. 빌드 계정 권한은 늘리지 않음. (2) Cloud Build docker 빌더에 BuildKit을 켬 (첫 빌드가 `COPY --chmod`에서 실패)

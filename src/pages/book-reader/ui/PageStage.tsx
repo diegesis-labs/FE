@@ -25,7 +25,7 @@ export function PageStage({ reader }: { reader: Reader }) {
   const {
     stageRef,
     geometry,
-    fontsReady,
+    fontsVersion,
     chapter,
     position,
     measureRef,
@@ -94,7 +94,7 @@ export function PageStage({ reader }: { reader: Reader }) {
                 <NeighborView
                   chapter={neighbors.prev}
                   geometry={geometry}
-                  fontsReady={fontsReady}
+                  fontsVersion={fontsVersion}
                   edge="last"
                   left={-viewStride}
                 />
@@ -111,7 +111,7 @@ export function PageStage({ reader }: { reader: Reader }) {
                 <NeighborView
                   chapter={neighbors.next}
                   geometry={geometry}
-                  fontsReady={fontsReady}
+                  fontsVersion={fontsVersion}
                   edge="first"
                   left={viewCount * viewStride}
                 />

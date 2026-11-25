@@ -1,0 +1,53 @@
+# Diegesis FE nginx 설정 (Phase 13). 컨테이너가 뜰 때 envsubst가 ${PORT}를 채워 /etc/nginx/conf.d/diegesis.conf로 만든다.
+# nginx 변수($uri 등)는 환경 변수가 아니므로 envsubst가 건드리지 않는다.
+
+# 접근 로그에 쿼리 문자열을 남기지 않는다. Google 로그인 결과(code, state)가 쿼리로 오기 때문이다.
+# $uri는 try_files 뒤에 /index.html로 바뀌므로, 브라우저가 요청한 경로에서 ? 앞만 잘라 쓴다.
+map $request_uri $diegesis_log_path {
+    "~^(?<diegesis_path>[^?]*)" $diegesis_path;
+}
+log_format diegesis '$remote_addr [$time_local] "$request_method $diegesis_log_path $server_protocol" '
+                    '$status $body_bytes_sent $request_time "$http_user_agent"';
+
+# Cloud Run 앞단이 붙여 준 X-Forwarded-Proto(https)를 BE에 그대로 넘긴다. 없으면(로컬) 이 연결의 scheme.
+map $http_x_forwarded_proto $diegesis_forwarded_proto {
+    default $http_x_forwarded_proto;
+    ""      $scheme;
+}
+
+server {
+    listen ${PORT};
+    server_name _;
+    root /usr/share/nginx/html;
+
+    access_log /var/log/nginx/access.log diegesis;
+    server_tokens off;
+    # 리다이렉트 주소에 컨테이너 안의 포트(8080)나 http가 들어가지 않게 한다.
+    absolute_redirect off;
+
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+
+    # BE로 넘길 요청. 내용은 40-api-upstream.sh가 BE_ORIGIN을 보고 만든다 (없으면 404).
+    location /api/ {
+        include /etc/nginx/api.conf;
+    }
+
+    # 파일 이름에 내용 해시가 붙은 빌드 결과물. 없는 파일은 index.html이 아니라 404를 준다.
+    # 장기 캐시는 성공 응답에만 붙인다(always 없음). 404가 1년 동안 캐시되면 안 된다.
+    location /assets/ {
+        include /etc/nginx/snippets/security-headers.conf;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files $uri =404;
+    }
+
+    # 그 밖의 경로: 실제 파일(favicon.svg, mockServiceWorker.js)이 있으면 그것, 없으면 SPA의 index.html.
+    # index.html과 서비스 워커는 배포마다 바뀌므로 매번 확인하게 한다.
+    location / {
+        include /etc/nginx/snippets/security-headers.conf;
+        add_header Cache-Control "no-cache" always;
+        try_files $uri /index.html;
+    }
+}

@@ -1,0 +1,15 @@
+# 빌드 컨텍스트에서 뺄 것 (Phase 13). 비밀값과 로컬 산출물이 이미지에 들어가지 않게 한다.
+.git
+.github
+.claude
+.vscode
+.vercel
+node_modules
+dist
+docs
+*.log
+.DS_Store
+
+# 환경 변수 파일. .env.example도 빌드에 필요 없다.
+.env
+.env.*

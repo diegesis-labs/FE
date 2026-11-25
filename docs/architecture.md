@@ -69,9 +69,9 @@ src/
 - BE의 엔드포인트와 요청·응답 형식은 BE 레포의 [docs/API.md](https://github.com/diegesis-labs/BE/blob/main/docs/API.md)가 기준이다. BE가 구현되면 `/api/openapi.json`이 세부 형식의 기준이 된다.
 - 모든 요청은 `apiClient`(`src/shared/api/client.ts`)를 거친다. JSON 직렬화, 쿼리스트링, 에러(`ApiError`, `status`/`body`/`code` 포함)를 한곳에서 처리한다. BE 에러 본문 `{ code, message, detail }`의 `message`가 `ApiError.message`가 된다.
 - 화면에 에러를 보여 줄 때는 `describeError()`(문구)나 `shared/ui/error-state.tsx`(안내 + 다시 시도)를 쓴다. 4xx는 다시 요청해도 같으므로 쿼리가 재시도하지 않는다 (`app/api/query-client.ts`).
-- 기본 주소는 `VITE_API_BASE_URL`, 비어 있으면 같은 도메인의 `/api`로 보낸다.
+- 기본 주소는 `VITE_API_BASE_URL`, 비어 있으면 같은 출처의 `/api`로 보낸다. 이 값은 언제나 같은 출처의 상대 경로(`/api`)여야 한다. `http://localhost:8080/api` 같은 절대 주소를 넣으면 쿠키가 붙지 않고, BE가 상태를 바꾸는 요청을 출처가 다르다며 `403 ORIGIN_MISMATCH`로 거절한다 ([BE API.md](https://github.com/diegesis-labs/BE/blob/main/docs/API.md) 2.2절, 2.4절).
 - 개발 중엔 Vite 개발 서버가 `/api`를 `API_PROXY_TARGET`(기본 `http://localhost:8080`)으로 넘긴다. 그래서 로컬에서는 CORS 설정 없이 BE에 붙을 수 있다.
-- 쿠키 기반 인증을 쓸 수 있도록 `credentials: 'include'`로 보낸다. 배포 환경에서 FE와 BE 도메인이 다르면 BE에서 CORS(`Access-Control-Allow-Credentials`, 허용 origin)를 맞춰야 한다.
+- 쿠키 기반 인증을 쓸 수 있도록 `credentials: 'include'`로 보낸다. FE와 BE는 배포 환경에서도 한 주소를 함께 쓰므로(5장 "BE가 생기면") CORS 설정은 없다.
 - 서버 데이터는 TanStack Query로 가져온다. 기능별로 아래처럼 쿼리 훅을 만든다.
 
 ```ts
@@ -97,7 +97,8 @@ BE가 구현되기 전에는 [MSW](https://mswjs.io)로 BE API 문서 형식 그
 - 켜기: `.env.local`에 `VITE_API_MOCK=true`를 넣고 `pnpm dev`. 빌드도 같은 값으로 정한다: `VITE_API_MOCK=true pnpm build`이면 배포 결과에서도 목이 켜지고(데모 모드, 5장), 값이 없으면 목 코드가 번들에 들어가지 않는다. 목 코드와 데이터는 따로 떨어진 파일(`browser-*.js`, gzip 약 184KB)로 들어가 목이 켜질 때만 받는다.
 - 위치: `src/app/mocks/` (`handlers.ts`, `fixtures/books.json`, `enable-mocking.ts`). 목은 엔티티 타입을 쓰므로 모든 레이어를 import 할 수 있는 `app`에 둔다.
 - 목 데이터: 저작권 보호 기간이 끝난 한국 단편 3편을 위키문헌에서 가져와 3장씩 나눴다. 출처는 `handlers.ts` 머리 주석에 있다.
-- 시나리오: 브라우저 콘솔에서 `localStorage.setItem('diegesis-mock', 'empty' | 'unauthorized' | 'error')` 후 새로고침. 되돌리기는 `localStorage.removeItem('diegesis-mock')`. 없는 책(`/books/nope`)은 404.
+- 시나리오: 브라우저 콘솔에서 `localStorage.setItem('diegesis-mock', 'empty' | 'unauthorized' | 'not-allowed' | 'error')` 후 새로고침. `unauthorized`는 모든 경로가 401, `not-allowed`는 403 `NOT_ALLOWED`다. 되돌리기는 `localStorage.removeItem('diegesis-mock')`. 없는 책(`/books/nope`)은 404.
+- 목 로그인 상태: `localStorage`의 `diegesis-mock-session`이 `out`이면 로그아웃한 상태다(값이 없으면 로그인한 상태). 헤더의 로그아웃이 `out`으로 바꾸고, 로그인 화면의 버튼(`/login/mock`)이 지운다. 실제 로그인 버튼은 화면 이동이라 MSW가 가로채지 못하므로, 목이 켜져 있을 때만 `/login/mock` 라우트가 생긴다.
 - `public/mockServiceWorker.js`는 `msw init`이 만드는 파일이라 고치지 않는다. MSW를 올리면 `pnpm exec msw init public`으로 다시 만든다. 배포 결과에는 늘 복사되고, 데모 모드일 때만 등록된다.
 - BE에 새 엔드포인트가 생기면 화면을 만들기 전에 목 핸들러부터 추가한다.
 
@@ -106,11 +107,21 @@ BE가 구현되기 전에는 [MSW](https://mswjs.io)로 BE API 문서 형식 그
 BE [docs/API.md](https://github.com/diegesis-labs/BE/blob/main/docs/API.md) 1절에서 답을 받았다.
 
 - [x] API 기본 경로와 로컬 포트: 모든 경로에 `/api`, 로컬 `8080`. 지금 설정 그대로.
-- [x] 인증 방식: Google 로그인 후 BE가 심는 HttpOnly 쿠키. FE는 `credentials: 'include'`만 하면 된다. 401이면 로그인 화면으로 보낸다 (로그인 화면은 아직 없음).
+- [x] 인증 방식: Google 로그인 후 BE가 심는 HttpOnly 쿠키. FE는 `credentials: 'include'`만 하면 된다. 401이면 로그인 화면으로 보낸다 (아래 "로그인").
 - [x] 에러 응답 형식: `{ code, message, detail }`. `ApiError`가 읽는다.
 - [x] API 스펙 공유: BE가 `/api/openapi.json`을 제공한다. BE 구현 후 타입 자동 생성을 검토한다. 그 전에는 `entities`에 BE 형식(snake_case) 그대로 타입을 쓴다.
 - [x] 헬스체크: `GET /api/health` → `{ "status": "ok" }`.
 - [ ] BE API.md 5절에 남은 것 (곡 구간 끝 처리, 크로스페이드, 위치 알림 묶기, 설정 화면 위치, 허용 목록 밖 계정 화면): 음악 phase에서 정한다.
+
+### 로그인 (Phase 12)
+
+계약은 [BE API.md](https://github.com/diegesis-labs/BE/blob/main/docs/API.md) 2.2절(관문), 2.4절(출처 확인), 4.2절(로그인과 로그아웃), 4.3절(내 정보)이다. 자세한 설계는 [phase 12](phases/12-login.md).
+
+- 보호된 화면(`/`, `*`, `/books/:bookId`)은 라우터의 loader가 들어가기 전에 `GET /api/me`로 확인한다. 401이면 `/login`, 403 `NOT_ALLOWED`면 `/login?error=NOT_ALLOWED`로 보낸다. 어디로 보낼지는 `app/router/auth-redirect.ts`의 함수 하나가 정한다.
+- 화면을 연 뒤에 받은 401·403 `NOT_ALLOWED`는 쿼리 캐시의 `onError`(`app/api/query-client.ts`)가 같은 함수로 보낸다. 쿼리나 요청에 `meta: { authRedirect: false }`를 달면 보내지 않는다.
+- 로그인 버튼은 `fetch`가 아니라 브라우저 이동으로 `/api/auth/google/login`에 간다. 로그인 결과는 BE가 `/` 또는 `/login?error=NOT_ALLOWED|LOGIN_FAILED`로 보낸다.
+- 로그아웃은 헤더의 버튼이 `POST /api/auth/logout`을 부르고, `/login`으로 옮긴 뒤 쿼리 캐시를 비운다.
+- 라우터는 만드는 순간 첫 loader가 돌기 때문에, 목이 켜진 뒤 `App`이 그려질 때 `getRouter()`로 만든다.
 
 ### 리더 (Phase 07)
 

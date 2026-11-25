@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 
+import { LogoutButton } from '@/features/logout'
 import { ThemeToggle } from '@/features/theme-toggle'
 
 export function Header() {
@@ -10,7 +11,10 @@ export function Header() {
         <Link to="/" className="font-display text-xl no-underline">
           Diegesis
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-1">
+          <LogoutButton />
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   )

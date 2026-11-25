@@ -1,0 +1,89 @@
+# Review 12: 로그인 화면과 401·403 처리
+
+- 대상 phase: [12-login.md](../phases/12-login.md)
+- 리뷰 대상: 브랜치 `feat/28-login`, 기준 커밋 `ebc01c2` (phase의 구현 커밋)
+- 리뷰 계획 커밋: `bffa052`
+- 작성일: 2026-11-25
+- 결과: 수정 후 통과 (리뷰 반영 커밋 `d4d9b35`, 계획 변경 `d856615`)
+
+## 1. 리뷰 계획
+
+### 1.1 변경 요약
+
+`git diff 2743680..ebc01c2` 기준 (`2743680`은 계획 변경 커밋, phase 문서만). 21개 파일, +383 / -38.
+
+| 파일                                                        | 변경                                                                                                                               | 계획과 비교                                                   |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `src/entities/user/*`                                       | `Me`, `UserRole` 타입, `userKeys`, `meQuery`                                                                                       | 계획대로. `display_name`은 BE ERD대로 `string \| null`        |
+| `src/shared/api/describe-error.ts`                          | 403을 `code`로 나눔 (`NOT_ALLOWED`, `ADMIN_ONLY`, `ORIGIN_MISMATCH`, 그 밖)                                                        | 계획대로                                                      |
+| `src/shared/api/client.ts`, `index.ts`                      | `GOOGLE_LOGIN_URL`, 기본 주소가 같은 출처의 상대 경로여야 한다는 주석                                                              | 계획대로                                                      |
+| `src/app/router/auth-redirect.ts`                           | 401·403을 어디로 보낼지 정하는 `authRedirectPath`, 이동 함수를 넣어 두는 `setAuthNavigator`, `redirectOnAuthError`                 | 계획대로 (import 순환을 끊는 방법은 구현 때 정하기로 했던 것) |
+| `src/app/api/query-client.ts`                               | `QueryCache`·`MutationCache`의 `onError`, `meta.authRedirect` 타입                                                                 | 계획대로                                                      |
+| `src/app/router/router.tsx`, `src/app/App.tsx`              | `/login` 라우트와 loader, 보호된 라우트의 loader, 목 전용 `/login/mock`, `getRouter()`로 늦게 만들기, loader 이동은 모두 `replace` | `replace`와 `getRouter()`는 **계획 변경**(phase 변경 기록)    |
+| `src/app/layouts/AppLoading.tsx`                            | 첫 loader가 끝나기 전의 빈 바탕 (`HydrateFallback`)                                                                                | **계획에 없던 것**. 위험 4를 구현 중에 반영                   |
+| `src/app/mocks/handlers.ts`, `session.ts`                   | `GET /me`, `POST /auth/logout`, 목 로그인 상태, `not-allowed` 시나리오. 기존 책 핸들러도 목 로그인 상태를 본다                     | 계획대로                                                      |
+| `src/pages/login/*`                                         | 로그인 화면                                                                                                                        | 계획대로                                                      |
+| `src/features/logout/*`, `src/widgets/header/ui/Header.tsx` | 로그아웃 버튼과 `useLogout`, 헤더에 배치                                                                                           | 계획대로                                                      |
+| `docs/architecture.md`, `.env.example`                      | 3장의 API 주소·CORS·목 시나리오, "로그인 (Phase 12)" 절, `VITE_API_BASE_URL` 설명                                                  | 계획대로                                                      |
+
+### 1.2 완료 기준 확인 방법
+
+목은 `VITE_API_MOCK=true pnpm exec vite`로 띄우고, Chrome(Claude in Chrome)으로 본다. 주소, 화면의 글자, 네트워크 요청(`/api/`)을 기록한다.
+
+| #   | 완료 기준                                                                                                            | 확인 방법                                                                                                                           | 결과                                                                                                                                                                                                                                                          |
+| --- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`가 통과한다                     | `ebc01c2`에서 다섯 명령의 종료 코드                                                                                                 | 통과. `ebc01c2`에서 다섯 명령 모두 종료 코드 0. 리뷰 반영 뒤(`d4d9b35`)에도 다섯 명령과 `pnpm check:process`(검사 1~4) 통과                                                                                                                                   |
+| 2   | 목에서 로그아웃 상태로 `/`와 `/books/bombom`을 열면 `/login`으로 간다                                                | `diegesis-mock-session=out`으로 두 주소를 새로 열고 주소 확인                                                                       | 통과. 로그아웃 상태로 `/`를 열면 `/login`, `/books/bombom`을 열면 `/login`. 안내 없음                                                                                                                                                                         |
+| 3   | 목에서 "Google로 로그인"을 누르면 `/`가 보인다. 이미 로그인한 상태로 `/login`을 열면 `/`로 간다                      | 버튼 클릭 뒤 주소와 헤더. 로그인한 상태로 `/login`을 새로 열고 주소 확인                                                            | 통과. 버튼(`/login/mock`)을 누르면 `/`와 헤더의 "로그아웃"이 보인다. 로그인한 상태로 `/login`을 열면 `/`                                                                                                                                                      |
+| 4   | `/login?error=NOT_ALLOWED`와 `?error=LOGIN_FAILED`에서 각각의 안내가 보이고, `?error=abc`에서는 안내가 없다          | 세 주소를 로그인 전과 로그인 뒤에 각각 열고 `[role=alert]`의 글자 확인 (로그인 뒤에도 첫 화면으로 가지 않는지, 계획 변경 `2743680`) | 통과. 로그아웃 상태: `NOT_ALLOWED`·`LOGIN_FAILED`는 각 안내, `abc`는 안내 없음. 로그인 상태: `LOGIN_FAILED`에서 첫 화면으로 가지 않고 안내가 보인다                                                                                                           |
+| 5   | `unauthorized`는 `/login`, `not-allowed`는 `/login?error=NOT_ALLOWED`로 가고 이동이 반복되지 않는다                  | 시나리오마다 보호된 주소를 열고 2초 뒤 주소, 네트워크의 `/api/me` 요청 수(한 번)                                                    | 통과(조건부). `not-allowed`는 `/login?error=NOT_ALLOWED`와 안내, `unauthorized`는 `/login`. 이동은 한 번에 멈춘다. 다만 `/api/me`는 한 번이 아니라 **두 번** 나간다(보호된 화면의 loader, 로그인 화면의 loader). 반복이 아니라 설계상 두 번이다 (발견 사항 2) |
+| 6   | 책 목록을 연 뒤 목 로그인 상태를 끄고 다른 데이터를 불러오면(쓰는 도중의 401) `/login`으로 간다                      | 목록에서 `diegesis-mock-session=out`으로 바꾸고 책 카드를 눌러 책 정보 요청이 401이 되게 한 뒤 주소 확인                            | 통과. 목록에서 목 로그인 상태를 끄고 책 카드를 누르면 책 정보가 401이 되고 `/login`으로 간다. `replace` 수정 뒤에도 다시 확인                                                                                                                                 |
+| 7   | "로그아웃"을 누르면 `POST /api/auth/logout`이 한 번 불리고 `/login`으로 가며, 뒤로 가기를 해도 `/login`으로 돌아온다 | 목록 → 리더 → 뒤로 → 로그아웃 → 뒤로. 네트워크의 로그아웃 요청 수와 마지막 주소, `/api/me`가 401인지                                | 통과. 목록 → 리더 → 뒤로 → 로그아웃 → 뒤로: `POST /api/auth/logout` 한 번(204), 마지막 주소 `/login`, 그 뒤 `/api/me`는 401. 처음 구현 중에는 뒤로 가기로 다시 로그인되는 문제가 있었고 loader의 `replace`로 고친 뒤 확인했다 (phase 변경 기록)               |
+| 8   | `describeError`가 403 `ADMIN_ONLY`, `ORIGIN_MISMATCH`, 코드 없는 403에 각각 다른 문구를 낸다                         | 개발 서버에서 `/src/shared/api/index.ts`를 import 해 `ApiError` 다섯 가지(위 셋, `NOT_ALLOWED`, 본문 없음)로 부르고 결과 비교       | 통과. `NOT_ALLOWED` "테스트 참가자만…", `ADMIN_ONLY` "관리자만 쓸 수 있습니다", `ORIGIN_MISMATCH` "요청이 거절되었습니다", 다른 코드 "접근할 수 없습니다 / BE 메시지", 본문 없음 "접근할 수 없습니다 / API 요청 실패 (403)"                                   |
+| 9   | 로그인 화면이 라이트·다크, 375px·1440px에서 깨지지 않고, Tab으로 테마 버튼과 로그인 버튼에 포커스 링이 보인다        | 두 폭과 두 테마의 스크린샷, Tab 두 번 뒤 스크린샷                                                                                   | 부분 통과. 넓은 화면(1516px) 라이트·다크, 375px 라이트에서 깨지지 않는다. 375px에서 Tab 두 번 뒤 로그인 버튼에 포커스 링이 보인다. 375px 다크와 테마 버튼의 포커스 링은 따로 찍지 않았다 (3절)                                                                |
+| 10  | 목을 끈 빌드의 번들에 `/login/mock`과 목 로그인 상태 코드가 없다                                                     | `pnpm build` 뒤 `dist/assets/*.js`에서 `login/mock`, `diegesis-mock-session` 검색. 목을 켠 빌드에서는 나오는지도 확인               | 통과. 목을 끈 빌드: 두 문자열 0건. 목을 켠 빌드: `login/mock`은 `index-*.js`, `diegesis-mock-session`은 따로 떨어진 `session-*.js`에 있다                                                                                                                     |
+| 11  | 제품 레이어에 `useEffect`나 타이머가 없다                                                                            | `pnpm lint`와 `grep -rn 'useEffect\|setTimeout' src/pages src/widgets src/features src/entities`                                    | 통과. `pnpm lint` 통과, `grep` 결과 없음                                                                                                                                                                                                                      |
+
+### 1.3 공통 확인 항목
+
+| 영역   | 확인할 것                                                            | 확인 방법                                                                                                        | 결과                                                                                                                                                                                                                                                             |
+| ------ | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FSD    | 아래 레이어가 위 레이어를 import 하지 않는다                         | `pnpm lint:fsd`(steiger)와 새 파일의 import 확인                                                                 | 통과. steiger 문제 없음. 새 슬라이스는 `pages/login` → `features/theme-toggle`·`shared`, `widgets/header` → `features/logout`, `features/logout`·`entities/user` → `shared`만 쓴다                                                                               |
+| FSD    | 같은 레이어 슬라이스끼리 import 하지 않는다                          | 같음                                                                                                             | 통과. steiger                                                                                                                                                                                                                                                    |
+| FSD    | 슬라이스 밖에서는 `index.ts`로만 import 한다                         | 같음                                                                                                             | 통과. steiger, import 경로 확인                                                                                                                                                                                                                                  |
+| 디자인 | 색은 의미 토큰만 쓴다 (`#hex`, 팔레트 직접 사용 없음)                | `pnpm lint`, 새 파일의 클래스 확인                                                                               | 통과. `pnpm lint`(색 가드레일), 새 파일은 `bg-background`, `bg-accent`, `text-foreground`, `text-muted-foreground`만 쓴다                                                                                                                                        |
+| 디자인 | 라이트/다크 둘 다 깨지지 않는다                                      | 완료 기준 9                                                                                                      | 통과 (완료 기준 9의 범위)                                                                                                                                                                                                                                        |
+| 디자인 | 브랜드 버튼은 한 화면에 하나 이하다 (design-system 1.3)              | 로그인 화면 코드                                                                                                 | 통과. 로그인 화면의 "Google로 로그인" 하나                                                                                                                                                                                                                       |
+| 접근성 | 글자 대비 4.5:1 이상, 키보드로 조작 가능, 아이콘 버튼에 `aria-label` | 안내 박스(`bg-accent` 위 `text-foreground`·`text-muted-foreground`) 대비를 design-system 1.7 표로 확인, Tab 이동 | 통과. 안내 박스는 라이트 `accent`(cream-200) 위 `foreground`(charcoal-800)와 `muted-foreground`(charcoal-500, 4.75), 다크 `accent`(pine-700) 위 `cream-50`과 `pine-300`으로 design-system 1.7 표에서 모두 4.5 이상. Tab 이동 가능, 테마 버튼은 기존 `aria-label` |
+| 접근성 | 안내가 `role="alert"`, 로그아웃 중 버튼이 `disabled`·`aria-busy`     | 코드                                                                                                             | 통과. 로그인 화면 안내에 `role="alert"`, 로그아웃 버튼에 `disabled`·`aria-busy`                                                                                                                                                                                  |
+| 상태   | 로딩, 빈 상태, 에러 상태가 있다                                      | 첫 진입의 `AppLoading`, 서버가 꺼졌을 때(목 시나리오 `error`)의 라우트 에러 화면                                 | 수정 후 통과. 첫 진입은 `AppLoading`(빈 바탕). 시나리오 `error`에서 라우트 에러 화면이 화면 전체를 덮고 다시 시도가 없었다 (발견 사항 1). 고친 뒤에는 헤더와 책 목록 안에 "불러오지 못했습니다"와 "다시 시도"                                                    |
+| 보안   | 새 의존성이 phase 문서에 적혀 있고 확인되었다                        | `package.json` diff (없어야 함)                                                                                  | 통과. `package.json`, `pnpm-lock.yaml` 변경 없음                                                                                                                                                                                                                 |
+| 보안   | 비밀값, 토큰이 코드나 커밋에 없다                                    | diff 검색                                                                                                        | 통과. diff에 `secret`·`token`·`password` 추가 없음                                                                                                                                                                                                               |
+
+### 1.4 이번 변경에서 특히 볼 것
+
+- **이동 반복**: loader의 `replace`, 쿼리 캐시의 이동, 로그인 화면의 loader가 서로 맞물려 같은 주소를 오가지 않는지. `setAuthNavigator`의 "로그인 화면에서 받은 401은 무시" 조건이 `?error=`를 지우지 않는지.
+- **loader 안의 `onError`**: loader에서 부르는 `GET /api/me`에 `meta.authRedirect: false`가 붙어, 쿼리 캐시의 이동과 loader의 `replace`가 겹치지 않는지.
+- **`getRouter()`**: 렌더 중에 라우터를 한 번만 만드는지 (StrictMode의 두 번 렌더에서도 하나). 목이 켜지기 전에 첫 `/api/me`가 나가지 않는지.
+- **`/login/mock`**: 목이 꺼진 빌드에 라우트가 없고, `pages/login`이 목을 모르는지.
+- **로그아웃 순서**: 화면을 옮긴 뒤 캐시를 비워서, 아직 그려진 책 목록이 다시 요청하지 않는지.
+- **목 시나리오 `error`**: 모든 경로가 500이면 `/api/me`도 500이므로 보호된 화면은 라우트 에러 화면이 된다. 이 화면이 견딜 만한지.
+- **문서**: `architecture.md`의 바뀐 문장이 BE 계약(BE#10)과 맞는지.
+
+## 2. 발견 사항
+
+| #   | 심각도 | 위치                                             | 내용                                                                                                                                                                                                 | 조치                                                                                                                                                                                                                  |
+| --- | ------ | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 중간   | `src/app/router/router.tsx` `requireLogin`       | `GET /api/me`가 500이거나 BE가 꺼져 있으면 loader가 에러를 던져 라우트 에러 화면("문제가 발생했어요")이 헤더까지 덮고, 다시 시도 버튼이 없었다. 이 phase 전에는 책 목록 안에서 다시 시도할 수 있었다 | 고침 (`d856615` 계획 변경, `d4d9b35`). 로그인과 무관한 에러는 화면으로 넘기고, 화면의 쿼리가 다시 시도 버튼과 함께 보여 준다. 그 쿼리가 401을 받으면 쿼리 캐시가 로그인 화면으로 보낸다. 시나리오 `error`로 다시 확인 |
+| 2   | 낮음   | `src/app/router/router.tsx` `redirectIfLoggedIn` | 보호된 화면에서 `/login`으로 갈 때 `/api/me`가 두 번 나간다. 로그인 화면의 loader가 언제나 새로 확인하기 때문이다(`staleTime: 0`). 반복은 아니다                                                     | 그대로 둠. 캐시된 결과를 쓰면, 쓰는 도중의 401 뒤에 남은 성공 캐시로 첫 화면에 되돌아가는 문제가 생길 수 있다. 요청 한 번이 더 싸다                                                                                   |
+
+## 3. 확인 못 한 것
+
+- **실제 BE와의 연결**: BE E1이 아직 구현되지 않아 Google 로그인, 쿠키, 출처 확인(`ORIGIN_MISMATCH` 없이 로그아웃 `204`)을 확인하지 못했다. BE E1이 `main`에 합쳐지면 로컬 BE(docker compose)에 붙여 확인한다 (phase 위험 1).
+- **375px 다크 모드와 테마 버튼의 포커스 링**: 스크린샷을 찍지 않았다. 색은 의미 토큰만 쓰고 포커스는 전역 스타일이라 문제될 곳은 적지만, 화면으로 확인하지 않았다.
+- **StrictMode에서 라우터가 하나만 만들어지는지**: 코드(모듈 변수에 한 번만 담음)로만 확인했다.
+- **목이 켜지기 전에 `/api/me`가 나가지 않는지**: 첫 요청부터 목의 로그인 상태대로(200·401) 응답한 것으로 간접 확인했다.
+
+## 4. 결론
+
+수정 후 통과. 발견 사항 1(서버 에러에서 화면 전체가 막힘)을 고쳤고, 2(`/api/me` 두 번)는 이유를 적고 그대로 둔다. 실제 BE와의 연결 확인은 BE E1이 합쳐진 뒤 이 문서의 3절을 채운다.

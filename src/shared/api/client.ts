@@ -4,7 +4,11 @@
  */
 
 // .env에 빈 값(VITE_API_BASE_URL=)으로 두면 빈 문자열이 들어오므로 ?? 가 아니라 || 로 기본값을 쓴다.
+// 쿠키와 BE의 출처 확인 때문에 언제나 같은 출처의 상대 경로여야 한다 (BE docs/API.md 2.2절, 2.4절).
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+
+/** Google 로그인을 시작하는 주소. `fetch`가 아니라 브라우저 이동으로 연다 (BE docs/API.md 4.2절). */
+export const GOOGLE_LOGIN_URL = `${BASE_URL}/auth/google/login`
 
 /** BE 에러 응답 본문 (BE docs/API.md 2.3절). `message`는 화면에 그대로 보여 줘도 된다. */
 type ApiErrorBody = { code: string; message: string; detail?: unknown }

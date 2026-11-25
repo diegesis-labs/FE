@@ -1,6 +1,16 @@
-import { QueryClient } from '@tanstack/react-query'
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
 
 import { ApiError } from '@/shared/api'
+
+import { redirectOnAuthError } from '../router/auth-redirect'
+
+declare module '@tanstack/react-query' {
+  interface Register {
+    // false면 401·403을 받아도 로그인 화면으로 보내지 않는다. 로그인 확인처럼 부른 쪽이 직접 처리할 때 쓴다.
+    queryMeta: { authRedirect?: boolean }
+    mutationMeta: { authRedirect?: boolean }
+  }
+}
 
 const RETRYABLE_4XX = [408, 429]
 
@@ -14,6 +24,17 @@ function isFinalClientError(error: unknown) {
 }
 
 export const queryClient = new QueryClient({
+  // 쓰는 도중에 로그인 상태가 끝나거나 허용 목록에서 빠지면 로그인 화면으로 보낸다 (BE docs/API.md 2.2절).
+  queryCache: new QueryCache({
+    onError: (error, query) => {
+      if (query.meta?.authRedirect !== false) redirectOnAuthError(error)
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error, _variables, _context, mutation) => {
+      if (mutation.meta?.authRedirect !== false) redirectOnAuthError(error)
+    },
+  }),
   defaultOptions: {
     queries: {
       // 같은 데이터를 짧은 시간 안에 다시 요청하지 않도록 30초간 신선한 것으로 본다.

@@ -1,5 +1,5 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useQueries, useQuery } from '@tanstack/react-query'
+import { useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
 
 import { type BookDetail, chapterQuery } from '@/entities/book'
@@ -13,18 +13,23 @@ import { usePagination } from './use-pagination'
 /** 두 쪽 펼침: 가로 화면이고 폭 1024px 이상 */
 const SPREAD_QUERY = '(min-width: 1024px) and (orientation: landscape)'
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
+/** 지금 챕터 앞뒤로 미리 받아 둘 챕터 수 (2026-11-24 FE·BE 회의 E4: 2챕터 정도 미리 받기) */
+const PRELOAD_CHAPTERS = 2
 
 export type Direction = 1 | -1
 type Destination = { chapterNo: number; anchor: number }
 /**
- * 챕터 경계를 넘을 때의 슬라이드: 밀려 나가는 중(leaving) → 챕터를 바꾸고 들어오는 중(entering).
+ * 챕터 경계를 넘는 슬라이드. 띠가 한 화면 더 밀려 가면 그 자리에 미리 그려 둔 이웃 챕터 화면이 오고,
+ * 슬라이드가 끝나면(transitionend) 챕터를 바꾼다. 새 챕터는 같은 자리에 그려지므로 따로 들어오는 움직임이 없다.
  * `at`은 이 슬라이드가 유효한 위치다. 그 사이 뒤로 가기 등으로 위치가 바뀌면 슬라이드는 없던 것으로 본다
  * (밀려 나가던 띠가 사라져 transitionend가 오지 않으면 leaving에 갇히기 때문).
  */
-export type ChapterTransition =
-  | { phase: 'leaving'; at: string; dir: Direction; destination: Destination }
-  | { phase: 'entering'; at: string; dir: Direction }
-  | null
+export type ChapterTransition = {
+  phase: 'leaving'
+  at: string
+  dir: Direction
+  destination: Destination
+} | null
 
 const positionKey = (chapterNo: number, anchor: number) => `${chapterNo}:${anchor}`
 
@@ -34,19 +39,35 @@ type TurnedPage = { layoutKey: string; anchor: number; page: number }
 /** 리더의 상태와 동작. 위치는 URL(`?chapter&s`)이 기준이다 */
 export function useReader(book: BookDetail) {
   const [searchParams, setSearchParams] = useSearchParams()
-  const queryClient = useQueryClient()
   const spread = useMediaQuery(SPREAD_QUERY)
   const reducedMotion = useMediaQuery(REDUCED_MOTION_QUERY)
   const fontsReady = useFontsReady()
   const stage = useElementSize<HTMLDivElement>()
   const geometry = pageGeometry(stage.width, stage.height, spread)
+  /** 넘길 때 미끄러지는 틀 (지금 챕터 띠 + 이웃 챕터 화면). 끌기는 이 틀을 옮긴다 */
+  const slideRef = useRef<HTMLDivElement | null>(null)
 
   const position = resolvePosition(book, searchParams)
   const chapter = useQuery({
     ...chapterQuery(book.id, position?.chapterNo ?? 0),
     enabled: position !== null,
   })
-  const { measureRef, trackRef, layout } = usePagination(chapter.data, geometry, fontsReady)
+  const { measureRef, layout } = usePagination(chapter.data, geometry, fontsReady)
+
+  const index = book.chapters.findIndex((c) => c.chapter_no === position?.chapterNo)
+  const prevChapter = index > 0 ? book.chapters[index - 1] : undefined
+  const nextChapter = index >= 0 ? book.chapters[index + 1] : undefined
+
+  // 앞뒤 챕터를 미리 받는다. 바로 옆 챕터는 경계에서 미리 그릴 화면이기도 하다.
+  const nearby =
+    index >= 0
+      ? book.chapters.filter((_, i) => i !== index && Math.abs(i - index) <= PRELOAD_CHAPTERS)
+      : []
+  const nearbyChapters = useQueries({
+    queries: nearby.map((c) => chapterQuery(book.id, c.chapter_no)),
+  })
+  const loadedChapter = (chapterNo: number | undefined) =>
+    nearbyChapters.find((q) => q.data?.chapter_no === chapterNo)?.data
 
   const [turned, setTurned] = useState<TurnedPage | null>(null)
   const [savedTransition, setTransition] = useState<ChapterTransition>(null)
@@ -66,14 +87,11 @@ export function useReader(book: BookDetail) {
   const viewCount = layout ? Math.ceil(layout.pageCount / perView) : 0
   const range = layout ? visibleRange(layout, firstPage, perView) : null
 
-  const index = book.chapters.findIndex((c) => c.chapter_no === position?.chapterNo)
-  const prevChapter = index > 0 ? book.chapters[index - 1] : undefined
-  const nextChapter = index >= 0 ? book.chapters[index + 1] : undefined
   const canPrev = layout !== null && (view > 0 || prevChapter !== undefined)
   const canNext = layout !== null && (view < viewCount - 1 || nextChapter !== undefined)
   const atBookEnd = layout !== null && view === viewCount - 1 && nextChapter === undefined
 
-  // 띠를 옮길 거리. 챕터 경계에서 밀려 나갈 때는 한 화면 더 간다(빈 쪽이 보임).
+  // 띠를 옮길 거리. 챕터 경계에서 밀려 나갈 때는 한 화면 더 간다(이웃 챕터 화면이 들어옴).
   const viewStride = perView * geometry.pageStride
   const shownView = transition?.phase === 'leaving' ? view + transition.dir : view
   const offset = shownView * viewStride
@@ -83,17 +101,20 @@ export function useReader(book: BookDetail) {
     transition?.phase === 'leaving' ||
     (layout !== null && turned?.layoutKey === layout.key && turned.anchor === position?.anchor)
 
-  const prefetchChapter = (chapterNo: number) =>
-    void queryClient.prefetchQuery(chapterQuery(book.id, chapterNo))
+  // 경계 화면에서는 이웃 챕터의 맞닿은 화면을 띠 바로 옆에 그린다. 넘기거나 끌면 띠와 함께 움직인다.
+  // 본문을 아직 받지 못했으면 그리지 않는다 (그때는 빈 쪽으로 넘어간다).
+  const neighbors = {
+    prev: layout !== null && view === 0 ? loadedChapter(prevChapter?.chapter_no) : undefined,
+    next:
+      layout !== null && view === viewCount - 1
+        ? loadedChapter(nextChapter?.chapter_no)
+        : undefined,
+  }
 
-  const enterChapter = (destination: Destination, dir: Direction | null) => {
+  const enterChapter = (destination: Destination) => {
     setSearchParams(positionParams(destination.chapterNo, destination.anchor))
     setTurned(null)
-    setTransition(
-      dir && !reducedMotion
-        ? { phase: 'entering', at: positionKey(destination.chapterNo, destination.anchor), dir }
-        : null,
-    )
+    setTransition(null)
   }
 
   /** 한 화면(한 쪽 또는 두 쪽) 넘긴다. 챕터 끝이면 이웃 챕터로 */
@@ -107,8 +128,6 @@ export function useReader(book: BookDetail) {
       setTurned({ layoutKey: layout.key, anchor, page: targetPage })
       setTransition(null)
       setSearchParams(positionParams(position.chapterNo, anchor), { replace: true })
-      if (nextChapter && target >= viewCount - 2) prefetchChapter(nextChapter.chapter_no)
-      if (prevChapter && target <= 1) prefetchChapter(prevChapter.chapter_no)
       return
     }
 
@@ -119,20 +138,19 @@ export function useReader(book: BookDetail) {
       // 이전 챕터로 갈 때는 마지막 문장을 기준으로 삼아 마지막 쪽이 보이게 한다.
       anchor: dir > 0 ? neighbor.first_sentence : neighbor.last_sentence,
     }
-    prefetchChapter(neighbor.chapter_no)
-    if (reducedMotion) enterChapter(destination, null)
+    if (reducedMotion) enterChapter(destination)
     else setTransition({ phase: 'leaving', at: currentKey, dir, destination })
   }
 
-  /** 띠의 슬라이드가 끝났을 때. 밀려 나가는 중이었다면 이제 챕터를 바꾼다 */
+  /** 띠의 슬라이드가 끝났을 때. 챕터 경계를 넘는 중이었다면 이제 챕터를 바꾼다 */
   const onSlideEnd = () => {
-    if (transition?.phase === 'leaving') enterChapter(transition.destination, transition.dir)
+    if (transition?.phase === 'leaving') enterChapter(transition.destination)
   }
 
   /** 목차에서 챕터로 바로 간다 (첫 쪽) */
   const goToChapter = (chapterNo: number) => {
     const meta = book.chapters.find((c) => c.chapter_no === chapterNo)
-    if (meta) enterChapter({ chapterNo, anchor: meta.first_sentence }, null)
+    if (meta) enterChapter({ chapterNo, anchor: meta.first_sentence })
   }
 
   return {
@@ -141,17 +159,19 @@ export function useReader(book: BookDetail) {
     chapter,
     stageRef: stage.ref,
     geometry,
+    fontsReady,
     spread,
     measureRef,
-    trackRef,
+    slideRef,
     layout,
     page: firstPage,
     view,
     viewCount,
+    viewStride,
     range,
     offset,
     animate,
-    transition,
+    neighbors,
     canPrev,
     canNext,
     atBookEnd,

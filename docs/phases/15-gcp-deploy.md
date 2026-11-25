@@ -1,4 +1,4 @@
-# Phase 13: GCP Cloud Run 배포로 옮기기
+# Phase 15: GCP Cloud Run 배포로 옮기기
 
 - 상태: 진행 중
 - 선행 phase: 없음 (10 Vercel 배포, 12 로그인 모두 `main`에 머지됨)
@@ -6,7 +6,7 @@
 - 브랜치: `setup/33-gcp-deploy` (`main`의 `e6b570b`에서 만듦)
 - 계획 커밋: `293c3c9`
 - 구현 커밋: (구현 완료 후 커밋 해시)
-- 리뷰 문서: [13-gcp-deploy-review.md](../reviews/13-gcp-deploy-review.md) (리뷰 단계에서 작성)
+- 리뷰 문서: [15-gcp-deploy-review.md](../reviews/15-gcp-deploy-review.md) (리뷰 단계에서 작성)
 
 ## 목표
 
@@ -199,7 +199,7 @@ https://diegesis-fe-<프로젝트 번호>.asia-northeast3.run.app
   - `docker build --build-arg VITE_API_MOCK=true`로 만들고 `docker run -e PORT=8080`으로 띄운다.
   - `/`, `/books/<id>?chapter=2` 새로 고침, 없는 경로, `/api/books` 404, 헤더(`curl -I`)를 본다.
   - `BE_ORIGIN`에 로컬 BE(compose)를 넣었을 때 `/api/health`가 넘어가는지 본다. BE에 로그인 코드가 아직 없어서, BE API.md 4.2~4.3절대로만 움직이는 가짜 BE로 로그인 흐름(시작, 콜백, `/api/me`, 로그아웃)을 개발 서버와 컨테이너 양쪽에서 확인했다.
-- [ ] 3. Artifact Registry, 실행용과 빌드용 서비스 계정, `cloudbuild.yaml`을 만든다. 첫 배포는 로컬에서 `gcloud builds submit`으로 해서 Cloud Run 서비스를 만든다.
+- [x] 3. Artifact Registry, 실행용과 빌드용 서비스 계정, `cloudbuild.yaml`을 만든다. 첫 배포는 로컬에서 `gcloud builds submit`으로 해서 Cloud Run 서비스를 만든다.
 - [ ] 4. 사용자에게 Cloud Build GitHub 앱 설치를 부탁한다. 설치되면 트리거 두 개를 만든다. 이 phase의 PR에서 `pr-<번호>` 태그 주소가 생기는지 확인한다.
 - [ ] 5. architecture.md 5장, README, `.env.example`을 고친다.
 - [ ] 6. 머지 뒤 `fe-main` 트리거로 production이 바뀌는지 확인한다. 그다음 Vercel을 정리한다: `vercel.json` 삭제와 Git 연결 끊기는 후속 PR로 한다.
@@ -247,3 +247,4 @@ https://diegesis-fe-<프로젝트 번호>.asia-northeast3.run.app
 - 2026-11-25: 계획 변경 (단계 2 구현 중 확인). (1) 없는 `/assets/` 파일은 `index.html` 대신 404를 주고, 장기 캐시는 성공 응답에만 붙인다. Vercel은 없는 파일에도 `index.html`을 `immutable`로 줄 수 있었다. (2) Cloud Run 요청 로그에는 쿼리가 남는다는 위험 7을 더함. (3) 기반 이미지 digest를 적음
 - 2026-11-25: 계획 변경 (단계 3 시작 전). (1) 첫 배포에 같은 빌드 설정을 쓰려고 `cloudbuild.yaml`을 단계 4에서 3으로 당김. (2) GCP 프로젝트 `diegesis-front`, 예산 월 1만 원 (사용자 결정). (3) 서비스 계정 이름(`fe-run`, `fe-build`)과 권한 표, 로컬 제출용 소스 버킷, 빌드 로그 위치, 빌더 이미지 digest를 적음. (4) 단계 2에서 가짜 BE로 로그인 흐름을 확인한 것을 적음
 - 2026-11-25: 계획 변경 (단계 3 첫 배포에서 확인). (1) 빌드 계정은 서비스를 공개로 바꿀 수 없어(경고 뒤 403) 공개 설정은 소유자가 한 번 걸고 `cloudbuild.yaml`에서 `--allow-unauthenticated`를 뺌. 빌드 계정 권한은 늘리지 않음. (2) Cloud Build docker 빌더에 BuildKit을 켬 (첫 빌드가 `COPY --chmod`에서 실패)
+- 2026-11-25: 번호를 13에서 15로 바꿈 (사용자 결정). 이 브랜치가 진행되는 동안 `main`에 `13-chapter-transition`, `14-font-preload`가 먼저 머지되어 번호가 겹쳤다. 끝난 두 phase 대신 머지 전인 이 문서를 옮긴다. 이미 올린 커밋 메시지의 "13"(`293c3c9`~`3f59588`)은 이 문서를 가리킨다

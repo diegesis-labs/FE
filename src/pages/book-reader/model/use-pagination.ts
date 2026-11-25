@@ -13,21 +13,23 @@ import { measurePages, type PageLayout } from '../lib/paginate'
 export function usePagination(
   chapter: Chapter | undefined,
   geometry: PageGeometry,
-  fontsReady: boolean,
+  fontsVersion: number,
 ) {
   const [layout, setLayout] = useState<PageLayout | null>(null)
 
   const ready = chapter !== undefined && geometry.pageWidth > 0 && geometry.pageHeight > 0
-  const key = ready
+  // 챕터와 쪽 크기. 이것이 바뀌면 옛 쪽 표는 쓸 수 없다.
+  const shapeKey = ready
     ? [
         chapter.book_id,
         chapter.chapter_no,
         geometry.pageWidth,
         geometry.pageHeight,
         geometry.gap,
-        fontsReady,
       ].join(':')
     : null
+  // 글꼴 조각을 새로 받으면 글자 폭이 바뀔 수 있어 다시 잰다.
+  const key = shapeKey === null ? null : `${shapeKey}|${fontsVersion}`
   const { pageStride } = geometry
 
   const measureRef = useCallback(
@@ -37,5 +39,8 @@ export function usePagination(
     [key, pageStride],
   )
 
-  return { measureRef, layout: layout && layout.key === key ? layout : null }
+  // 글꼴만 바뀌었으면 다시 잴 때까지(같은 커밋 안) 옛 쪽 표를 그대로 쓴다. 비워 두면 그 사이
+  // 띠가 숨겨지고 첫 쪽 위치로 갔다가 돌아와서, 넘기는 중인 미끄러짐이 처음부터 다시 시작된다.
+  const usable = layout !== null && shapeKey !== null && layout.key.split('|')[0] === shapeKey
+  return { measureRef, layout: usable ? layout : null }
 }

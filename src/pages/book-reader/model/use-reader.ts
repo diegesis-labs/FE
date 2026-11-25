@@ -3,7 +3,7 @@ import { useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
 
 import { type BookDetail, chapterQuery } from '@/entities/book'
-import { useElementSize, useFontsReady, useMediaQuery } from '@/shared/lib/dom'
+import { useElementSize, useFontsVersion, useMediaQuery, usePreloadGlyphs } from '@/shared/lib/dom'
 
 import { pageGeometry } from '../lib/geometry'
 import { pageForAnchor, visibleRange } from '../lib/paginate'
@@ -38,15 +38,26 @@ export type ChapterTransition = {
 
 const positionKey = (chapterNo: number, anchor: number) => `${chapterNo}:${anchor}`
 
-/** 사용자가 넘긴 쪽. 같은 표·같은 기준 문장인 동안만 쓰고, 그 밖에는 기준 문장으로 쪽을 다시 찾는다 */
-type TurnedPage = { layoutKey: string; anchor: number; page: number }
+/**
+ * 사용자가 넘긴 쪽.
+ * - 쪽 번호(`page`)는 같은 쪽 표·같은 기준 문장인 동안만 쓰고, 그 밖에는 기준 문장으로 쪽을 다시 찾는다.
+ * - 미끄러짐은 같은 챕터·같은 쪽 크기(`viewKey`)·같은 기준 문장인 동안 켜 둔다. 글꼴 조각을 받아 쪽 표를
+ *   다시 재더라도(`layoutKey`만 바뀜) 넘기는 중인 미끄러짐이 끊기지 않게 하려는 것이다. 크기가 바뀌면 끈다.
+ */
+type TurnedPage = {
+  chapterNo: number
+  viewKey: string
+  layoutKey: string
+  anchor: number
+  page: number
+}
 
 /** 리더의 상태와 동작. 위치는 URL(`?chapter&s`)이 기준이다 */
 export function useReader(book: BookDetail) {
   const [searchParams, setSearchParams] = useSearchParams()
   const spread = useMediaQuery(SPREAD_QUERY)
   const reducedMotion = useMediaQuery(REDUCED_MOTION_QUERY)
-  const fontsReady = useFontsReady()
+  const fontsVersion = useFontsVersion()
   const stage = useElementSize<HTMLDivElement>()
   const geometry = pageGeometry(stage.width, stage.height, spread)
   /** 넘길 때 미끄러지는 틀 (지금 챕터 띠 + 이웃 챕터 화면). 끌기는 이 틀을 옮긴다 */
@@ -57,7 +68,7 @@ export function useReader(book: BookDetail) {
     ...chapterQuery(book.id, position?.chapterNo ?? 0),
     enabled: position !== null,
   })
-  const { measureRef, layout } = usePagination(chapter.data, geometry, fontsReady)
+  const { measureRef, layout } = usePagination(chapter.data, geometry, fontsVersion)
 
   const index = book.chapters.findIndex((c) => c.chapter_no === position?.chapterNo)
   const prevChapter = index > 0 ? book.chapters[index - 1] : undefined
@@ -74,7 +85,23 @@ export function useReader(book: BookDetail) {
   const loadedChapter = (chapterNo: number | undefined) =>
     nearbyChapters.find((q) => q.data?.chapter_no === chapterNo)?.data
 
-  const [turned, setTurned] = useState<TurnedPage | null>(null)
+  // 받아 둔 챕터(지금 + 앞뒤)에 나오는 글자의 글꼴 조각을 미리 받는다. 브라우저는 화면에 그리는 글자의
+  // 조각만 받기 때문에, 미리 받지 않으면 처음 보는 쪽으로 넘길 때 다른 글꼴로 그려졌다가 바뀐다.
+  const readable = [chapter.data, ...nearbyChapters.map((q) => q.data)].filter(
+    (c) => c !== undefined,
+  )
+  usePreloadGlyphs(
+    '--font-sans',
+    readable.flatMap((c) => c.paragraphs.flatMap((p) => p.sentences.map((s) => s.text))).join(''),
+  )
+  usePreloadGlyphs('--font-display', readable.map((c) => c.title).join(''))
+
+  const [savedTurned, setTurned] = useState<TurnedPage | null>(null)
+  // 다른 챕터로 위치가 바뀌면 넘긴 쪽을 버린다 (렌더 중에 고치는 파생 상태). 남겨 두면 뒤로·앞으로 가기로
+  // 같은 챕터·같은 문장에 돌아왔을 때 사용자가 넘긴 것으로 보고 처음부터 미끄러진다.
+  const turned = savedTurned?.chapterNo === position?.chapterNo ? savedTurned : null
+  if (savedTurned && !turned) setTurned(null)
+  const viewKey = [geometry.pageWidth, geometry.pageHeight, geometry.gap].join(':')
   const [savedTransition, setTransition] = useState<ChapterTransition>(null)
   const currentKey = position ? positionKey(position.chapterNo, position.anchor) : null
   const transition = savedTransition?.at === currentKey ? savedTransition : null
@@ -107,7 +134,7 @@ export function useReader(book: BookDetail) {
   // 새 위치로 바로 옮긴다 (그러지 않으면 챕터 처음부터 끝까지 띠가 미끄러져 지나간다).
   const animate =
     transition?.phase === 'leaving' ||
-    (layout !== null && turned?.layoutKey === layout.key && turned.anchor === position?.anchor)
+    (layout !== null && turned?.viewKey === viewKey && turned.anchor === position?.anchor)
 
   // 경계 화면에서는 이웃 챕터의 맞닿은 화면을 띠 바로 옆에 그린다. 넘기거나 끌면 띠와 함께 움직인다.
   // 본문을 아직 받지 못했으면 그리지 않는다 (그때는 빈 쪽으로 넘어간다).
@@ -131,7 +158,13 @@ export function useReader(book: BookDetail) {
     if (target >= 0 && target < viewCount) {
       const targetPage = target * perView
       const anchor = layout.ranges[targetPage]?.first ?? position.anchor
-      setTurned({ layoutKey: layout.key, anchor, page: targetPage })
+      setTurned({
+        chapterNo: position.chapterNo,
+        viewKey,
+        layoutKey: layout.key,
+        anchor,
+        page: targetPage,
+      })
       setTransition(null)
       setSearchParams(positionParams(position.chapterNo, anchor), { replace: true })
       return
@@ -174,7 +207,7 @@ export function useReader(book: BookDetail) {
     chapter,
     stageRef: stage.ref,
     geometry,
-    fontsReady,
+    fontsVersion,
     spread,
     measureRef,
     slideRef,

@@ -1,4 +1,5 @@
 export { useElementSize, type ElementSize } from './use-element-size'
-export { useFontsReady } from './use-fonts-ready'
+export { useFontsVersion } from './use-fonts-version'
 export { useMediaQuery } from './use-media-query'
+export { usePreloadGlyphs } from './use-preload-glyphs'
 export { useWindowKeydown } from './use-window-keydown'

@@ -1,10 +1,10 @@
 # Phase 13: GCP Cloud Run 배포로 옮기기
 
-- 상태: 승인됨
+- 상태: 진행 중
 - 선행 phase: 없음 (10 Vercel 배포, 12 로그인 모두 `main`에 머지됨)
 - 관련 이슈: [#33 GCP Cloud Run 배포로 옮기기](https://github.com/diegesis-labs/FE/issues/33)
 - 브랜치: `setup/33-gcp-deploy` (`main`의 `e6b570b`에서 만듦)
-- 계획 커밋: (승인 후 이 문서만 커밋·푸시한 해시)
+- 계획 커밋: `293c3c9`
 - 구현 커밋: (구현 완료 후 커밋 해시)
 - 리뷰 문서: [13-gcp-deploy-review.md](../reviews/13-gcp-deploy-review.md) (리뷰 단계에서 작성)
 
@@ -97,11 +97,11 @@ flowchart LR
 | 듣는 포트         | `$PORT` (Cloud Run 기본 8080)                                                                                                                                                                                                                                                                                                                                            |
 | SPA rewrite       | `try_files $uri /index.html`. `/api/`는 제외. 실제 파일(`/assets/…`, `/favicon.svg`, `/mockServiceWorker.js`)을 먼저 찾는다                                                                                                                                                                                                                                              |
 | 보안 헤더         | `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`. nginx의 `add_header`는 `location`에 하나라도 있으면 바깥 것을 물려받지 않으므로, 공통 파일을 `include`해서 모든 `location`에 같은 헤더가 붙게 한다                                       |
-| 캐시              | `/assets/`: `public, max-age=31536000, immutable`. `index.html`과 `mockServiceWorker.js`: `no-cache`                                                                                                                                                                                                                                                                     |
+| 캐시              | `/assets/`: `public, max-age=31536000, immutable` (성공 응답에만). 없는 `/assets/` 파일은 `index.html`이 아니라 404. 그 밖의 경로(`index.html`, `mockServiceWorker.js`, `favicon.svg`): `no-cache`                                                                                                                                                                       |
 | 압축              | gzip (text, js, css, json, svg)                                                                                                                                                                                                                                                                                                                                          |
 | `/api/` (BE 없음) | `BE_ORIGIN`이 비어 있으면 404 `text/plain`. 지금 Vercel과 같다. `index.html`을 JSON 대신 받는 일이 없다                                                                                                                                                                                                                                                                  |
 | `/api/` (BE 있음) | `proxy_pass $BE_ORIGIN`<br>헤더: `proxy_ssl_server_name on`, `Host`는 BE 호스트, `X-Forwarded-Proto: https`, `X-Forwarded-For`, `X-Forwarded-Host`<br>`Set-Cookie`와 `Cookie`는 건드리지 않는다<br>`client_max_body_size 32m` (Cloud Run 요청 본문 제한과 같게)<br>`proxy_read_timeout 300s` (묶음 적재)<br>`resolver`를 둬서 BE 주소를 시작할 때 한 번만 풀지 않게 한다 |
-| 로그              | 접근 로그는 stdout (Cloud Logging), 쿼리 문자열의 `code`·`state`는 남지 않게 경로만 기록                                                                                                                                                                                                                                                                                 |
+| 로그              | 접근 로그는 stdout (Cloud Logging). nginx 로그에는 쿼리 문자열을 빼고 경로만 남긴다 (`code`·`state`). Cloud Run 자체의 요청 로그에는 쿼리가 남는다 (위험과 열린 질문 7)                                                                                                                                                                                                  |
 
 `/api` 설정은 시작 스크립트(`/docker-entrypoint.d/`)가 `BE_ORIGIN`이 있는지 보고 두 파일 중 하나를 고른다. 빈 값으로 `proxy_pass`를 만들면 nginx가 뜨지 않기 때문이다.
 
@@ -173,9 +173,9 @@ https://diegesis-fe-<프로젝트 번호>.asia-northeast3.run.app
 ### 새 의존성
 
 - npm 패키지: 없음.
-- 컨테이너 기반 이미지는 Docker Hub 공식 이미지 두 개다. 둘 다 Docker 공식 이미지 관리 주체다. 구현 때 최신 안정 태그의 digest와 배포일을 이 문서에 적는다.
-  - `node:24-alpine`: 빌드 단계 전용이라 실행 이미지에는 남지 않는다.
-  - `nginx` stable alpine
+- 컨테이너 기반 이미지는 Docker Hub 공식 이미지 두 개다. 둘 다 Docker 공식 이미지 관리 주체다. `Dockerfile`에 digest로 고정했다 (2026-11-25 확인).
+  - `node:24-alpine@sha256:116b800c3754…` (Node 24.22.3, 2026-11-11 빌드): 빌드 단계 전용이라 실행 이미지에는 남지 않는다.
+  - `nginx:stable-alpine@sha256:8eb2b5540eae…` (nginx 1.30.8, 2026-11-23 빌드). 빌드된 지 2일이다. npm의 3일 규칙(`minimumReleaseAge`)은 이미지에 적용되지 않지만, 같은 취지로 리뷰 때 다시 확인한다.
 - 로컬 도구: `gcloud` CLI (Google 공식, Homebrew cask `gcloud-cli`). 레포에는 들어가지 않는다.
 
 ## 작업 단계
@@ -223,9 +223,11 @@ https://diegesis-fe-<프로젝트 번호>.asia-northeast3.run.app
 4. **PR 미리보기의 보호**: Vercel Preview는 로그인한 팀원만 볼 수 있었다. Cloud Run 태그 주소는 공개다. 데모 데이터(저작권이 끝난 단편)만 있어서 지금은 괜찮다. BE를 붙인 뒤에도 Preview는 데모 모드로 두거나, Google 로그인과 허용 목록으로 막힌다.
 5. **GCP 계정과 비용**: 프로젝트를 누구 계정에 만들지, BE와 같은 프로젝트를 쓸지 정해야 한다. BE INFRA.md 3.9절의 무료 크레딧 기한도 따진다. 이 phase는 Cloud Run 무료 범위와 Artifact Registry 0.5GB 안에 들 것으로 본다. 예산 알림으로 확인한다.
 6. **Cloud Build PR 트리거 권한**: 외부 기여자 PR이 GCP에서 빌드를 돌리지 못하게 댓글 승인을 켠다. 지금은 조직 구성원만 PR을 올린다.
+7. **Cloud Run 요청 로그의 쿼리**: Cloud Run이 Cloud Logging에 남기는 요청 로그에는 전체 주소가 들어가서, Google 로그인 결과의 `code`·`state`가 남는다. nginx 설정으로는 막을 수 없다. `code`는 한 번만 쓸 수 있고 짧게 유효하며 PKCE(`code_verifier`)가 없으면 바꿀 수 없어서 위험은 낮다고 본다. 로그를 볼 수 있는 사람은 GCP 프로젝트 구성원뿐이다.
 
 ## 변경 기록
 
 - 2026-11-25: 작성. 호스팅(Cloud Run nginx)과 배포 방식(Cloud Build 트리거)은 사용자 결정
 - 2026-11-25: 도메인을 사지 않고 Cloud Run 기본 주소를 운영 주소로 쓰기로 함 (사용자 결정). 도메인 연결 열린 질문을 지우고 "운영 주소" 절을 더함. Confluence 회의록에도 반영
 - 2026-11-25: 승인. 이슈 #33 생성, 브랜치 `setup/33-gcp-deploy`
+- 2026-11-25: 계획 변경 (단계 2 구현 중 확인). (1) 없는 `/assets/` 파일은 `index.html` 대신 404를 주고, 장기 캐시는 성공 응답에만 붙인다. Vercel은 없는 파일에도 `index.html`을 `immutable`로 줄 수 있었다. (2) Cloud Run 요청 로그에는 쿼리가 남는다는 위험 7을 더함. (3) 기반 이미지 digest를 적음

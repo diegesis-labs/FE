@@ -140,7 +140,16 @@ https://diegesis-fe-<프로젝트 번호>.asia-northeast3.run.app
 
 - `VITE_API_MOCK`은 트리거의 대체 변수(`_VITE_API_MOCK`)로 둔다. E2에서 BE를 붙일 때 이 값만 바꾼다.
 - 빌드는 전용 서비스 계정으로 돈다. 권한은 Artifact Registry 쓰기, Cloud Run 배포, 실행 서비스 계정의 `actAs`, 로그 쓰기만 준다. 기본 Compute 서비스 계정의 편집자 권한을 쓰지 않는다.
+
+  | 서비스 계정 | 용도                  | 권한                                                                                                                                               |
+  | ----------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `fe-run`    | Cloud Run 실행        | 없음 (nginx는 GCP API를 부르지 않는다)                                                                                                             |
+  | `fe-build`  | Cloud Build 빌드·배포 | 저장소 `diegesis`의 `artifactregistry.writer`, 프로젝트의 `run.developer`·`logging.logWriter`, `fe-run`의 `iam.serviceAccountUser`, 소스 버킷 읽기 |
+
+- 로컬에서 `gcloud builds submit`으로 올릴 때 소스를 담는 버킷 `gs://diegesis-front-build-src`(서울, 7일 뒤 자동 삭제)를 따로 둔다. 기본 버킷(`<프로젝트>_cloudbuild`, 미국)을 쓰지 않고, `fe-build`에 이 버킷 읽기만 준다. GitHub 트리거는 버킷을 쓰지 않는다.
+- 빌드 로그는 Cloud Logging에만 남긴다 (`CLOUD_LOGGING_ONLY`). 전용 서비스 계정으로 빌드하려면 로그 위치를 정해야 하기 때문이다.
 - Artifact Registry 정리 정책: 최근 이미지 10개만 남긴다.
+- 예산 알림: 결제 계정에 `diegesis-front` 프로젝트만 보는 월 1만 원 예산을 두고, 50%·90%·100%에서 메일을 받는다 (사용자 결정). 알림일 뿐 비용을 막지는 않는다.
 - **사용자가 직접 할 것**:
   - GCP 프로젝트를 만들고 결제 계정을 연결한다.
   - Cloud Build GitHub 앱을 `diegesis-labs` 조직에 설치한다. 조직 소유자의 브라우저 승인이 필요하다.
@@ -176,17 +185,20 @@ https://diegesis-fe-<프로젝트 번호>.asia-northeast3.run.app
 - 컨테이너 기반 이미지는 Docker Hub 공식 이미지 두 개다. 둘 다 Docker 공식 이미지 관리 주체다. `Dockerfile`에 digest로 고정했다 (2026-11-25 확인).
   - `node:24-alpine@sha256:116b800c3754…` (Node 24.22.3, 2026-11-11 빌드): 빌드 단계 전용이라 실행 이미지에는 남지 않는다.
   - `nginx:stable-alpine@sha256:8eb2b5540eae…` (nginx 1.30.8, 2026-11-23 빌드). 빌드된 지 2일이다. npm의 3일 규칙(`minimumReleaseAge`)은 이미지에 적용되지 않지만, 같은 취지로 리뷰 때 다시 확인한다.
+- Cloud Build 단계 이미지는 Google 공식 빌더 두 개다. `cloudbuild.yaml`에 digest로 고정한다 (2026-11-25 확인, 둘 다 2026-11-19 빌드).
+  - `gcr.io/cloud-builders/docker@sha256:2d89b48c704d…`: 이미지 빌드와 올리기
+  - `gcr.io/cloud-builders/gcloud@sha256:dc291205504c…`: Cloud Run 배포
 - 로컬 도구: `gcloud` CLI (Google 공식, Homebrew cask `gcloud-cli`). 레포에는 들어가지 않는다.
 
 ## 작업 단계
 
-- [ ] 1. 사용자 준비를 부탁한다: GCP 프로젝트와 결제, `gcloud` 로그인. 필요한 API를 켠다 (Cloud Run, Cloud Build, Artifact Registry). 예산 알림을 만든다.
-- [ ] 2. `Dockerfile`, `.dockerignore`, `deploy/nginx/`를 만든다. 로컬에서 확인한다.
+- [x] 1. 사용자 준비를 부탁한다: GCP 프로젝트와 결제, `gcloud` 로그인. 필요한 API를 켠다 (Cloud Run, Cloud Build, Artifact Registry, 예산 알림용 Billing Budgets). 예산 알림을 만든다.
+- [x] 2. `Dockerfile`, `.dockerignore`, `deploy/nginx/`를 만든다. 로컬에서 확인한다.
   - `docker build --build-arg VITE_API_MOCK=true`로 만들고 `docker run -e PORT=8080`으로 띄운다.
   - `/`, `/books/<id>?chapter=2` 새로 고침, 없는 경로, `/api/books` 404, 헤더(`curl -I`)를 본다.
-  - `BE_ORIGIN`에 로컬 BE(compose)를 넣었을 때 `/api/health`가 넘어가는지 본다.
-- [ ] 3. Artifact Registry, 실행용과 빌드용 서비스 계정, Cloud Run 서비스를 만든다. 첫 배포는 로컬에서 `gcloud builds submit`으로 한다.
-- [ ] 4. 사용자에게 Cloud Build GitHub 앱 설치를 부탁한다. 설치되면 `cloudbuild.yaml`과 트리거 두 개를 만든다. 이 phase의 PR에서 `pr-<번호>` 태그 주소가 생기는지 확인한다.
+  - `BE_ORIGIN`에 로컬 BE(compose)를 넣었을 때 `/api/health`가 넘어가는지 본다. BE에 로그인 코드가 아직 없어서, BE API.md 4.2~4.3절대로만 움직이는 가짜 BE로 로그인 흐름(시작, 콜백, `/api/me`, 로그아웃)을 개발 서버와 컨테이너 양쪽에서 확인했다.
+- [ ] 3. Artifact Registry, 실행용과 빌드용 서비스 계정, `cloudbuild.yaml`을 만든다. 첫 배포는 로컬에서 `gcloud builds submit`으로 해서 Cloud Run 서비스를 만든다.
+- [ ] 4. 사용자에게 Cloud Build GitHub 앱 설치를 부탁한다. 설치되면 트리거 두 개를 만든다. 이 phase의 PR에서 `pr-<번호>` 태그 주소가 생기는지 확인한다.
 - [ ] 5. architecture.md 5장, README, `.env.example`을 고친다.
 - [ ] 6. 머지 뒤 `fe-main` 트리거로 production이 바뀌는지 확인한다. 그다음 Vercel을 정리한다: `vercel.json` 삭제와 Git 연결 끊기는 후속 PR로 한다.
 - [ ] 7. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`를 통과시킨다.
@@ -221,7 +233,7 @@ https://diegesis-fe-<프로젝트 번호>.asia-northeast3.run.app
 2. **콜드 스타트**: 최소 인스턴스 0이라 한동안 요청이 없으면 첫 화면이 늦을 수 있다. nginx는 가벼워서 보통 1초 안이지만 측정해서 리뷰에 적는다. 실사용 테스트 기간(12/21~27)에만 최소 1로 올리는 방법도 있다. 그만큼 비용이 든다.
 3. **PR 태그 정리**: PR이 닫혀도 `pr-<번호>` 태그와 리비전이 남는다. 리비전은 비용이 없지만 쌓인다. 일단 수동 정리 명령을 5장에 적고, 많아지면 자동 정리를 다음 phase로 둔다.
 4. **PR 미리보기의 보호**: Vercel Preview는 로그인한 팀원만 볼 수 있었다. Cloud Run 태그 주소는 공개다. 데모 데이터(저작권이 끝난 단편)만 있어서 지금은 괜찮다. BE를 붙인 뒤에도 Preview는 데모 모드로 두거나, Google 로그인과 허용 목록으로 막힌다.
-5. **GCP 계정과 비용**: 프로젝트를 누구 계정에 만들지, BE와 같은 프로젝트를 쓸지 정해야 한다. BE INFRA.md 3.9절의 무료 크레딧 기한도 따진다. 이 phase는 Cloud Run 무료 범위와 Artifact Registry 0.5GB 안에 들 것으로 본다. 예산 알림으로 확인한다.
+5. **GCP 계정과 비용**: FE 전용 프로젝트 `diegesis-front`(번호 `872555598631`)를 사용자 계정에 만들었다 (사용자 결정). BE와는 프로젝트가 다르다. BE INFRA.md 3.9절의 무료 크레딧 기한도 따진다. 이 phase는 Cloud Run 무료 범위와 Artifact Registry 0.5GB 안에 들 것으로 본다. 월 1만 원 예산 알림으로 확인한다.
 6. **Cloud Build PR 트리거 권한**: 외부 기여자 PR이 GCP에서 빌드를 돌리지 못하게 댓글 승인을 켠다. 지금은 조직 구성원만 PR을 올린다.
 7. **Cloud Run 요청 로그의 쿼리**: Cloud Run이 Cloud Logging에 남기는 요청 로그에는 전체 주소가 들어가서, Google 로그인 결과의 `code`·`state`가 남는다. nginx 설정으로는 막을 수 없다. `code`는 한 번만 쓸 수 있고 짧게 유효하며 PKCE(`code_verifier`)가 없으면 바꿀 수 없어서 위험은 낮다고 본다. 로그를 볼 수 있는 사람은 GCP 프로젝트 구성원뿐이다.
 
@@ -231,3 +243,4 @@ https://diegesis-fe-<프로젝트 번호>.asia-northeast3.run.app
 - 2026-11-25: 도메인을 사지 않고 Cloud Run 기본 주소를 운영 주소로 쓰기로 함 (사용자 결정). 도메인 연결 열린 질문을 지우고 "운영 주소" 절을 더함. Confluence 회의록에도 반영
 - 2026-11-25: 승인. 이슈 #33 생성, 브랜치 `setup/33-gcp-deploy`
 - 2026-11-25: 계획 변경 (단계 2 구현 중 확인). (1) 없는 `/assets/` 파일은 `index.html` 대신 404를 주고, 장기 캐시는 성공 응답에만 붙인다. Vercel은 없는 파일에도 `index.html`을 `immutable`로 줄 수 있었다. (2) Cloud Run 요청 로그에는 쿼리가 남는다는 위험 7을 더함. (3) 기반 이미지 digest를 적음
+- 2026-11-25: 계획 변경 (단계 3 시작 전). (1) 첫 배포에 같은 빌드 설정을 쓰려고 `cloudbuild.yaml`을 단계 4에서 3으로 당김. (2) GCP 프로젝트 `diegesis-front`, 예산 월 1만 원 (사용자 결정). (3) 서비스 계정 이름(`fe-run`, `fe-build`)과 권한 표, 로컬 제출용 소스 버킷, 빌드 로그 위치, 빌더 이미지 digest를 적음. (4) 단계 2에서 가짜 BE로 로그인 흐름을 확인한 것을 적음

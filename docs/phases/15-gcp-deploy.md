@@ -47,6 +47,7 @@ FE를 Vercel에서 GCP Cloud Run으로 옮긴다. `main`에 머지되면 Cloud B
    - README의 배포 주소
    - `.env.example` 주석
    - BE 담당에게 공유할 내용 (아래 "BE와 맞출 것")
+8. **작업 절차 검사가 phase 문서 이름 변경을 따라가게** (`scripts/check-process.mjs` 검사 4): 이 phase의 번호를 13에서 15로 옮기자, 검사가 첫 코드 커밋 시점의 문서를 지금 이름으로만 찾아서 실패했다. 그 시점에 없으면 git 이름 변경 기록(`git log --follow`)의 예전 이름으로 다시 찾는다. 테스트를 더하고 `docs/guardrails.md`의 설명을 고친다.
 
 ### 하지 않는 것
 
@@ -201,6 +202,7 @@ https://diegesis-fe-<프로젝트 번호>.asia-northeast3.run.app
   - `BE_ORIGIN`에 로컬 BE(compose)를 넣었을 때 `/api/health`가 넘어가는지 본다. BE에 로그인 코드가 아직 없어서, BE API.md 4.2~4.3절대로만 움직이는 가짜 BE로 로그인 흐름(시작, 콜백, `/api/me`, 로그아웃)을 개발 서버와 컨테이너 양쪽에서 확인했다.
 - [x] 3. Artifact Registry, 실행용과 빌드용 서비스 계정, `cloudbuild.yaml`을 만든다. 첫 배포는 로컬에서 `gcloud builds submit`으로 해서 Cloud Run 서비스를 만든다.
 - [ ] 4. 사용자에게 Cloud Build GitHub 앱 설치를 부탁한다. 설치되면 트리거 두 개를 만든다. 이 phase의 PR에서 `pr-<번호>` 태그 주소가 생기는지 확인한다.
+- [ ] 4-1. 작업 절차 검사 4가 phase 문서의 예전 이름도 찾게 고친다 (범위 8). `pnpm test:scripts`와 `pnpm check:process`로 확인한다.
 - [ ] 5. architecture.md 5장, README, `.env.example`을 고친다.
 - [ ] 6. 머지 뒤 `fe-main` 트리거로 production이 바뀌는지 확인한다. 그다음 Vercel을 정리한다: `vercel.json` 삭제와 Git 연결 끊기는 후속 PR로 한다.
 - [ ] 7. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`를 통과시킨다.
@@ -248,3 +250,4 @@ https://diegesis-fe-<프로젝트 번호>.asia-northeast3.run.app
 - 2026-11-25: 계획 변경 (단계 3 시작 전). (1) 첫 배포에 같은 빌드 설정을 쓰려고 `cloudbuild.yaml`을 단계 4에서 3으로 당김. (2) GCP 프로젝트 `diegesis-front`, 예산 월 1만 원 (사용자 결정). (3) 서비스 계정 이름(`fe-run`, `fe-build`)과 권한 표, 로컬 제출용 소스 버킷, 빌드 로그 위치, 빌더 이미지 digest를 적음. (4) 단계 2에서 가짜 BE로 로그인 흐름을 확인한 것을 적음
 - 2026-11-25: 계획 변경 (단계 3 첫 배포에서 확인). (1) 빌드 계정은 서비스를 공개로 바꿀 수 없어(경고 뒤 403) 공개 설정은 소유자가 한 번 걸고 `cloudbuild.yaml`에서 `--allow-unauthenticated`를 뺌. 빌드 계정 권한은 늘리지 않음. (2) Cloud Build docker 빌더에 BuildKit을 켬 (첫 빌드가 `COPY --chmod`에서 실패)
 - 2026-11-25: 번호를 13에서 15로 바꿈 (사용자 결정). 이 브랜치가 진행되는 동안 `main`에 `13-chapter-transition`, `14-font-preload`가 먼저 머지되어 번호가 겹쳤다. 끝난 두 phase 대신 머지 전인 이 문서를 옮긴다. 이미 올린 커밋 메시지의 "13"(`293c3c9`~`3f59588`)은 이 문서를 가리킨다
+- 2026-11-25: 계획 변경 (번호를 옮긴 뒤 확인). 작업 절차 검사 4가 첫 코드 커밋 시점의 phase 문서를 지금 이름(`15-…`)으로만 찾아 실패했다. 순서를 어긴 것이 아니라 검사가 이름 변경을 모르는 한계라서, 검사가 예전 이름도 찾게 고치기로 함 (사용자 결정). 범위 8과 단계 4-1을 더함

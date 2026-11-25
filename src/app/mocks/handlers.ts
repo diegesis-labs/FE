@@ -1,4 +1,4 @@
-// 개발용 목 API. BE docs/API.md 4.5, 4.6절 형식을 그대로 흉내 낸다.
+// 개발용 목 API. BE docs/API.md 4.2, 4.3, 4.5, 4.6절 형식을 그대로 흉내 낸다.
 // 켜는 법과 시나리오 전환: docs/architecture.md 3장 "목 API".
 //
 // 목 데이터(fixtures/books.json)는 저작권 보호 기간이 끝난 작품을 위키문헌에서 가져와
@@ -7,8 +7,10 @@
 import { delay, http, HttpResponse } from 'msw'
 
 import type { BookDetail, BookListResponse, BookSummary, Chapter } from '@/entities/book'
+import type { Me } from '@/entities/user'
 
 import fixtures from './fixtures/books.json'
+import { isMockLoggedIn, setMockLoggedIn } from './session'
 
 type FixtureBook = {
   id: string
@@ -19,12 +21,13 @@ type FixtureBook = {
 }
 
 /** 목 응답 시나리오. 브라우저 콘솔에서 localStorage.setItem('diegesis-mock', 'empty') 처럼 바꾼다 */
-type Scenario = 'normal' | 'empty' | 'unauthorized' | 'error'
+type Scenario = 'normal' | 'empty' | 'unauthorized' | 'not-allowed' | 'error'
 const SCENARIO_KEY = 'diegesis-mock'
+const SCENARIOS: readonly Scenario[] = ['empty', 'unauthorized', 'not-allowed', 'error']
 
 function scenario(): Scenario {
   const value = localStorage.getItem(SCENARIO_KEY)
-  return value === 'empty' || value === 'unauthorized' || value === 'error' ? value : 'normal'
+  return SCENARIOS.find((s) => s === value) ?? 'normal'
 }
 
 const API = import.meta.env.VITE_API_BASE_URL || '/api'
@@ -52,21 +55,44 @@ function errorResponse(status: number, code: string, message: string) {
   return HttpResponse.json({ code, message }, { status })
 }
 
-/** 시나리오가 에러면 에러 응답, 아니면 undefined */
+const notAuthenticated = () => errorResponse(401, 'NOT_AUTHENTICATED', '로그인이 필요합니다.')
+
+/** 보호된 경로의 관문(BE docs/API.md 2.2절)과 시나리오. 에러면 에러 응답, 아니면 undefined */
 function scenarioError() {
   switch (scenario()) {
     case 'unauthorized':
-      return errorResponse(401, 'NOT_AUTHENTICATED', '로그인이 필요합니다.')
+      return notAuthenticated()
+    case 'not-allowed':
+      return errorResponse(403, 'NOT_ALLOWED', '허용 목록에 없는 계정입니다.')
     case 'error':
       return errorResponse(500, 'INTERNAL_ERROR', '서버에서 문제가 생겼습니다.')
     default:
-      return undefined
+      return isMockLoggedIn() ? undefined : notAuthenticated()
   }
+}
+
+const MOCK_ME: Me = {
+  id: '6f1c2b8e-4a3d-4c1e-9b7a-2d5e8f0a1b3c',
+  email: 'reader@example.com',
+  display_name: '독자',
+  role: 'user',
 }
 
 const notFound = () => errorResponse(404, 'NOT_FOUND', '요청한 책을 찾을 수 없습니다.')
 
 export const handlers = [
+  http.get(`${API}/me`, async () => {
+    await delay(LATENCY_MS)
+    return scenarioError() ?? HttpResponse.json(MOCK_ME)
+  }),
+
+  // 로그아웃은 관문을 거치지 않고 언제나 204다 (BE docs/API.md 4.2절).
+  http.post(`${API}/auth/logout`, async () => {
+    await delay(LATENCY_MS)
+    setMockLoggedIn(false)
+    return new HttpResponse(null, { status: 204 })
+  }),
+
   http.get(`${API}/books`, async () => {
     await delay(LATENCY_MS)
     const error = scenarioError()

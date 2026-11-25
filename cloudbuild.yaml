@@ -1,0 +1,70 @@
+# Diegesis FE 빌드와 배포 (Phase 13, docs/architecture.md 5장).
+# - main push 트리거(fe-main): 빌드 → 올리기 → 배포, production 트래픽을 새 리비전으로
+# - PR 트리거(fe-pr): 같은 빌드 → 올리기 → 트래픽 없이 배포, 주소 태그 pr-<번호>
+# - 로컬 첫 배포: gcloud builds submit --config=cloudbuild.yaml \
+#     --service-account=projects/diegesis-front/serviceAccounts/fe-build@diegesis-front.iam.gserviceaccount.com \
+#     --gcs-source-staging-dir=gs://diegesis-front-build-src/source \
+#     --substitutions=_TAG=$(git rev-parse HEAD) --region=asia-northeast3
+# Cloud Build가 ${...}를 채운다. 셸 변수는 $$로 적는다.
+
+steps:
+  - id: build
+    # gcr.io/cloud-builders/docker (2026-11-19 빌드)
+    name: gcr.io/cloud-builders/docker@sha256:2d89b48c704ddcc4a199dd1cc70c21813fb675227600f19cb77e5bbf368012bc
+    args:
+      - build
+      - --build-arg=VITE_API_MOCK=${_VITE_API_MOCK}
+      - --tag=${_IMAGE}:${_TAG}
+      - .
+
+  - id: push
+    name: gcr.io/cloud-builders/docker@sha256:2d89b48c704ddcc4a199dd1cc70c21813fb675227600f19cb77e5bbf368012bc
+    args: [push, '${_IMAGE}:${_TAG}']
+
+  - id: deploy
+    # gcr.io/cloud-builders/gcloud (2026-11-19 빌드)
+    name: gcr.io/cloud-builders/gcloud@sha256:dc291205504ce8fdb830e55cae4905c7880c7978b03e54b5bcdabe7cab5f8e2e
+    entrypoint: bash
+    args:
+      - -euc
+      - |
+        # PR 빌드면 트래픽 없이 pr-<번호> 태그 주소로만 띄운다.
+        if [ -n "${_PR_NUMBER}" ]; then
+          mode="--no-traffic --tag=pr-${_PR_NUMBER}"
+        else
+          mode=""
+        fi
+        # BE_ORIGIN 같은 환경 변수는 여기서 건드리지 않는다 (gcloud run services update로 넣은 값이 유지된다).
+        gcloud run deploy "${_SERVICE}" \
+          --image="${_IMAGE}:${_TAG}" \
+          --region="${_REGION}" \
+          --service-account="${_RUN_SA}" \
+          --allow-unauthenticated \
+          --port=8080 --cpu=1 --memory=256Mi --concurrency=80 \
+          --min-instances=0 --max-instances=2 \
+          --labels="commit-sha=${_TAG}" \
+          $$mode --quiet
+        # PR 배포(--no-traffic)가 production 트래픽을 그때의 리비전에 고정해 두므로, main 배포는 최신 리비전으로 되돌린다.
+        if [ -z "${_PR_NUMBER}" ]; then
+          gcloud run services update-traffic "${_SERVICE}" --region="${_REGION}" --to-latest --quiet
+        fi
+
+substitutions:
+  # true면 MSW 데모 모드. BE를 붙일 때(E2) 트리거에서 false로 바꾼다.
+  _VITE_API_MOCK: 'true'
+  _REGION: asia-northeast3
+  _SERVICE: diegesis-fe
+  _IMAGE: asia-northeast3-docker.pkg.dev/${PROJECT_ID}/diegesis/fe
+  _RUN_SA: fe-run@${PROJECT_ID}.iam.gserviceaccount.com
+  # 트리거에서는 커밋 SHA. 로컬 제출에는 COMMIT_SHA가 없으므로 --substitutions=_TAG=...로 준다.
+  _TAG: ${COMMIT_SHA}
+
+options:
+  # _IMAGE, _TAG가 ${PROJECT_ID}, ${COMMIT_SHA}를 쓰게 한다.
+  dynamicSubstitutions: true
+  # main 빌드에는 _PR_NUMBER가 없다. 없는 값은 빈 문자열로 둔다.
+  substitutionOption: ALLOW_LOOSE
+  # 전용 서비스 계정으로 빌드할 때는 로그 위치를 정해야 한다. Cloud Logging에만 남긴다.
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: 900s

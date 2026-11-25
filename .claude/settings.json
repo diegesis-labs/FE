@@ -32,6 +32,16 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/confluence-gate.mjs\" check docs/phases/",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -43,6 +53,16 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard.mjs\" lint",
             "timeout": 60,
             "statusMessage": "ESLint 검사 중"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*getConfluenceContent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/confluence-gate.mjs\" record",
+            "timeout": 10
           }
         ]
       }

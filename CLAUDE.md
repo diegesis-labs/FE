@@ -24,6 +24,7 @@ phase 문서 작성 → 승인 → [커밋·푸시] → 구현 → [커밋·푸�
 - 새 phase를 아직 시작하지 않은 phase보다 먼저 해야 하면, 시작 전인 phase들의 번호를 뒤로 미루고(`git mv`) 각 문서의 "변경 기록"에 이유를 적는다. 이미 시작했거나 끝난 phase의 번호는 바꾸지 않는다.
 - 다른 phase가 먼저 끝나야 하면 문서 위쪽에 `선행 phase`를 적는다.
 - 양식: [docs/phases/_template.md](docs/phases/_template.md)를 복사해서 채운다.
+- 쓰기 전에 Confluence Diegesis 스페이스의 최신 회의록을 읽고, 바뀐 결정(API 계약, 일정, 화면 규칙)을 계획에 반영한다. Claude Code는 그 세션에서 Confluence 문서를 읽지 않았으면 phase 문서를 쓸 수 없다(훅). Atlassian 커넥터가 없으면 `.claude/settings.local.json`의 `env`에 `"CONFLUENCE_GATE": "off"`를 넣고, 회의록은 직접 확인한다.
 - 반드시 들어갈 것: 목표, 관련 이슈, 바꿀 범위와 **바꾸지 않을 범위**, FSD 기준 어느 레이어/슬라이스에 무엇을 만들지, 작업 단계, 완료 기준.
 - 다 쓰면 사용자에게 요약을 보여주고 **승인을 받는다.**
 - 승인되면 상태를 `승인됨`으로 바꾸고, **phase 문서만 따로 커밋해서 푸시한 뒤** 구현을 시작한다. 코드 변경을 같은 커밋에 섞지 않는다.
@@ -139,7 +140,7 @@ import { ThemeToggle } from '@/features/theme-toggle/ui/ThemeToggle'
 - 같은 실수를 두 번 고치게 되면, 이 문서에 한 줄을 더하기 전에 lint나 테스트로 만들 수 있는지 먼저 본다.
 - 규칙을 어기는 이유를 주석으로 남기지 않는다. 규칙이 틀렸으면 phase를 열어 규칙을 고친다. 제품 레이어에서는 `eslint-disable` 주석이 동작하지 않는다.
 - ESLint 가드레일을 바꾸면 `scripts/check-guardrails.mjs`의 사례도 같이 고친다.
-- Claude Code에는 `.claude/settings.json`의 훅이 추가로 걸린다: 섞인 커밋·`main` 커밋·squash 머지를 막고, force push·PR 머지·가드레일 설정 수정 전에 사용자 확인을 받고, 고친 `src/` 파일을 바로 ESLint로 검사한다. 훅이 막으면 우회하지 말고 원인을 고친다. 훅을 바꾸면 `scripts/claude-guard.test.mjs`도 같이 고친다.
+- Claude Code에는 `.claude/settings.json`의 훅이 추가로 걸린다: 섞인 커밋·`main` 커밋·squash 머지와 Confluence 회의록을 읽기 전의 phase 문서 쓰기를 막고, force push·PR 머지·가드레일 설정 수정 전에 사용자 확인을 받고, 고친 `src/` 파일을 바로 ESLint로 검사한다. 훅이 막으면 우회하지 말고 원인을 고친다. 훅을 바꾸면 `scripts/claude-guard.test.mjs`·`scripts/confluence-gate.test.mjs`도 같이 고친다.
 
 ## 명령
 

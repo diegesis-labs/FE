@@ -1,12 +1,12 @@
 # Phase 11: phase 문서 작성 전 Confluence 최신 회의록 확인
 
-- 상태: 승인됨
+- 상태: 완료
 - 선행 phase: 없음 ([05 작업 절차 CI 검사](05-process-check.md)의 Claude Code 훅 위에 하나를 더한다)
 - 관련 이슈: [#27 phase 문서 작성 전 Confluence 최신 회의록 확인 훅](https://github.com/diegesis-labs/FE/issues/27)
 - 브랜치: `setup/27-confluence-gate` (`main`의 `85726e2`에서 만듦)
-- 계획 커밋: (승인 후 이 문서만 커밋·푸시한 해시)
-- 구현 커밋: (구현 완료 후 커밋 해시)
-- 리뷰 문서: [11-confluence-gate-review.md](../reviews/11-confluence-gate-review.md) (리뷰 단계에서 작성)
+- 계획 커밋: `ab15672`
+- 구현 커밋: `6f2ec3d`
+- 리뷰 문서: [11-confluence-gate-review.md](../reviews/11-confluence-gate-review.md)
 
 ## 목표
 
@@ -90,17 +90,17 @@ BE API는 쓰지 않는다. Confluence는 Claude의 Atlassian MCP 커넥터로�
 
 ## 작업 단계
 
-- [ ] 1. `.claude/hooks/confluence-gate.mjs` 추가 (개인 설정에서 쓰던 스크립트, 대상 폴더는 `docs/phases/`)
-- [ ] 2. `.claude/settings.json`에 `PreToolUse`(`Edit|Write|MultiEdit|NotebookEdit|Bash`)와 `PostToolUse`(`mcp__.*getConfluenceContent`) 훅 추가
-- [ ] 3. `scripts/confluence-gate.test.mjs` 작성, `pnpm test:scripts` 통과
-- [ ] 4. `.gitignore`에 `.claude/settings.local.json` 추가
-- [ ] 5. `docs/guardrails.md`, CLAUDE.md 갱신
-- [ ] 6. 새 Claude Code 세션에서 실제로 확인: 읽기 전 phase 문서 수정이 막히고, 회의록을 읽은 뒤 통과
+- [x] 1. `.claude/hooks/confluence-gate.mjs` 추가 (개인 설정에서 쓰던 스크립트, 대상 폴더는 `docs/phases/`)
+- [x] 2. `.claude/settings.json`에 `PreToolUse`(`Edit|Write|MultiEdit|NotebookEdit|Bash`)와 `PostToolUse`(`mcp__.*getConfluenceContent`) 훅 추가
+- [x] 3. `scripts/confluence-gate.test.mjs` 작성, `pnpm test:scripts` 통과
+- [x] 4. `.gitignore`에 `.claude/settings.local.json` 추가
+- [x] 5. `docs/guardrails.md`, CLAUDE.md 갱신
+- [x] 6. (일부, 리뷰 3절) 새 Claude Code 세션에서 실제로 확인: 읽기 전 phase 문서 수정이 막히고, 회의록을 읽은 뒤 통과
 
 ## 완료 기준
 
-- [ ] `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`가 통과한다.
-- [ ] 테스트가 다음 사례를 확인한다.
+- [x] `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`가 통과한다.
+- [x] 테스트가 다음 사례를 확인한다.
   - 읽은 기록 없이 `docs/phases/NN-x.md`를 Edit·Write하면 막힘
   - `_template.md`, `docs/reviews/`, `src/` 수정은 통과
   - Bash로 쓰면 막힘: `cat >`, `sed -i`, `git mv`
@@ -109,9 +109,9 @@ BE API는 쓰지 않는다. Confluence는 Claude의 Atlassian MCP 커넥터로�
   - 다른 세션이면 막힘
   - 12시간이 지난 기록이면 막힘
   - `CONFLUENCE_GATE=off`면 통과
-- [ ] 막는 메시지에 어디서 무엇을 읽을지(스페이스, 검색 방법)가 들어 있다.
-- [ ] 기존 `guard.mjs` 훅과 권한 규칙이 그대로다 (`scripts/claude-guard.test.mjs` 통과).
-- [ ] 새 세션에서 실제로 막히고 풀리는 것을 확인했다 (작업 단계 6).
+- [x] 막는 메시지에 어디서 무엇을 읽을지(스페이스, 검색 방법)가 들어 있다.
+- [x] 기존 `guard.mjs` 훅과 권한 규칙이 그대로다 (`scripts/claude-guard.test.mjs` 통과).
+- [x] 새 세션에서 실제로 막히고 풀리는 것을 확인했다 (작업 단계 6). 일부: 개인 설정으로 이 세션에서 확인, FE 설정의 새 세션은 머지 후 (리뷰 3절)
 
 ## 위험과 열린 질문
 
@@ -123,3 +123,4 @@ BE API는 쓰지 않는다. Confluence는 Claude의 Atlassian MCP 커넥터로�
 ## 변경 기록
 
 - 2026-11-25: 작성, 승인
+- 2026-11-25: 구현(`6f2ec3d`), 리뷰 통과. 완료 기준 5의 FE 설정 새 세션 확인은 머지 후로 남김

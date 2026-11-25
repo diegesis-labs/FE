@@ -1,11 +1,13 @@
-import type { CSSProperties, TransitionEvent } from 'react'
+import type { TransitionEvent } from 'react'
 
 import { cn } from '@/shared/lib/utils'
 import { ErrorState } from '@/shared/ui/error-state'
 
+import { columnTrackStyle } from '../lib/geometry'
 import type { Reader } from '../model/use-reader'
 import { useSwipe } from '../model/use-swipe'
 import { ChapterBody, ChapterBodySkeleton } from './ChapterBody'
+import { NeighborView } from './NeighborView'
 
 // 쪽을 넘길 때의 미끄러짐 (design-system 5장 "이동" 300ms ease-in-out). 움직임 줄이기 설정이면 없음.
 const SLIDE_TRANSITION =
@@ -13,36 +15,35 @@ const SLIDE_TRANSITION =
 // 끌기를 놓은 뒤 제자리·새 쪽으로 돌아갈 때 (use-swipe가 data-settling을 붙임)
 const SETTLE_TRANSITION =
   'data-[settling=true]:motion-safe:transition-transform data-[settling=true]:motion-safe:duration-300 data-[settling=true]:motion-safe:ease-in-out'
-// Tailwind가 찾을 수 있게 클래스 이름을 통째로 적는다 (조립하면 CSS가 만들어지지 않음).
-const ENTER_FROM = {
-  1: 'motion-safe:slide-in-from-right',
-  [-1]: 'motion-safe:slide-in-from-left',
-} as const
 
 /**
  * 본문 무대. 본문 띠는 CSS 다단으로 쪽(단) 너비만큼씩 오른쪽으로 이어지고,
- * 보이는 영역(viewport)이 한 쪽 또는 두 쪽만 잘라 보여 준다. 쪽을 넘기면 띠가 옆으로 미끄러진다.
+ * 보이는 영역(viewport)이 한 쪽 또는 두 쪽만 잘라 보여 준다. 쪽을 넘기면 틀이 옆으로 미끄러진다.
+ * 챕터의 첫·마지막 화면에서는 이웃 챕터의 맞닿은 화면이 틀 안 띠 옆에 있어서, 챕터 경계도 같은 미끄러짐으로 넘어간다.
  */
 export function PageStage({ reader }: { reader: Reader }) {
   const {
     stageRef,
     geometry,
+    fontsVersion,
     chapter,
     position,
     measureRef,
-    trackRef,
+    slideRef,
     layout,
     range,
     offset,
     animate,
-    transition,
+    neighbors,
+    viewCount,
+    viewStride,
     canPrev,
     canNext,
     turn,
     onSlideEnd,
   } = reader
   const swipe = useSwipe({
-    trackRef,
+    trackRef: slideRef,
     viewportWidth: geometry.viewportWidth,
     canPrev,
     canNext,
@@ -54,17 +55,6 @@ export function PageStage({ reader }: { reader: Reader }) {
     delete event.currentTarget.dataset.settling
     onSlideEnd()
   }
-
-  const trackStyle = {
-    width: geometry.pageWidth,
-    height: geometry.pageHeight,
-    columnWidth: geometry.pageWidth,
-    columnGap: geometry.gap,
-    columnFill: 'auto',
-    transform: `translateX(calc(${-offset}px + var(--drag-dx, 0px)))`,
-  } satisfies CSSProperties
-
-  const entering = transition?.phase === 'entering' ? transition.dir : null
 
   return (
     <div
@@ -88,27 +78,44 @@ export function PageStage({ reader }: { reader: Reader }) {
           ) : chapter.isError ? (
             <ErrorState error={chapter.error} onRetry={() => void chapter.refetch()} />
           ) : (
+            // 챕터가 바뀌면 틀을 새로 만든다. 그래야 새 챕터가 미끄러짐 없이 제자리에 놓인다.
             <div
               key={chapter.data.chapter_no}
-              className={
-                entering
-                  ? `h-full motion-safe:animate-in motion-safe:duration-300 motion-safe:ease-in-out ${ENTER_FROM[entering]}`
-                  : 'h-full'
-              }
+              ref={slideRef}
+              onTransitionEnd={onTransitionEnd}
+              className={cn('relative', SETTLE_TRANSITION, animate && SLIDE_TRANSITION)}
+              style={{
+                width: geometry.viewportWidth,
+                height: geometry.pageHeight,
+                transform: `translateX(calc(${-offset}px + var(--drag-dx, 0px)))`,
+              }}
             >
+              {neighbors.prev && (
+                <NeighborView
+                  chapter={neighbors.prev}
+                  geometry={geometry}
+                  fontsVersion={fontsVersion}
+                  edge="last"
+                  left={-viewStride}
+                />
+              )}
               <div
                 ref={measureRef}
-                style={trackStyle}
-                onTransitionEnd={onTransitionEnd}
-                className={cn(
-                  SETTLE_TRANSITION,
-                  animate && SLIDE_TRANSITION,
-                  !layout && 'invisible',
-                )}
+                style={columnTrackStyle(geometry)}
+                className={cn(!layout && 'invisible')}
               >
                 <h2 className="mb-8 font-display text-2xl leading-snug">{chapter.data.title}</h2>
                 <ChapterBody chapter={chapter.data} />
               </div>
+              {neighbors.next && (
+                <NeighborView
+                  chapter={neighbors.next}
+                  geometry={geometry}
+                  fontsVersion={fontsVersion}
+                  edge="first"
+                  left={viewCount * viewStride}
+                />
+              )}
             </div>
           )}
         </div>

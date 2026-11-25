@@ -1,12 +1,12 @@
 # Phase 12: 로그인 화면과 401·403 처리
 
-- 상태: 승인됨
+- 상태: 리뷰 중
 - 선행 phase: 없음 (11 Confluence 확인 훅과 파일이 겹치지 않는다)
 - 관련 이슈: [#28 로그인 화면과 401·403 처리](https://github.com/diegesis-labs/FE/issues/28)
 - 짝 BE Epic: [diegesis-labs/BE#9 로그인과 허용 목록](https://github.com/diegesis-labs/BE/issues/9) (계약 PR [diegesis-labs/BE#10](https://github.com/diegesis-labs/BE/pull/10))
 - 브랜치: `feat/28-login` (`main`의 `85726e2`에서 만듦)
 - 계획 커밋: `5f6a8e8`
-- 구현 커밋:
+- 구현 커밋: `ebc01c2`
 - 리뷰 문서: [12-login-review.md](../reviews/12-login-review.md) (리뷰 단계에서 작성)
 
 ## 목표
@@ -126,15 +126,15 @@ BE `docs/API.md` 기준이다 (BE#10 머지 전이므로 그 브랜치의 문서
 
 ## 작업 단계
 
-- [ ] 1. `entities/user`: `Me` 타입, `meQuery`, 쿼리 키
-- [ ] 2. `shared/api`: `describeError`의 403 분기, 로그인 시작 주소
-- [ ] 3. `app/mocks`: `/me`, `/auth/logout` 핸들러, 목 로그인 상태, `not-allowed` 시나리오
-- [ ] 4. `app`: 401·403을 어디로 보낼지 정하는 함수와 이동, 쿼리 캐시 `onError`
-- [ ] 5. `pages/login`: 로그인 화면
-- [ ] 6. `app/router`: `/login`, 보호된 라우트의 loader, 목 전용 `/login/mock`
-- [ ] 7. `features/logout`과 헤더의 로그아웃 버튼
-- [ ] 8. `docs/architecture.md` 3장, `.env.example` 고치기
-- [ ] 9. `pnpm lint`, `pnpm typecheck`, `pnpm build`, 목 시나리오로 화면 확인
+- [x] 1. `entities/user`: `Me` 타입, `meQuery`, 쿼리 키
+- [x] 2. `shared/api`: `describeError`의 403 분기, 로그인 시작 주소
+- [x] 3. `app/mocks`: `/me`, `/auth/logout` 핸들러, 목 로그인 상태, `not-allowed` 시나리오
+- [x] 4. `app`: 401·403을 어디로 보낼지 정하는 함수와 이동, 쿼리 캐시 `onError`
+- [x] 5. `pages/login`: 로그인 화면
+- [x] 6. `app/router`: `/login`, 보호된 라우트의 loader, 목 전용 `/login/mock`
+- [x] 7. `features/logout`과 헤더의 로그아웃 버튼
+- [x] 8. `docs/architecture.md` 3장, `.env.example` 고치기
+- [x] 9. `pnpm lint`, `pnpm typecheck`, `pnpm build`, 목 시나리오로 화면 확인
 
 ## 완료 기준
 
@@ -160,4 +160,5 @@ BE `docs/API.md` 기준이다 (BE#10 머지 전이므로 그 브랜치의 문서
 ## 변경 기록
 
 - 2026-11-25: 작성
-- 2026-11-25: 계획 변경. 목으로 확인하다가, 로그인한 상태로 `/login?error=LOGIN_FAILED`에 오면 안내 없이 첫 화면으로 가는 것을 발견했다. 이미 로그인한 사람이 다른 계정으로 로그인하다 실패하는 경우다. `?error=`가 있으면 첫 화면으로 보내지 않기로 바꿨다.
+- 2026-11-25: 계획 변경 (`2743680`). 목으로 확인하다가, 로그인한 상태로 `/login?error=LOGIN_FAILED`에 오면 안내 없이 첫 화면으로 가는 것을 발견했다. 이미 로그인한 사람이 다른 계정으로 로그인하다 실패하는 경우다. `?error=`가 있으면 첫 화면으로 보내지 않기로 바꿨다.
+- 2026-11-25: 구현 완료 (`ebc01c2`). 계획과 다른 점: loader의 이동을 모두 `replace`로 했다. 목으로 확인하다가, `redirect`(push)면 목 로그인 경로(`/login/mock`)가 기록에 남아 로그아웃 뒤 뒤로 가기로 다시 로그인되고, 보호된 화면에서 `/login`으로 간 뒤 뒤로 가기를 하면 같은 이동을 되풀이하는 것을 발견했다. 첫 화면의 loader가 끝나기 전에 보일 `AppLoading`(빈 바탕)을 더했다.

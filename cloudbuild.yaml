@@ -37,11 +37,11 @@ steps:
           mode=""
         fi
         # BE_ORIGIN 같은 환경 변수는 여기서 건드리지 않는다 (gcloud run services update로 넣은 값이 유지된다).
+        # 공개 설정(allUsers의 run.invoker)도 넣지 않는다. 소유자가 한 번 걸어 두었고, 빌드 계정은 IAM을 바꿀 수 없다.
         gcloud run deploy "${_SERVICE}" \
           --image="${_IMAGE}:${_TAG}" \
           --region="${_REGION}" \
           --service-account="${_RUN_SA}" \
-          --allow-unauthenticated \
           --port=8080 --cpu=1 --memory=256Mi --concurrency=80 \
           --min-instances=0 --max-instances=2 \
           --labels="commit-sha=${_TAG}" \

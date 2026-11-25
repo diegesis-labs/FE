@@ -1,5 +1,5 @@
 # Diegesis FE 빌드와 배포 (Phase 15, docs/architecture.md 5장).
-# - main push 트리거(fe-main): 빌드 → 올리기 → 배포, production 트래픽을 새 리비전으로
+# - main push 트리거(fe-main): 빌드 → 올리기 → 배포, production 트래픽을 이 빌드의 리비전으로
 # - PR 트리거(fe-pr): 같은 빌드 → 올리기 → 트래픽 없이 배포, 주소 태그 pr-<번호>
 # - 로컬 첫 배포: gcloud builds submit --config=cloudbuild.yaml \
 #     --service-account=projects/diegesis-front/serviceAccounts/fe-build@diegesis-front.iam.gserviceaccount.com \
@@ -30,11 +30,21 @@ steps:
     args:
       - -euc
       - |
-        # PR 빌드면 트래픽 없이 pr-<번호> 태그 주소로만 띄운다.
+        # 리비전 이름을 빌드마다 정한다: <서비스>-<커밋 7자리>-<빌드 ID 6자리>.
+        # main 배포는 "가장 최근 리비전"이 아니라 이 이름으로 트래픽을 옮긴다. 그 사이에 PR 빌드가
+        # 리비전을 만들어도 production이 PR 코드로 바뀌지 않는다.
+        tag="${_TAG}"
+        build="${BUILD_ID}"
+        suffix="$${tag:0:7}-$${build:0:6}"
+        # 새로 띄우는 리비전은 언제나 트래픽 없이 만든다. 서비스가 아직 없을 때만(첫 배포) 예외다.
+        traffic="--no-traffic"
+        if ! gcloud run services describe "${_SERVICE}" --region="${_REGION}" >/dev/null 2>&1; then
+          traffic=""
+        fi
+        # PR 빌드면 pr-<번호> 태그 주소를 붙인다.
+        tags=""
         if [ -n "${_PR_NUMBER}" ]; then
-          mode="--no-traffic --tag=pr-${_PR_NUMBER}"
-        else
-          mode=""
+          tags="--tag=pr-${_PR_NUMBER}"
         fi
         # BE_ORIGIN 같은 환경 변수는 여기서 건드리지 않는다 (gcloud run services update로 넣은 값이 유지된다).
         # 공개 설정(allUsers의 run.invoker)도 넣지 않는다. 소유자가 한 번 걸어 두었고, 빌드 계정은 IAM을 바꿀 수 없다.
@@ -42,13 +52,15 @@ steps:
           --image="${_IMAGE}:${_TAG}" \
           --region="${_REGION}" \
           --service-account="${_RUN_SA}" \
+          --revision-suffix="$$suffix" \
           --port=8080 --cpu=1 --memory=256Mi --concurrency=80 \
           --min-instances=0 --max-instances=2 \
           --labels="commit-sha=${_TAG}" \
-          $$mode --quiet
-        # PR 배포(--no-traffic)가 production 트래픽을 그때의 리비전에 고정해 두므로, main 배포는 최신 리비전으로 되돌린다.
+          $$traffic $$tags --quiet
+        # main 빌드만 production 트래픽 100%를 방금 만든 리비전으로 옮긴다.
         if [ -z "${_PR_NUMBER}" ]; then
-          gcloud run services update-traffic "${_SERVICE}" --region="${_REGION}" --to-latest --quiet
+          gcloud run services update-traffic "${_SERVICE}" --region="${_REGION}" \
+            --to-revisions="${_SERVICE}-$$suffix=100" --quiet
         fi
 
 substitutions:

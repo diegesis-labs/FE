@@ -188,10 +188,11 @@ GCP Cloud Run에 nginx 컨테이너로 올린다. 도메인은 사지 않고 Clo
 
 `cloudbuild.yaml`이 빌드 → 이미지 올리기 → Cloud Run 배포를 한다. 트리거는 `fe-build` 서비스 계정으로 돈다.
 
-- **`main`에 머지**: `fe-main`이 머지 커밋을 빌드해서 production 트래픽 100%를 새 리비전으로 옮긴다.
+- **`main`에 머지**: `fe-main`이 머지 커밋을 빌드해서 트래픽 없이 리비전을 만들고, production 트래픽 100%를 그 리비전으로 옮긴다. 리비전 이름은 `diegesis-fe-<커밋 7자리>-<빌드 ID 6자리>`다.
 - **PR**: `fe-pr`이 같은 빌드를 트래픽 없이 배포하고 `pr-<번호>` 태그를 붙인다. 주소: `https://pr-<번호>---diegesis-fe-872555598631.asia-northeast3.run.app`. 조직 밖 사람의 PR은 `/gcbrun` 댓글 승인 뒤에만 돈다.
   - PR 미리보기는 공개 주소다 (Vercel Preview와 달리 로그인 보호가 없다).
-  - PR을 트래픽 없이 배포하면 Cloud Run이 production 트래픽을 그때의 리비전에 고정한다. 그래서 `main` 배포는 배포 뒤 `--to-latest`로 최신 리비전에 트래픽을 되돌린다.
+  - 트래픽은 "가장 최근 리비전"이 아니라 이름으로 옮긴다. `main` 배포 도중에 PR 빌드가 리비전을 만들어도 production이 PR 코드로 바뀌지 않는다.
+  - PR 빌드는 PR 브랜치의 `cloudbuild.yaml`로 돌고 `fe-build` 권한을 쓴다. 그래서 PR 코드가 production 서비스의 설정이나 트래픽을 바꿀 수 있다. 조직 밖 사람의 PR에 `/gcbrun`을 달기 전에 `cloudbuild.yaml`과 `Dockerfile`의 변경을 먼저 읽는다.
 - **빌드 시점 값**: `VITE_API_MOCK`은 트리거의 대체 변수 `_VITE_API_MOCK`(지금 `true`, 데모 모드)이다.
 - **실행 시점 값**: `BE_ORIGIN`은 Cloud Run 서비스의 환경 변수다. 배포가 이 값을 지우지 않는다.
 - **CI와의 관계**: GitHub Actions에는 배포 비밀값이 없다. Cloud Build의 결과는 PR에 `fe-pr (diegesis-front)`로 보이지만 필수 검사가 아니다 (필수는 `check` 하나).
@@ -215,7 +216,7 @@ gcloud run revisions list --service=diegesis-fe --region=asia-northeast3
 gcloud run services update-traffic diegesis-fe --region=asia-northeast3 --to-revisions=<리비전 이름>=100
 ```
 
-다음 `main` 머지 때 `fe-main`이 다시 최신 리비전으로 옮긴다. 그 전에 원인을 고친다.
+다음 `main` 머지 때 `fe-main`이 그 빌드의 리비전으로 트래픽을 옮긴다. 그 전에 원인을 고친다.
 
 ### PR 미리보기 정리
 

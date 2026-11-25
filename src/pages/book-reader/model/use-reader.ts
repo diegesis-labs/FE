@@ -23,12 +23,17 @@ type Destination = { chapterNo: number; anchor: number }
  * 슬라이드가 끝나면(transitionend) 챕터를 바꾼다. 새 챕터는 같은 자리에 그려지므로 따로 들어오는 움직임이 없다.
  * `at`은 이 슬라이드가 유효한 위치다. 그 사이 뒤로 가기 등으로 위치가 바뀌면 슬라이드는 없던 것으로 본다
  * (밀려 나가던 띠가 사라져 transitionend가 오지 않으면 leaving에 갇히기 때문).
+ * 슬라이드가 끝난 뒤에도 URL이 실제로 바뀔 때까지 지우지 않는다. URL 변경은 다른 상태보다 늦게 반영될 수 있어서,
+ * 먼저 지우면 바뀌기 직전 한두 프레임 동안 옛 챕터의 원래 화면이 다시 보인다.
+ * `fromView`는 넘기기 시작한 화면 번호다. 그동안 지금 화면을 이 번호로 고정해서, 넘긴 쪽(`turned`)을 지워도
+ * 틀과 이웃 화면이 움직이지 않는다.
  */
 export type ChapterTransition = {
   phase: 'leaving'
   at: string
   dir: Direction
   destination: Destination
+  fromView: number
 } | null
 
 const positionKey = (chapterNo: number, anchor: number) => `${chapterNo}:${anchor}`
@@ -73,6 +78,9 @@ export function useReader(book: BookDetail) {
   const [savedTransition, setTransition] = useState<ChapterTransition>(null)
   const currentKey = position ? positionKey(position.chapterNo, position.anchor) : null
   const transition = savedTransition?.at === currentKey ? savedTransition : null
+  // 위치가 슬라이드를 시작한 자리에서 벗어나면 슬라이드 상태를 버린다 (렌더 중에 고치는 파생 상태).
+  // 남겨 두면 나중에 뒤로 가기로 같은 자리에 돌아왔을 때 끝난 슬라이드가 다시 살아난다.
+  if (savedTransition && !transition) setTransition(null)
 
   const perView = geometry.pagesPerView
   let page = 0
@@ -82,7 +90,7 @@ export function useReader(book: BookDetail) {
         ? turned.page
         : pageForAnchor(layout, position.anchor, position.atEnd)
   }
-  const view = Math.floor(page / perView)
+  const view = transition ? transition.fromView : Math.floor(page / perView)
   const firstPage = view * perView
   const viewCount = layout ? Math.ceil(layout.pageCount / perView) : 0
   const range = layout ? visibleRange(layout, firstPage, perView) : null
@@ -111,11 +119,9 @@ export function useReader(book: BookDetail) {
         : undefined,
   }
 
-  const enterChapter = (destination: Destination) => {
+  /** 위치를 다른 챕터로 바꾼다. 넘긴 쪽과 슬라이드 상태는 부르는 쪽에서 정리한다 */
+  const enterChapter = (destination: Destination) =>
     setSearchParams(positionParams(destination.chapterNo, destination.anchor))
-    setTurned(null)
-    setTransition(null)
-  }
 
   /** 한 화면(한 쪽 또는 두 쪽) 넘긴다. 챕터 끝이면 이웃 챕터로 */
   const turn = (dir: Direction) => {
@@ -138,11 +144,17 @@ export function useReader(book: BookDetail) {
       // 이전 챕터로 갈 때는 마지막 문장을 기준으로 삼아 마지막 쪽이 보이게 한다.
       anchor: dir > 0 ? neighbor.first_sentence : neighbor.last_sentence,
     }
+    // 넘긴 쪽은 여기서 지운다. 다른 챕터에서 돌아왔을 때(뒤로 가기) 같은 기준 문장이면 남은 값이
+    // "사용자가 넘긴 쪽"으로 잘못 쓰여 미끄러짐이 생긴다. 슬라이드 동안 화면은 fromView로 고정된다.
+    setTurned(null)
     if (reducedMotion) enterChapter(destination)
-    else setTransition({ phase: 'leaving', at: currentKey, dir, destination })
+    else setTransition({ phase: 'leaving', at: currentKey, dir, destination, fromView: view })
   }
 
-  /** 띠의 슬라이드가 끝났을 때. 챕터 경계를 넘는 중이었다면 이제 챕터를 바꾼다 */
+  /**
+   * 띠의 슬라이드가 끝났을 때. 챕터 경계를 넘는 중이었다면 이제 챕터를 바꾼다.
+   * 슬라이드 상태는 지우지 않는다. URL이 바뀌면 `at`이 맞지 않아 저절로 없어진다.
+   */
   const onSlideEnd = () => {
     if (transition?.phase === 'leaving') enterChapter(transition.destination)
   }
@@ -150,7 +162,10 @@ export function useReader(book: BookDetail) {
   /** 목차에서 챕터로 바로 간다 (첫 쪽) */
   const goToChapter = (chapterNo: number) => {
     const meta = book.chapters.find((c) => c.chapter_no === chapterNo)
-    if (meta) enterChapter({ chapterNo, anchor: meta.first_sentence })
+    if (!meta) return
+    setTurned(null)
+    setTransition(null)
+    enterChapter({ chapterNo, anchor: meta.first_sentence })
   }
 
   return {

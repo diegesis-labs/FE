@@ -144,6 +144,28 @@ describe('검사 4: phase 승인이 코드보다 먼저', () => {
     assert.match(error, /아직 승인되지 않았습니다/)
   })
 
+  test('통과: 코드 커밋 시점에는 예전 이름이었던 문서 (번호를 옮김)', () => {
+    const oldPath = 'docs/phases/04-x.md'
+    const readAt = (sha, path) =>
+      path === oldPath && sha === '2'.repeat(40) ? '# Phase\n\n- 상태: 승인됨\n' : null
+    assert.deepEqual(
+      checkPhaseBeforeCode({ commits, phasePath, readAt, pastPathsOf: () => [oldPath] }),
+      [],
+    )
+  })
+
+  test('실패: 예전 이름으로도 코드 커밋 시점에 상태가 계획', () => {
+    const oldPath = 'docs/phases/04-x.md'
+    const readAt = (sha, path) => (path === oldPath ? '# Phase\n\n- 상태: 계획\n' : null)
+    const [error] = checkPhaseBeforeCode({
+      commits,
+      phasePath,
+      readAt,
+      pastPathsOf: () => [oldPath],
+    })
+    assert.match(error, /아직 승인되지 않았습니다/)
+  })
+
   test('실패: 코드 커밋 시점에 phase 문서가 없음', () => {
     const [error] = checkPhaseBeforeCode({ commits, phasePath, readAt: () => null })
     assert.match(error, /없거나/)

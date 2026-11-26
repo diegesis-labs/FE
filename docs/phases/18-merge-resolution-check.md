@@ -82,7 +82,7 @@ function collectCommits(base, head) { ... }
 - [x] 2. 지난 머지 PR 전부를 실제 커밋 범위로 돌려 위 표와 같은지 본다.
 - [x] 3. CLAUDE.md, guardrails.md, 17 리뷰 문서를 고친다.
 - [x] 4. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`를 통과시킨다.
-- [ ] 5. 이 PR을 draft로 열어 CI가 통과하는지 본다.
+- [x] 5. 이 PR을 draft로 열어 CI가 통과하는지 본다.
 
 ## 완료 기준
 
@@ -105,3 +105,4 @@ function collectCommits(base, head) { ... }
 - 2026-11-26: 작성. 17 리뷰 발견 사항 1 (충돌을 푼 `main` 머지를 검사 6이 보지 않음)을 phase로 열기로 함 (사용자 결정)
 - 2026-11-26: 사용자 승인. 이슈 #43, 브랜치 `setup/43-merge-resolution-check`
 - 2026-11-26: 단계 1~4 완료 (구현 `013d6c5`). 지난 PR 대 보기는 표와 같았다. 범위 6(phase 17 머지 뒤 기록)도 함께 커밋. 계획 변경은 없음
+- 2026-11-26: 단계 5 완료. PR #44를 draft로 열어 CI `check`·`fe-pr` 통과. CI의 git은 2.56.1 (ubuntu-26.04)

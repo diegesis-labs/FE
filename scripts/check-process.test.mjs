@@ -11,6 +11,7 @@ import {
   checkPhaseBeforeCode,
   checkPlanDocSeparation,
   checkPrBody,
+  checkReviewAfterChanges,
   isCodeFile,
   parseExemption,
   runChecks,
@@ -246,6 +247,58 @@ describe('검사 5: PR 설명', () => {
   })
 })
 
+describe('검사 6: 리뷰가 마지막 변경 뒤에', () => {
+  const reviewPath = 'docs/reviews/16-x-review.md'
+  const sha = (n) => String(n).repeat(40)
+  const plan = commit('docs(phase): 16 x', ['docs/phases/16-x.md'], sha(1))
+  const code = commit('feat: x', ['src/a.ts', 'docs/architecture.md'], sha(2))
+  const reviewPlan = commit('docs(review): 16 리뷰 계획', [reviewPath], sha(3))
+  const reviewResult = commit(
+    'docs(review): 16 리뷰 결과',
+    [reviewPath, 'docs/phases/16-x.md'],
+    sha(4),
+  )
+  const check = (commits) => checkReviewAfterChanges({ commits, reviewPath })
+
+  test('통과: PR #40 모양 (구현 뒤 리뷰 계획·결과)', () =>
+    assert.deepEqual(check([plan, code, reviewPlan, reviewResult]), []))
+
+  test('통과: 리뷰 반영 뒤 리뷰 결과 (PR #37 모양)', () => {
+    const fix = commit('fix: 16 리뷰 반영', ['src/a.ts'], sha(5))
+    assert.deepEqual(check([plan, code, reviewPlan, fix, reviewResult]), [])
+  })
+
+  test('통과: 리뷰 뒤에 phase 문서만 고침', () => {
+    const phaseOnly = commit('docs(phase): 16 완료', ['docs/phases/16-x.md'], sha(6))
+    assert.deepEqual(check([plan, code, reviewPlan, reviewResult, phaseOnly]), [])
+  })
+
+  test('실패: 리뷰 문서를 이 PR에서 안 바꿈 (PR #38 모양)', () => {
+    const errors = check([code, commit('docs(phase): 15 갱신', ['docs/phases/15-x.md'], sha(7))])
+    assert.equal(errors.length, 1)
+    assert.match(errors[0], /16-x-review\.md`가 이 PR에서 바뀌지 않았습니다/)
+  })
+
+  test('실패: 다른 리뷰 문서만 바꿈', () => {
+    const other = commit('docs(review): 15 갱신', ['docs/reviews/15-y-review.md'], sha(8))
+    assert.match(check([code, other])[0], /바뀌지 않았습니다/)
+  })
+
+  test('실패: 리뷰 결과 뒤에 코드를 고침', () => {
+    const late = commit('fix: x', ['src/b.ts'], sha(9))
+    const errors = check([plan, code, reviewPlan, reviewResult, late])
+    assert.equal(errors.length, 1)
+    assert.match(errors[0], /`9999999` 이후의 변경이 `docs\/reviews\/16-x-review\.md`에 기록되지/)
+  })
+
+  test('실패: 리뷰 뒤에 계획·리뷰 문서 밖의 문서를 고침', () => {
+    const late = commit('docs: x', ['docs/architecture.md'], sha(9))
+    assert.equal(check([code, reviewResult, late]).length, 1)
+  })
+
+  test('통과: 코드 없이 리뷰 문서만 바꾼 PR', () => assert.deepEqual(check([reviewResult]), []))
+})
+
 describe('예외 줄 해석', () => {
   test('여러 구분자', () => {
     assert.deepEqual(parseExemption('- Phase: 없음 — 오타'), { exempt: true, reason: '오타' })
@@ -268,13 +321,51 @@ describe('runChecks', () => {
   }
   const failed = ({ results }) => results.filter((r) => r.errors.length).map((r) => r.name)
 
-  test('PR 설명이 없으면(로컬) 검사 5를 건너뛰고 브랜치로 phase를 찾는다', () => {
+  test('PR 설명이 없으면(로컬) 검사 5·6을 건너뛰고 브랜치로 phase를 찾는다', () => {
     const out = runChecks({ ...base, pr: null })
     assert.deepEqual(
       out.results.map((r) => r.name[0]),
       ['1', '2', '3', '4'],
     )
     assert.deepEqual(failed(out), [])
+  })
+
+  const BODY = '- Refs #3\n- Phase: `docs/phases/05-x.md`\n- 리뷰: `docs/reviews/05-x-review.md`'
+
+  test('draft가 아닌 PR은 검사 6까지 한다', () => {
+    const out = runChecks({
+      ...base,
+      commits: [
+        commit('feat: x', ['src/a.ts']),
+        commit('docs(review): 05 리뷰 결과', ['docs/reviews/05-x-review.md']),
+      ],
+      pr: { body: BODY, draft: false, author: 'someone' },
+    })
+    assert.deepEqual(
+      out.results.map((r) => r.name[0]),
+      ['1', '2', '3', '4', '5', '6'],
+    )
+    assert.deepEqual(failed(out), [])
+  })
+
+  test('실패: 리뷰 문서를 안 바꾼 PR (PR #38 모양)', () => {
+    const out = runChecks({ ...base, pr: { body: BODY, draft: false, author: 'someone' } })
+    assert.deepEqual(failed(out), ['6. 리뷰가 마지막 변경 뒤에'])
+  })
+
+  test('draft PR은 검사 6을 건너뛴다', () => {
+    const out = runChecks({ ...base, pr: { body: BODY, draft: true, author: 'someone' } })
+    assert.ok(!out.results.some((r) => r.name.startsWith('6')))
+    assert.match(out.notes.join('\n'), /draft PR이라 검사 6을 건너뜁니다/)
+  })
+
+  test('리뷰 문서가 브랜치에 없으면 검사 5만 실패한다', () => {
+    const out = runChecks({
+      ...base,
+      exists: (path) => !path.startsWith('docs/reviews/'),
+      pr: { body: BODY, draft: false, author: 'someone' },
+    })
+    assert.deepEqual(failed(out), ['5. PR 설명'])
   })
 
   test('Dependabot PR은 검사 1만 한다', () => {
@@ -298,7 +389,7 @@ describe('runChecks', () => {
       pr: { body: '- Refs #3\n- Phase: 없음 — 설정값 한 줄', draft: false, author: 'someone' },
     })
     assert.deepEqual(failed(out), [])
-    assert.ok(!out.results.some((r) => r.name.startsWith('4')))
+    assert.ok(!out.results.some((r) => r.name.startsWith('4') || r.name.startsWith('6')))
     assert.match(out.notes.join('\n'), /phase 없이 머지되는 PR입니다: 설정값 한 줄/)
   })
 

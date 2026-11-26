@@ -1,5 +1,5 @@
 // 작업 절차 검사: CLAUDE.md "작업 순서"와 "Git" 규칙 중 PR에서 기계로 확인할 수 있는 것.
-// 규칙과 설계: docs/phases/05-process-check.md
+// 규칙과 설계: docs/phases/05-process-check.md, 검사 6은 docs/phases/17-review-after-change-check.md
 //
 //   CI:   node scripts/check-process.mjs --event "$GITHUB_EVENT_PATH"
 //   로컬: pnpm check:process [--base origin/main] [--body-file pr.md] [--draft]
@@ -109,6 +109,9 @@ export function parseExemption(body) {
 /** PR 설명이 가리키는 phase 문서 경로 */
 export const phaseLinkOf = (body) => body?.match(PHASE_LINK_RE)?.[0] ?? null
 
+/** PR 설명이 가리키는 리뷰 문서 경로 */
+export const reviewLinkOf = (body) => body?.match(REVIEW_LINK_RE)?.[0] ?? null
+
 /** 검사 5: PR 설명에 이슈, phase 문서, (draft가 아니면) 리뷰 문서 링크가 있다. exists(path)는 head에 파일이 있는지 */
 export function checkPrBody({ body, draft, exists }) {
   const errors = []
@@ -131,7 +134,7 @@ export function checkPrBody({ body, draft, exists }) {
     errors.push(`PR 설명의 \`${phase}\`가 이 브랜치에 없습니다.`)
   }
   if (!draft) {
-    const review = body.match(REVIEW_LINK_RE)?.[0]
+    const review = reviewLinkOf(body)
     if (!review) {
       errors.push(
         'PR 설명에 리뷰 문서(`docs/reviews/NN-이름-review.md`)가 없습니다. 리뷰 전이면 draft PR로 두세요.',
@@ -144,7 +147,30 @@ export function checkPrBody({ body, draft, exists }) {
 }
 
 /**
- * 다섯 검사를 묶어 실행한다. pr이 null이면(로컬, PR 설명 없음) 검사 5를 건너뛰고,
+ * 검사 6: PR이 링크한 리뷰 문서가 이 PR에서 바뀌었고, 마지막 변경(계획·리뷰 문서 밖)보다 뒤에 바뀌었다.
+ * 이미 끝난 리뷰 문서를 링크해서 리뷰 없이 머지하는 것을 막는다 (docs/phases/17-review-after-change-check.md).
+ * commits는 오래된 것부터(머지 커밋 제외). reviewPath는 PR 설명의 리뷰 문서 경로.
+ */
+export function checkReviewAfterChanges({ commits, reviewPath }) {
+  const reviewAt = commits.findLastIndex((c) => c.files.includes(reviewPath))
+  if (reviewAt === -1) {
+    return [
+      `\`${reviewPath}\`가 이 PR에서 바뀌지 않았습니다. 이 PR의 리뷰 계획과 결과를 적으세요. ` +
+        `이미 끝난 리뷰 문서를 쓰면 이 PR의 절을 더하세요.`,
+    ]
+  }
+  const changeAt = commits.findLastIndex((c) => c.files.some((f) => !PLAN_DOC_RE.test(f)))
+  if (changeAt > reviewAt) {
+    return [
+      `\`${short(commits[changeAt].sha)}\` 이후의 변경이 \`${reviewPath}\`에 기록되지 않았습니다. ` +
+        `리뷰 문서에 그 변경을 확인한 결과를 적으세요.`,
+    ]
+  }
+  return []
+}
+
+/**
+ * 여섯 검사를 묶어 실행한다. pr이 null이면(로컬, PR 설명 없음) 검사 5·6을 건너뛰고,
  * 검사 4의 phase 문서는 `- 브랜치:` 줄이 현재 브랜치인 문서로 찾는다(findPhaseForBranch).
  */
 export function runChecks({
@@ -178,8 +204,17 @@ export function runChecks({
     )
   }
 
-  if (pr) add('5. PR 설명', checkPrBody({ body: pr.body ?? '', draft: pr.draft, exists }))
-  else notes.push('PR 설명이 없어 검사 5를 건너뜁니다 (--body-file로 넘길 수 있음).')
+  if (!pr) {
+    notes.push('PR 설명이 없어 검사 5·6을 건너뜁니다 (--body-file로 넘길 수 있음).')
+    return { results, notes }
+  }
+  add('5. PR 설명', checkPrBody({ body: pr.body ?? '', draft: pr.draft, exists }))
+
+  // 리뷰 문서 링크가 없거나 파일이 없으면 검사 5가 이미 실패한다. 같은 원인으로 두 번 실패하지 않게 건너뛴다.
+  const reviewPath = reviewLinkOf(pr.body)
+  if (pr.draft) notes.push('draft PR이라 검사 6을 건너뜁니다.')
+  else if (!exempt && reviewPath && exists(reviewPath))
+    add('6. 리뷰가 마지막 변경 뒤에', checkReviewAfterChanges({ commits, reviewPath }))
 
   return { results, notes }
 }

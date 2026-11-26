@@ -169,7 +169,7 @@ GCP Cloud Run에 nginx 컨테이너로 올린다. 도메인은 사지 않고 Clo
 ### 컨테이너
 
 - `Dockerfile`: 1단계에서 Node 24와 Corepack pnpm으로 `pnpm install --frozen-lockfile`, `pnpm build`. 2단계 nginx 이미지에는 `dist/`와 nginx 설정만 담는다. 기반 이미지는 digest로 고정한다.
-- `deploy/nginx/`: Vercel의 `vercel.json`이 하던 일을 그대로 옮겼다.
+- `deploy/nginx/`: Vercel에서 쓰던 `vercel.json`(phase 15 후속 PR에서 지움)이 하던 일을 그대로 옮겼다.
   - SPA: 실제 파일이 없는 경로는 `index.html`. 없는 경로는 앱의 404 화면이 보여 준다.
   - `/assets/`: 없는 파일은 404. 있는 파일만 1년 `immutable` 캐시.
   - 그 밖(`index.html`, `mockServiceWorker.js` 등)은 `no-cache`.
@@ -290,9 +290,9 @@ BE INFRA.md의 구성 A(FE와 BE가 한 주소를 함께 씀)로 붙인다. ngin
 
 4. 이미 방문한 브라우저에 남은 MSW 서비스 워커를 정리한다 (등록 해제 코드 또는 `public/mockServiceWorker.js` 삭제. [phase 10](phases/10-vercel-deploy.md) 위험 4).
 
-### Vercel (옮기는 중)
+### Vercel (쓰지 않음)
 
-[phase 15](phases/15-gcp-deploy.md) 6단계 전까지 Vercel(<https://diegesis-fe.vercel.app>)도 그대로 살아 있고 PR마다 Preview를 만든다. GCP production을 확인한 뒤 후속 PR에서 `vercel.json`을 지우고 Vercel Git 연결을 끊는다.
+2026-11-26에 Vercel 프로젝트 `diegesis`의 Git 연결을 끊고 `vercel.json`을 지웠다 ([phase 15](phases/15-gcp-deploy.md) 6단계). push와 PR이 Vercel 배포를 만들지 않는다. 마지막 배포(<https://diegesis-fe.vercel.app>)는 아직 남아 있지만 더 바뀌지 않으므로 테스트 참가자에게 보내지 않는다. 프로젝트 삭제는 나중에 사용자가 정한다. `.gitignore`, `.dockerignore`, `eslint.config.js`의 `.vercel` 항목은 그때까지 둔다.
 
 ## 6. CI와 브랜치 규칙
 

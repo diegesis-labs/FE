@@ -1,6 +1,6 @@
 # Phase 16: 실제 BE와 Google 로그인을 로컬에서 확인
 
-- 상태: 리뷰 통과 (머지 뒤 `fe-main` 확인 남음)
+- 상태: 완료
 - 선행 phase: [12 로그인 화면](12-login.md), [15 GCP 배포](15-gcp-deploy.md) (둘 다 `main`에 머지됨). BE Epic 1 ([diegesis-labs/BE#11](https://github.com/diegesis-labs/BE/pull/11), `31e02ee`)도 BE `main`에 머지됨
 - 관련 이슈: [#39 실제 BE와 Google 로그인을 로컬에서 확인](https://github.com/diegesis-labs/FE/issues/39)
 - 브랜치: `setup/39-be-login-local` (`main`의 `0528838`에서 만듦)
@@ -94,10 +94,10 @@ phase 12에서 만든 화면을 그대로 쓴다. 바꾸지 않는다.
 
 ## 작업 단계
 
-- [ ] 1. GCP: 기본 Compute 서비스 계정에서 `roles/editor`를 뺀다. 남은 역할을 확인하고, 다음 빌드와 production 응답이 그대로인지 본다 (범위 7).
+- [x] 1. GCP: 기본 Compute 서비스 계정에서 `roles/editor`를 뺀다. 남은 역할을 확인하고, 다음 빌드와 production 응답이 그대로인지 본다 (범위 7).
   - [x] 뺐다 (2026-11-26). 남은 프로젝트 역할 없음. production `/` 200 그대로
   - [x] 이 PR(#40)의 `fe-pr` 빌드 성공 (`6b88849`, 리비전 `diegesis-fe-6b88849-9a8bff`)
-  - [ ] 머지 뒤 `fe-main` 빌드가 성공하고 production이 그 리비전인지
+  - [x] 머지 뒤 `fe-main` 빌드가 성공하고 production이 그 리비전인지: 머지 `332a9ad`의 `fe-main` 빌드 SUCCESS, production 트래픽 100% `diegesis-fe-332a9ad-8e5354`, `/` 200. `pr-40` 태그는 지웠다
 - [x] 2. BE `origin/main`을 임시 폴더에 풀고, 사용자가 `.env`에 Google 값을 넣는다. `docker compose up --build -d --wait`, 허용 목록에 계정 A를 넣는다. `GET /api/health` 200을 본다.
 - [x] 3. 개발 서버 경로로 "확인할 것" 1~7을 사용자와 함께 본다. Claude는 BE 로그와 응답 헤더를, 사용자는 게스트 창의 화면을 본다.
 - [x] 4. 컨테이너 경로로 같은 것을 본다.
@@ -114,7 +114,7 @@ phase 12에서 만든 화면을 그대로 쓴다. 바꾸지 않는다.
 - [x] 비밀값, 이메일, 쿠키 값이 커밋·PR·대화에 없다.
 - [x] architecture.md에 실제 BE로 로컬 개발하는 방법이 있다.
 - [x] 12 리뷰 문서 3절의 실제 BE 항목이 채워졌다.
-- [ ] 기본 Compute 서비스 계정에 `roles/editor`가 없고, 뺀 뒤에도 `fe-main`·`fe-pr` 빌드와 production이 정상이다.
+- [x] 기본 Compute 서비스 계정에 `roles/editor`가 없고, 뺀 뒤에도 `fe-main`·`fe-pr` 빌드와 production이 정상이다.
 
 ## 위험과 열린 질문
 
@@ -131,3 +131,4 @@ phase 12에서 만든 화면을 그대로 쓴다. 바꾸지 않는다.
 - 2026-11-26: 계획 변경 - BE 포트 8081. 8080을 code-server가 쓰고 있어 BE를 `API_PORT=8081`로 띄움 (로컬 구성에 적음). 단계 2~4 완료: 두 경로 모두 확인할 것 1~4, 6, 7이 기대와 같음(6·7은 개발 서버 경로에서). 5는 계정 B가 없어 확인 못 함. FE 결함 없음(단계 5 건너뜀)
 - 2026-11-26: 단계 6·7 완료. 기본 Compute 계정의 `roles/editor`는 뺐고, 뺀 뒤의 `fe-pr`·`fe-main` 빌드는 PR을 올린 뒤 리뷰에서 확인한다 (완료 기준 마지막 항목은 그때 체크)
 - 2026-11-26: 리뷰 통과 ([리뷰 문서](../reviews/16-be-login-local-review.md)). PR #38(phase 15 후속)을 리뷰 없이 머지했던 것을 이 리뷰에서 확인했다. 작업 절차 검사가 그것을 막지 못한 빈틈은 발견 사항 1 (검사 보강 여부는 사용자 결정). 남은 일: 머지 뒤 `fe-main` 확인, `pr-40` 태그 정리
+- 2026-11-26: 머지 뒤 확인 완료. 머지 `332a9ad`의 `fe-main` 빌드 SUCCESS, production 트래픽 100% `diegesis-fe-332a9ad-8e5354`, `/` 200. `pr-40` 태그는 지웠다. 상태 `완료`. 이 기록은 phase 17 브랜치(#41)에서 커밋했다

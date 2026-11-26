@@ -334,7 +334,7 @@ BE INFRA.md의 구성 A(FE와 BE가 한 주소를 함께 씀)로 붙인다. ngin
 
 ## 6. CI와 브랜치 규칙
 
-> 관련 phase: [02 CI와 브랜치 보호](phases/02-ci-branch-protection.md), [05 작업 절차 CI 검사](phases/05-process-check.md)
+> 관련 phase: [02 CI와 브랜치 보호](phases/02-ci-branch-protection.md), [05 작업 절차 CI 검사](phases/05-process-check.md), [17 리뷰 뒤 머지 검사](phases/17-review-after-change-check.md)
 
 ### CI (GitHub Actions)
 
@@ -342,7 +342,7 @@ BE INFRA.md의 구성 A(FE와 BE가 한 주소를 함께 씀)로 붙인다. ngin
 
 1. 체크아웃 (`fetch-depth: 0`, 작업 절차 검사가 PR의 커밋을 하나씩 본다)
 2. `pnpm install --frozen-lockfile` (lockfile 버전만 설치, `pnpm-workspace.yaml` 보안 설정 적용)
-3. 작업 절차 검사 (PR일 때만): `node scripts/check-process.mjs --event "$GITHUB_EVENT_PATH"`. 커밋 메시지, 브랜치 이름, 계획 문서와 코드 분리, phase 승인 순서, PR 설명 링크 ([Phase 05](phases/05-process-check.md), [guardrails.md](guardrails.md))
+3. 작업 절차 검사 (PR일 때만): `node scripts/check-process.mjs --event "$GITHUB_EVENT_PATH"`. 커밋 메시지, 브랜치 이름, 계획 문서와 코드 분리, phase 승인 순서, PR 설명 링크, 리뷰 문서가 마지막 변경 뒤에 바뀌었는지 ([Phase 05](phases/05-process-check.md), [Phase 17](phases/17-review-after-change-check.md), [guardrails.md](guardrails.md))
 4. `pnpm format:check`
 5. `pnpm lint` (ESLint + steiger FSD 검사 + 가드레일 자체 검사, [guardrails.md](guardrails.md))
 6. `pnpm typecheck`

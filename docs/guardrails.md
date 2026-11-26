@@ -1,6 +1,6 @@
 # 가드레일: 규칙과 강제 수단
 
-> 관련 phase: [04 가드레일 lint](phases/04-guardrail-lint.md), [05 작업 절차 CI 검사](phases/05-process-check.md), [11 Confluence 회의록 확인](phases/11-confluence-gate.md)
+> 관련 phase: [04 가드레일 lint](phases/04-guardrail-lint.md), [05 작업 절차 CI 검사](phases/05-process-check.md), [17 리뷰 뒤 머지 검사](phases/17-review-after-change-check.md), [11 Confluence 회의록 확인](phases/11-confluence-gate.md)
 
 [CLAUDE.md](../CLAUDE.md)의 규칙마다 **무엇이 강제하는지** 적은 표다. 강제 수단이 "없음"인 규칙은 글로만 있는 규칙이라, 사람과 에이전트가 읽고 지켜 주기를 바랄 수밖에 없다.
 
@@ -58,6 +58,7 @@
 | 커밋 메시지는 `종류(범위): 설명` 형식                        | CI 검사 1 (PR의 머지가 아닌 커밋)                                                                                                                                                                                                                                                              | `scripts/check-process.mjs`                                         |
 | 브랜치 이름은 `<종류>/<이슈번호>-<설명>`                     | CI 검사 2 (`dependabot/` 제외)                                                                                                                                                                                                                                                                 | `scripts/check-process.mjs`                                         |
 | PR 설명에 관련 이슈, phase 문서, 리뷰 문서 링크를 넣는다     | CI 검사 5: `Refs`/`Closes #N`, 있는 phase 문서, draft가 아니면 있는 리뷰 문서. 예외 줄 `- Phase: 없음 — 이유`는 이유가 있어야 하고 CI 로그에 남는다. 설명을 고치면 다시 검사                                                                                                                   | `scripts/check-process.mjs`, `.github/pull_request_template.md`     |
+| 리뷰 계획·결과를 리뷰 문서에 적은 뒤 머지한다                | 일부: CI 검사 6 (draft·예외 PR 제외): PR이 링크한 리뷰 문서가 이 PR에서 바뀌었고, 계획·리뷰 문서 밖의 마지막 변경보다 뒤에 바뀌었는지 본다. 리뷰 내용은 보지 않는다                                                                                                                            | `scripts/check-process.mjs`                                         |
 | 커밋·푸시는 작업 순서에 적힌 시점에만, 작업 브랜치에 한다    | 일부: `main` 직접 푸시는 ruleset이 막는다. Claude Code 훅이 `main`에서의 커밋을 막고 `main` 푸시 전에 확인을 받는다. 시점은 없음                                                                                                                                                               | `.github/rulesets/main.json`, `.claude/hooks/guard.mjs`             |
 | PR 머지, force push는 사용자가 요청할 때만 한다              | 일부: `main` force push는 ruleset이 막는다. Claude Code 훅이 force push·PR 머지 전에 사용자 확인을 받는다                                                                                                                                                                                      | `.github/rulesets/main.json`, `.claude/hooks/guard.mjs`             |
 | ruleset은 파일을 먼저 고치고 API로 적용해 둘을 같게 유지한다 | 일부: Claude Code 훅이 `gh api` ruleset 변경과 `.github/**` 수정 전에 사용자 확인을 받는다                                                                                                                                                                                                     | `.claude/hooks/guard.mjs`, `.claude/settings.json`                  |

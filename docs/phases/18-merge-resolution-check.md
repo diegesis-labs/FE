@@ -107,3 +107,4 @@ function collectCommits(base, head) { ... }
 - 2026-11-26: 단계 1~4 완료 (구현 `013d6c5`). 지난 PR 대 보기는 표와 같았다. 범위 6(phase 17 머지 뒤 기록)도 함께 커밋. 계획 변경은 없음
 - 2026-11-26: 단계 5 완료. PR #44를 draft로 열어 CI `check`·`fe-pr` 통과. CI의 git은 2.56.1 (ubuntu-26.04)
 - 2026-11-26: 리뷰 통과 ([리뷰 문서](../reviews/18-merge-resolution-check-review.md)). 발견 사항 없음. 남은 일: draft 해제 뒤 CI, 머지, 머지 뒤 `fe-main`·`pr-44` 태그
+- 2026-11-26: draft를 푼 뒤 PR #44 CI `check` 통과 (`6170217`, 실행 45779326070): 검사 1~6 모두 ✔. 남은 일: 머지, 머지 뒤 `fe-main`·`pr-44` 태그

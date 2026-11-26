@@ -1,6 +1,6 @@
 # Phase 17: 리뷰 없이 머지되는 PR을 작업 절차 검사로 막기
 
-- 상태: 리뷰 통과 (draft를 푼 뒤의 CI와 머지 남음)
+- 상태: 리뷰 통과 (머지와 머지 뒤 `fe-main` 확인 남음)
 - 선행 phase: [05 작업 절차 CI 검사](05-process-check.md), [16 실제 BE와 Google 로그인을 로컬에서 확인](16-be-login-local.md) (둘 다 `main`에 머지됨)
 - 관련 이슈: [#41](https://github.com/diegesis-labs/FE/issues/41)
 - 브랜치: `setup/41-review-after-change-check`
@@ -118,3 +118,4 @@ export function checkReviewAfterChanges({ commits, reviewPath }) { ... }
 - 2026-11-26: 단계 1~4 완료 (구현 `d865a67`). 지난 PR 대 보기에 #5(실패, 첫 리뷰 링크만 봄)를 더하고 위험 4를 적음. 계획 변경은 없음
 - 2026-11-26: 단계 5 완료. PR #42를 draft로 열어 CI 통과(검사 6 건너뜀 알림). 설명의 리뷰 링크를 15 리뷰로 바꾸고 draft를 풀자 검사 6만 실패(PR #38 모양). 다시 draft로 돌리고 설명을 되돌림
 - 2026-11-26: 리뷰 통과 ([리뷰 문서](../reviews/17-review-after-change-check-review.md)). 발견 사항 1(충돌을 푼 `main` 머지는 검사 6이 보지 않음, #20 사례)은 이 PR에서 고치지 않고 사용자 결정으로 남김. 남은 일: draft 해제 뒤 CI, 머지, 머지 뒤 `fe-main`·`pr-42` 태그
+- 2026-11-26: draft를 푼 뒤 PR #42 CI `check` 통과 (`39c8290`, 실행 45775662077): 검사 1~6 모두 ✔. 남은 일: 머지, 머지 뒤 `fe-main`·`pr-42` 태그

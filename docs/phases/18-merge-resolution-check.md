@@ -4,8 +4,8 @@
 - 선행 phase: [17 리뷰 없이 머지되는 PR을 작업 절차 검사로 막기](17-review-after-change-check.md) (`main`에 머지됨)
 - 관련 이슈: [#43](https://github.com/diegesis-labs/FE/issues/43)
 - 브랜치: `setup/43-merge-resolution-check`
-- 계획 커밋: (승인 후 이 문서만 커밋·푸시한 해시)
-- 구현 커밋: (구현 완료 후 커밋 해시)
+- 계획 커밋: `762f51c`
+- 구현 커밋: `013d6c5`
 - 리뷰 문서: [18-merge-resolution-check-review.md](../reviews/18-merge-resolution-check-review.md) (리뷰 단계에서 작성)
 
 ## 목표
@@ -63,6 +63,8 @@ function collectCommits(base, head) { ... }
 
 ### 지난 PR에 대 보기 (구현 때 실제 커밋으로 확인)
 
+머지된 PR 22개를 머지 커밋의 두 부모와 실제 PR 설명으로, `main`의 검사(17)와 바뀐 검사로 각각 돌려 출력을 비교했다. 달라진 것은 #20 하나이고 표와 같았다. #20의 실패 메시지: "`25317b0`(충돌을 푼 머지) 이후의 변경이 `docs/reviews/09-focus-style-guardrail-review.md`에 기록되지 않았습니다." #5는 두 검사 모두 실패 4건(작업 절차 검사가 생기기 전의 PR)으로 같다.
+
 | PR                   | 모양                                                                 | 검사 6 (지금 → 바뀐 뒤) |
 | -------------------- | -------------------------------------------------------------------- | ----------------------- |
 | #20                  | 리뷰 결과 `1f09929`·phase 완료 `562d502` 뒤 충돌을 푼 머지 `25317b0` | 통과 → 실패             |
@@ -76,10 +78,10 @@ function collectCommits(base, head) { ... }
 
 ## 작업 단계
 
-- [ ] 1. `collectCommits()`와 `runChecks()`를 고치고 테스트를 쓴다. `pnpm test:scripts` 통과.
-- [ ] 2. 지난 머지 PR 전부를 실제 커밋 범위로 돌려 위 표와 같은지 본다.
-- [ ] 3. CLAUDE.md, guardrails.md, 17 리뷰 문서를 고친다.
-- [ ] 4. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`를 통과시킨다.
+- [x] 1. `collectCommits()`와 `runChecks()`를 고치고 테스트를 쓴다. `pnpm test:scripts` 통과.
+- [x] 2. 지난 머지 PR 전부를 실제 커밋 범위로 돌려 위 표와 같은지 본다.
+- [x] 3. CLAUDE.md, guardrails.md, 17 리뷰 문서를 고친다.
+- [x] 4. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`를 통과시킨다.
 - [ ] 5. 이 PR을 draft로 열어 CI가 통과하는지 본다.
 
 ## 완료 기준
@@ -102,3 +104,4 @@ function collectCommits(base, head) { ... }
 
 - 2026-11-26: 작성. 17 리뷰 발견 사항 1 (충돌을 푼 `main` 머지를 검사 6이 보지 않음)을 phase로 열기로 함 (사용자 결정)
 - 2026-11-26: 사용자 승인. 이슈 #43, 브랜치 `setup/43-merge-resolution-check`
+- 2026-11-26: 단계 1~4 완료 (구현 `013d6c5`). 지난 PR 대 보기는 표와 같았다. 범위 6(phase 17 머지 뒤 기록)도 함께 커밋. 계획 변경은 없음

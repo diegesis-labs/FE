@@ -4,8 +4,8 @@
 - 선행 phase: [12 로그인 화면](12-login.md), [15 GCP 배포](15-gcp-deploy.md) (둘 다 `main`에 머지됨). BE Epic 1 ([diegesis-labs/BE#11](https://github.com/diegesis-labs/BE/pull/11), `31e02ee`)도 BE `main`에 머지됨
 - 관련 이슈: [#39 실제 BE와 Google 로그인을 로컬에서 확인](https://github.com/diegesis-labs/FE/issues/39)
 - 브랜치: `setup/39-be-login-local` (`main`의 `0528838`에서 만듦)
-- 계획 커밋: (승인 후 이 문서만 커밋·푸시한 해시)
-- 구현 커밋: (구현 완료 후 커밋 해시)
+- 계획 커밋: `b6b2eaf` (계획 변경: `22a1261`)
+- 구현 커밋: `11e0282` (리뷰 문서 12·15 기록: `92b0af1`)
 - 리뷰 문서: [16-be-login-local-review.md](../reviews/16-be-login-local-review.md) (리뷰 단계에서 작성)
 
 ## 목표
@@ -101,18 +101,18 @@ phase 12에서 만든 화면을 그대로 쓴다. 바꾸지 않는다.
 - [x] 3. 개발 서버 경로로 "확인할 것" 1~7을 사용자와 함께 본다. Claude는 BE 로그와 응답 헤더를, 사용자는 게스트 창의 화면을 본다.
 - [x] 4. 컨테이너 경로로 같은 것을 본다.
 - [x] 5. 결함이 나오면 이 문서를 고치고(계획 변경) FE를 고친다. 없으면 건너뛴다.
-- [ ] 6. architecture.md, 12 리뷰 문서 3절, 15 리뷰 문서를 고친다.
-- [ ] 7. BE를 내리고(`docker compose down -v`) 임시 폴더를 지운다. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`를 통과시킨다.
+- [x] 6. architecture.md, 12 리뷰 문서 3절, 15 리뷰 문서를 고친다.
+- [x] 7. BE를 내리고(`docker compose down -v`) 임시 폴더를 지운다. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`를 통과시킨다.
 
 ## 완료 기준
 
-- [ ] `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`가 통과한다.
-- [ ] 개발 서버 경로에서 "확인할 것" 1~7의 결과가 기대와 같다 (계정 B가 없으면 5는 확인 못 함으로 적는다).
-- [ ] 컨테이너 경로에서 같은 결과다. 특히 2의 `Set-Cookie`와 4의 로그아웃 204가 nginx를 거쳐도 같다.
-- [ ] BE 작업 폴더의 브랜치와 파일이 바뀌지 않았다 (`git -C ../BE status`가 시작 전과 같다).
-- [ ] 비밀값, 이메일, 쿠키 값이 커밋·PR·대화에 없다.
-- [ ] architecture.md에 실제 BE로 로컬 개발하는 방법이 있다.
-- [ ] 12 리뷰 문서 3절의 실제 BE 항목이 채워졌다.
+- [x] `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`가 통과한다.
+- [x] 개발 서버 경로에서 "확인할 것" 1~7의 결과가 기대와 같다 (계정 B가 없으면 5는 확인 못 함으로 적는다).
+- [x] 컨테이너 경로에서 같은 결과다. 특히 2의 `Set-Cookie`와 4의 로그아웃 204가 nginx를 거쳐도 같다.
+- [x] BE 작업 폴더의 브랜치와 파일이 바뀌지 않았다 (`git -C ../BE status`가 시작 전과 같다).
+- [x] 비밀값, 이메일, 쿠키 값이 커밋·PR·대화에 없다.
+- [x] architecture.md에 실제 BE로 로컬 개발하는 방법이 있다.
+- [x] 12 리뷰 문서 3절의 실제 BE 항목이 채워졌다.
 - [ ] 기본 Compute 서비스 계정에 `roles/editor`가 없고, 뺀 뒤에도 `fe-main`·`fe-pr` 빌드와 production이 정상이다.
 
 ## 위험과 열린 질문
@@ -128,3 +128,4 @@ phase 12에서 만든 화면을 그대로 쓴다. 바꾸지 않는다.
 - 2026-11-26: 작성. BE Epic 1 머지 뒤 실제 BE로 로그인을 확인하는 phase. 기본 Compute 계정의 편집자 권한 빼기(사용자 결정)도 이 phase에 넣음
 - 2026-11-26: 승인. 운영 주소가 아니라 로컬에서만 확인한다는 것을 사용자와 다시 확인함. 계정 A는 사용자가 알려 준 계정(이메일은 문서에 적지 않음). 이슈 #39 생성, 브랜치 `setup/39-be-login-local`
 - 2026-11-26: 계획 변경 - BE 포트 8081. 8080을 code-server가 쓰고 있어 BE를 `API_PORT=8081`로 띄움 (로컬 구성에 적음). 단계 2~4 완료: 두 경로 모두 확인할 것 1~4, 6, 7이 기대와 같음(6·7은 개발 서버 경로에서). 5는 계정 B가 없어 확인 못 함. FE 결함 없음(단계 5 건너뜀)
+- 2026-11-26: 단계 6·7 완료. 기본 Compute 계정의 `roles/editor`는 뺐고, 뺀 뒤의 `fe-pr`·`fe-main` 빌드는 PR을 올린 뒤 리뷰에서 확인한다 (완료 기준 마지막 항목은 그때 체크)

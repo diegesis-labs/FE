@@ -4,8 +4,8 @@
 - 선행 phase: [05 작업 절차 CI 검사](05-process-check.md), [16 실제 BE와 Google 로그인을 로컬에서 확인](16-be-login-local.md) (둘 다 `main`에 머지됨)
 - 관련 이슈: [#41](https://github.com/diegesis-labs/FE/issues/41)
 - 브랜치: `setup/41-review-after-change-check`
-- 계획 커밋: (승인 후 이 문서만 커밋·푸시한 해시)
-- 구현 커밋: (구현 완료 후 커밋 해시)
+- 계획 커밋: `44e6e39`
+- 구현 커밋: `d865a67`
 - 리뷰 문서: [17-review-after-change-check-review.md](../reviews/17-review-after-change-check-review.md) (리뷰 단계에서 작성)
 
 ## 목표
@@ -70,11 +70,16 @@ export function checkReviewAfterChanges({ commits, reviewPath }) { ... }
 
 ### 지난 PR에 대 보기 (구현 때 실제 커밋으로 확인)
 
+머지 커밋의 두 부모로 돌렸다 (`--base <머지>^1 --head <머지>^2 --body-file <PR 설명>`). 결과는 표와 같았다.
+
 | PR  | 모양                                                  | 검사 6 |
 | --- | ----------------------------------------------------- | ------ |
 | #38 | 구현 `1c4b07f`, phase 문서만 더 고침, 15 리뷰 링크    | 실패   |
 | #40 | 구현 `11e0282` 뒤 리뷰 계획 `6b88849`, 결과 `669a4df` | 통과   |
 | #37 | 리뷰 반영 `a30666d` 뒤 리뷰 결과 `6038174`            | 통과   |
+| #5  | 01·02 phase를 함께 올린 첫 PR. 설명은 01 리뷰만 링크  | 실패   |
+
+그 밖에 머지된 PR(리뷰 링크가 있는 #7~#35)은 모두 통과했고, 예외 줄 PR(#22, #25, #26)은 검사 6을 하지 않았다. #5는 작업 절차 검사가 생기기 전(phase 05)의 PR이다. 마지막 변경 `ce5e76d`(02 리뷰 반영)는 02 리뷰 문서에 기록됐지만 설명은 01 리뷰만 링크했다. 오탐이 아니라, 설명이 마지막 리뷰를 가리키지 않은 경우다.
 
 ### 새 의존성
 
@@ -82,10 +87,10 @@ export function checkReviewAfterChanges({ commits, reviewPath }) { ... }
 
 ## 작업 단계
 
-- [ ] 1. `checkReviewAfterChanges()`와 테스트를 쓰고 `runChecks()`에 넣는다. `pnpm test:scripts` 통과.
-- [ ] 2. 지난 PR #37, #38, #40의 실제 커밋 범위로 검사를 돌려 위 표와 같은지 본다 (`--base`, `--head`, `--body-file`).
-- [ ] 3. CLAUDE.md, guardrails.md, architecture.md, PR 템플릿, 16 리뷰 문서를 고친다.
-- [ ] 4. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`를 통과시킨다.
+- [x] 1. `checkReviewAfterChanges()`와 테스트를 쓰고 `runChecks()`에 넣는다. `pnpm test:scripts` 통과.
+- [x] 2. 지난 PR #37, #38, #40의 실제 커밋 범위로 검사를 돌려 위 표와 같은지 본다 (`--base`, `--head`, `--body-file`).
+- [x] 3. CLAUDE.md, guardrails.md, architecture.md, PR 템플릿, 16 리뷰 문서를 고친다.
+- [x] 4. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`를 통과시킨다.
 - [ ] 5. 이 PR을 draft로 열어 CI가 통과하는지, 리뷰 결과를 쓰기 전에 draft를 풀면 검사 6이 실패하는지(일부러 한 번) 본다.
 
 ## 완료 기준
@@ -103,9 +108,11 @@ export function checkReviewAfterChanges({ commits, reviewPath }) { ... }
 1. **리뷰 문서에 한 줄만 더해도 통과한다**: 검사는 "고쳤는가"만 본다. 빈 리뷰를 막지는 못한다. 내용은 사람이 본다 (하지 않는 것).
 2. **리뷰 뒤 작은 문서 수정**: `docs/architecture.md`처럼 계획·리뷰 문서 밖의 문서를 리뷰 뒤에 고치면 실패한다. 리뷰 문서에 한 줄(무엇을 고쳤는지) 더하면 된다. 의도한 동작이다.
 3. **긴 PR의 리뷰 문서 재사용**: phase 하나에 PR이 여러 개면 각 PR이 같은 리뷰 문서에 그 PR의 절을 더한다 (PR #38이 했어야 하는 것).
-4. **force push로 커밋 순서가 바뀌면**: 검사는 그 시점의 커밋 순서로만 본다. force push는 사용자 확인을 받는다.
+4. **리뷰 문서를 여럿 링크한 PR**: 검사 5처럼 PR 설명의 첫 리뷰 문서 링크만 본다. phase 여러 개를 한 PR에 올리면(#5) 마지막 변경을 기록한 리뷰 문서를 먼저 적는다. 지금 규칙은 phase 하나에 PR 하나 이상이라 드물다.
+5. **force push로 커밋 순서가 바뀌면**: 검사는 그 시점의 커밋 순서로만 본다. force push는 사용자 확인을 받는다.
 
 ## 변경 기록
 
 - 2026-11-26: 작성. 16 리뷰 발견 사항 1 (PR #38이 리뷰 없이 머지됨)을 검사로 막기로 함 (사용자 결정)
 - 2026-11-26: 사용자 승인. 이슈 #41, 브랜치 `setup/41-review-after-change-check`
+- 2026-11-26: 단계 1~4 완료 (구현 `d865a67`). 지난 PR 대 보기에 #5(실패, 첫 리뷰 링크만 봄)를 더하고 위험 4를 적음. 계획 변경은 없음

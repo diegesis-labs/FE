@@ -123,6 +123,43 @@ BE [docs/API.md](https://github.com/diegesis-labs/BE/blob/main/docs/API.md) 1절
 - 로그아웃은 헤더의 버튼이 `POST /api/auth/logout`을 부르고, `/login`으로 옮긴 뒤 쿼리 캐시를 비운다.
 - 라우터는 만드는 순간 첫 loader가 돌기 때문에, 목이 켜진 뒤 `App`이 그려질 때 `getRouter()`로 만든다.
 
+### 실제 BE로 로컬 개발하기 (Phase 16)
+
+로컬에 띄운 BE에 붙여 실제 Google 계정으로 로그인해 본다. [phase 16](phases/16-be-login-local.md)에서 2026-11-26에 BE `main`(`31e02ee`)으로 확인했다. BE 쪽 명령의 자세한 설명은 BE 레포 README의 "로컬에서 실행"과 "허용 목록"에 있다.
+
+1. **BE 띄우기**: BE 레포 폴더에서 `docker compose up --build -d --wait`. BE 작업 폴더를 건드리지 않으려면 `main`을 임시 폴더에 풀어서 띄운다.
+
+   ```bash
+   mkdir -p /tmp/be-main && git -C ../BE archive origin/main | tar -x -C /tmp/be-main
+   cd /tmp/be-main && cp .env.example .env   # GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET을 채운다. FRONTEND_URL은 http://localhost:5173 그대로
+   docker compose up --build -d --wait
+   curl http://localhost:8080/api/health     # {"status":"ok"}
+   ```
+
+   - 8080을 다른 프로그램이 쓰고 있으면 `.env`에 `API_PORT=8081`을 더하고 아래의 `8080`을 그 포트로 바꾼다.
+   - `.env`는 커밋하지 않는다. Google 값은 GCP 콘솔의 OAuth 클라이언트에서 받는다. 이 클라이언트의 돌아올 주소에 `http://localhost:5173/api/auth/google/callback`이 있어야 한다. 동의 화면이 "테스트" 상태면 로그인할 계정을 테스트 사용자로도 넣는다.
+
+2. **허용 목록에 계정 넣기**: 허용 목록에 없는 계정은 로그인해도 `/login?error=NOT_ALLOWED`로 돌아온다.
+
+   ```bash
+   docker compose exec db psql -U diegesis -d diegesis -c "INSERT INTO allowed_emails (email, role) VALUES (lower('me@example.com'), 'user') ON CONFLICT (email) DO UPDATE SET role = EXCLUDED.role;"
+   ```
+
+3. **FE 띄우기** (둘 중 하나. 둘 다 5173을 쓴다. 다른 포트면 Google 돌아올 주소와 BE `FRONTEND_URL`이 맞지 않는다)
+   - 개발 서버: `VITE_API_MOCK=false pnpm dev --strictPort`. BE 포트가 8080이 아니면 `API_PROXY_TARGET=http://localhost:8081`도 붙인다. 셸에서 준 값이 `.env.local`보다 우선한다.
+   - 컨테이너(운영과 같은 nginx):
+
+     ```bash
+     docker build --build-arg VITE_API_MOCK=false -t diegesis-fe:local .
+     docker run --rm -p 5173:8080 -e BE_ORIGIN=http://host.docker.internal:8080 diegesis-fe:local
+     ```
+
+4. **확인**: 평소 프로필이 아니라 Chrome 게스트 창에서 `http://localhost:5173`을 연다. 쿠키 없이 시작하고 Google 계정 로그인이 남지 않는다.
+   - 로그인 → `/`. 책 목록 자리는 "찾을 수 없습니다"가 정상이다. BE에 `/api/books`가 아직 없어 404를 받는다 (BE Epic 2에서 생긴다).
+   - 로그아웃 → `POST /api/auth/logout` 204, `/login`.
+   - Google 화면에서 뒤로 가기를 누르면 BE를 거치지 않고 `/login`으로 돌아온다. 실패 안내가 없는 게 정상이다. `LOGIN_FAILED` 안내는 Google이 취소·오류를 BE로 돌려줄 때 나온다 (`/api/auth/google/callback?error=access_denied&state=x`를 직접 열어 볼 수 있다).
+   - 끝나면 `docker compose down -v`로 BE와 데이터를 지운다.
+
 ### 리더 (Phase 07)
 
 `/books/:bookId`는 일반 레이아웃(`RootLayout`) 밖의 라우트다. 자세한 설계는 [phase 07](phases/07-book-reader.md).
@@ -181,8 +218,9 @@ GCP Cloud Run에 nginx 컨테이너로 올린다. 도메인은 사지 않고 Clo
   ```bash
   docker build --build-arg VITE_API_MOCK=true -t diegesis-fe .
   docker run --rm -p 8080:8080 diegesis-fe                                   # 데모 모드
-  docker run --rm -p 8080:8080 -e BE_ORIGIN=http://host.docker.internal:8000 diegesis-fe   # 로컬 BE로 /api 넘기기
   ```
+
+  로컬 BE로 `/api`를 넘겨 Google 로그인까지 보려면 3장 "실제 BE로 로컬 개발하기"의 컨테이너 경로를 따른다 (포트 5173, `VITE_API_MOCK=false`).
 
 ### 배포 흐름
 

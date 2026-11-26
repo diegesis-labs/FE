@@ -205,6 +205,8 @@ https://diegesis-fe-<프로젝트 번호>.asia-northeast3.run.app
 - [x] 4-1. 작업 절차 검사 4가 phase 문서의 예전 이름도 찾게 고친다 (범위 8). `pnpm test:scripts`와 `pnpm check:process`로 확인한다.
 - [x] 5. architecture.md 5장, README, `.env.example`을 고친다.
 - [ ] 6. 머지 뒤 `fe-main` 트리거로 production이 바뀌는지 확인한다. 그다음 Vercel을 정리한다: `vercel.json` 삭제와 Git 연결 끊기는 후속 PR로 한다.
+  - [x] `fe-main` 확인: 머지 커밋 `3d86352`의 빌드가 성공했고, 트래픽 100%가 `diegesis-fe-3d86352-24b201`(라벨 `commit-sha`가 머지 커밋)로 옮겨졌다. `/`, `/books` 200, 없는 `/assets/` 404, `/api/me` 404, 보안 헤더 4개.
+  - [ ] 후속 PR (브랜치 `setup/33-vercel-cleanup`): Vercel 프로젝트 `diegesis`의 Git 연결을 끊고(`vercel git disconnect`), `vercel.json`을 지우고, 5장의 "Vercel (옮기는 중)"을 고친다. 그 PR에 Vercel 상태가 생기지 않는지 본다. `pr-37` 태그를 지운다. `.gitignore`, `.dockerignore`, `eslint.config.js`의 `.vercel` 항목은 Vercel 프로젝트가 남아 있어서 그대로 둔다.
 - [x] 7. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`를 통과시킨다.
 
 ## 완료 기준
@@ -221,7 +223,7 @@ https://diegesis-fe-<프로젝트 번호>.asia-northeast3.run.app
   - `index.html`과 `mockServiceWorker.js`는 `no-cache`다.
 - [ ] `BE_ORIGIN`이 없으면 `/api/books`가 404 `text/plain`이다.
 - [ ] 로컬 컨테이너에 `BE_ORIGIN`을 주면 `/api/health`가 BE로 넘어간다. 응답의 `Set-Cookie`가 바뀌지 않고 그대로 브라우저에 온다 (로컬 BE에서 확인 가능한 만큼).
-- [ ] `main`에 머지되면 Cloud Build가 production을 자동으로 바꾼다. 배포된 이미지 태그가 머지 커밋 SHA와 같다.
+- [x] `main`에 머지되면 Cloud Build가 production을 자동으로 바꾼다. 배포된 이미지 태그가 머지 커밋 SHA와 같다.
 - [ ] PR마다 `pr-<번호>` 태그 주소가 생긴다. 이 주소는 production 트래픽을 받지 않는다.
 - [ ] GitHub에 배포 비밀값이 없다. `ci.yml`과 ruleset이 바뀌지 않았다. 빌드 서비스 계정에 편집자 권한이 없다.
 - [ ] architecture.md 5장에 다음이 적혀 있다.
@@ -253,3 +255,4 @@ https://diegesis-fe-<프로젝트 번호>.asia-northeast3.run.app
 - 2026-11-25: 계획 변경 (번호를 옮긴 뒤 확인). 작업 절차 검사 4가 첫 코드 커밋 시점의 phase 문서를 지금 이름(`15-…`)으로만 찾아 실패했다. 순서를 어긴 것이 아니라 검사가 이름 변경을 모르는 한계라서, 검사가 예전 이름도 찾게 고치기로 함 (사용자 결정). 범위 8과 단계 4-1을 더함
 - 2026-11-25: 단계 4, 4-1, 5, 7 완료. GitHub 연결은 사용자가 콘솔에서 만듦. PR #37(draft)에서 `fe-pr`이 `pr-37` 미리보기를 만들고 production 트래픽은 그대로인 것을 확인. 구현 커밋 `28e7c0e`, 리뷰 시작
 - 2026-11-25: 리뷰 수정 후 통과. `main`과 PR 배포가 겹칠 때 production이 PR 리비전으로 바뀔 수 있던 문제를 고침 (`a30666d`, 리비전 이름으로 트래픽을 옮김). 콜드 스타트 첫 응답 0.35~0.49초. 머지 뒤 단계 6(`fe-main` 확인, Vercel 정리 후속 PR)이 남음. 자세한 내용은 리뷰 문서
+- 2026-11-26: PR #37 머지(`3d86352`). 단계 6의 `fe-main` 확인 완료. Vercel 프로젝트는 지우지 않고 Git 연결만 끊기로 함 (사용자 결정). 후속 PR 계획을 단계 6에 적음

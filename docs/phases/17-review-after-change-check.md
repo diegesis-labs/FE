@@ -91,7 +91,7 @@ export function checkReviewAfterChanges({ commits, reviewPath }) { ... }
 - [x] 2. 지난 PR #37, #38, #40의 실제 커밋 범위로 검사를 돌려 위 표와 같은지 본다 (`--base`, `--head`, `--body-file`).
 - [x] 3. CLAUDE.md, guardrails.md, architecture.md, PR 템플릿, 16 리뷰 문서를 고친다.
 - [x] 4. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`를 통과시킨다.
-- [ ] 5. 이 PR을 draft로 열어 CI가 통과하는지, 리뷰 결과를 쓰기 전에 draft를 풀면 검사 6이 실패하는지(일부러 한 번) 본다.
+- [x] 5. 이 PR을 draft로 열어 CI가 통과하는지, 리뷰 결과를 쓰기 전에 draft를 풀면 검사 6이 실패하는지(일부러 한 번) 본다.
 
 ## 완료 기준
 
@@ -116,3 +116,4 @@ export function checkReviewAfterChanges({ commits, reviewPath }) { ... }
 - 2026-11-26: 작성. 16 리뷰 발견 사항 1 (PR #38이 리뷰 없이 머지됨)을 검사로 막기로 함 (사용자 결정)
 - 2026-11-26: 사용자 승인. 이슈 #41, 브랜치 `setup/41-review-after-change-check`
 - 2026-11-26: 단계 1~4 완료 (구현 `d865a67`). 지난 PR 대 보기에 #5(실패, 첫 리뷰 링크만 봄)를 더하고 위험 4를 적음. 계획 변경은 없음
+- 2026-11-26: 단계 5 완료. PR #42를 draft로 열어 CI 통과(검사 6 건너뜀 알림). 설명의 리뷰 링크를 15 리뷰로 바꾸고 draft를 풀자 검사 6만 실패(PR #38 모양). 다시 draft로 돌리고 설명을 되돌림

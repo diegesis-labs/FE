@@ -1,6 +1,6 @@
 # Phase 18: 충돌을 푼 `main` 머지도 검사 6에서 변경으로 보기
 
-- 상태: 승인됨
+- 상태: 리뷰 통과 (머지와 머지 뒤 `fe-main` 확인 남음)
 - 선행 phase: [17 리뷰 없이 머지되는 PR을 작업 절차 검사로 막기](17-review-after-change-check.md) (`main`에 머지됨)
 - 관련 이슈: [#43](https://github.com/diegesis-labs/FE/issues/43)
 - 브랜치: `setup/43-merge-resolution-check`
@@ -86,11 +86,11 @@ function collectCommits(base, head) { ... }
 
 ## 완료 기준
 
-- [ ] `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`가 통과한다.
-- [ ] 리뷰 결과 뒤에 충돌을 푼 머지가 있으면 검사 6이 실패한다. 테스트와 PR #20 실제 커밋으로 확인한다.
-- [ ] 충돌 없는 머지, 머지 뒤 리뷰 결과를 적은 PR은 통과한다. PR #18, #10, #12, #26, #37 실제 커밋으로 확인한다.
-- [ ] 머지 커밋이 검사 1·3·4의 결과를 바꾸지 않는다 (지난 머지 PR 전부에서 검사 1~5 결과가 이 phase 전과 같다).
-- [ ] CLAUDE.md, guardrails.md의 검사 6 설명이 코드와 같다.
+- [x] `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`가 통과한다.
+- [x] 리뷰 결과 뒤에 충돌을 푼 머지가 있으면 검사 6이 실패한다. 테스트와 PR #20 실제 커밋으로 확인한다.
+- [x] 충돌 없는 머지, 머지 뒤 리뷰 결과를 적은 PR은 통과한다. PR #18, #10, #12, #26, #37 실제 커밋으로 확인한다.
+- [x] 머지 커밋이 검사 1·3·4의 결과를 바꾸지 않는다 (지난 머지 PR 전부에서 검사 1~5 결과가 이 phase 전과 같다).
+- [x] CLAUDE.md, guardrails.md의 검사 6 설명이 코드와 같다.
 - [ ] 이 PR 자체가 검사 6을 통과하고 머지된다.
 
 ## 위험과 열린 질문
@@ -106,3 +106,4 @@ function collectCommits(base, head) { ... }
 - 2026-11-26: 사용자 승인. 이슈 #43, 브랜치 `setup/43-merge-resolution-check`
 - 2026-11-26: 단계 1~4 완료 (구현 `013d6c5`). 지난 PR 대 보기는 표와 같았다. 범위 6(phase 17 머지 뒤 기록)도 함께 커밋. 계획 변경은 없음
 - 2026-11-26: 단계 5 완료. PR #44를 draft로 열어 CI `check`·`fe-pr` 통과. CI의 git은 2.56.1 (ubuntu-26.04)
+- 2026-11-26: 리뷰 통과 ([리뷰 문서](../reviews/18-merge-resolution-check-review.md)). 발견 사항 없음. 남은 일: draft 해제 뒤 CI, 머지, 머지 뒤 `fe-main`·`pr-44` 태그

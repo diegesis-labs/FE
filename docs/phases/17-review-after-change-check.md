@@ -1,6 +1,6 @@
 # Phase 17: 리뷰 없이 머지되는 PR을 작업 절차 검사로 막기
 
-- 상태: 승인됨
+- 상태: 리뷰 통과 (draft를 푼 뒤의 CI와 머지 남음)
 - 선행 phase: [05 작업 절차 CI 검사](05-process-check.md), [16 실제 BE와 Google 로그인을 로컬에서 확인](16-be-login-local.md) (둘 다 `main`에 머지됨)
 - 관련 이슈: [#41](https://github.com/diegesis-labs/FE/issues/41)
 - 브랜치: `setup/41-review-after-change-check`
@@ -95,12 +95,12 @@ export function checkReviewAfterChanges({ commits, reviewPath }) { ... }
 
 ## 완료 기준
 
-- [ ] `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`가 통과한다.
-- [ ] 리뷰 문서를 바꾸지 않은 non-draft PR, 리뷰 결과 뒤에 계획·리뷰 문서 밖의 파일을 바꾼 PR은 검사 6이 실패한다. 테스트와 PR #38 실제 커밋으로 확인한다.
-- [ ] PR #37, #40 실제 커밋은 검사 6을 통과한다.
-- [ ] draft PR, `- Phase: 없음` 예외 PR, Dependabot PR은 검사 6을 하지 않는다.
-- [ ] 실패 메시지가 무엇을 고쳐야 하는지 말한다 (리뷰 문서 경로와 기준 커밋).
-- [ ] CLAUDE.md, guardrails.md, architecture.md, PR 템플릿의 검사 설명이 같다.
+- [x] `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`가 통과한다.
+- [x] 리뷰 문서를 바꾸지 않은 non-draft PR, 리뷰 결과 뒤에 계획·리뷰 문서 밖의 파일을 바꾼 PR은 검사 6이 실패한다. 테스트와 PR #38 실제 커밋으로 확인한다.
+- [x] PR #37, #40 실제 커밋은 검사 6을 통과한다.
+- [x] draft PR, `- Phase: 없음` 예외 PR, Dependabot PR은 검사 6을 하지 않는다.
+- [x] 실패 메시지가 무엇을 고쳐야 하는지 말한다 (리뷰 문서 경로와 기준 커밋).
+- [x] CLAUDE.md, guardrails.md, architecture.md, PR 템플릿의 검사 설명이 같다.
 - [ ] 이 PR 자체가 검사 6을 통과하고 머지된다.
 
 ## 위험과 열린 질문
@@ -117,3 +117,4 @@ export function checkReviewAfterChanges({ commits, reviewPath }) { ... }
 - 2026-11-26: 사용자 승인. 이슈 #41, 브랜치 `setup/41-review-after-change-check`
 - 2026-11-26: 단계 1~4 완료 (구현 `d865a67`). 지난 PR 대 보기에 #5(실패, 첫 리뷰 링크만 봄)를 더하고 위험 4를 적음. 계획 변경은 없음
 - 2026-11-26: 단계 5 완료. PR #42를 draft로 열어 CI 통과(검사 6 건너뜀 알림). 설명의 리뷰 링크를 15 리뷰로 바꾸고 draft를 풀자 검사 6만 실패(PR #38 모양). 다시 draft로 돌리고 설명을 되돌림
+- 2026-11-26: 리뷰 통과 ([리뷰 문서](../reviews/17-review-after-change-check-review.md)). 발견 사항 1(충돌을 푼 `main` 머지는 검사 6이 보지 않음, #20 사례)은 이 PR에서 고치지 않고 사용자 결정으로 남김. 남은 일: draft 해제 뒤 CI, 머지, 머지 뒤 `fe-main`·`pr-42` 태그

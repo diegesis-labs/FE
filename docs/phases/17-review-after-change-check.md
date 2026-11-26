@@ -1,6 +1,6 @@
 # Phase 17: 리뷰 없이 머지되는 PR을 작업 절차 검사로 막기
 
-- 상태: 리뷰 통과 (머지와 머지 뒤 `fe-main` 확인 남음)
+- 상태: 완료
 - 선행 phase: [05 작업 절차 CI 검사](05-process-check.md), [16 실제 BE와 Google 로그인을 로컬에서 확인](16-be-login-local.md) (둘 다 `main`에 머지됨)
 - 관련 이슈: [#41](https://github.com/diegesis-labs/FE/issues/41)
 - 브랜치: `setup/41-review-after-change-check`
@@ -101,7 +101,7 @@ export function checkReviewAfterChanges({ commits, reviewPath }) { ... }
 - [x] draft PR, `- Phase: 없음` 예외 PR, Dependabot PR은 검사 6을 하지 않는다.
 - [x] 실패 메시지가 무엇을 고쳐야 하는지 말한다 (리뷰 문서 경로와 기준 커밋).
 - [x] CLAUDE.md, guardrails.md, architecture.md, PR 템플릿의 검사 설명이 같다.
-- [ ] 이 PR 자체가 검사 6을 통과하고 머지된다.
+- [x] 이 PR 자체가 검사 6을 통과하고 머지된다.
 
 ## 위험과 열린 질문
 
@@ -119,3 +119,4 @@ export function checkReviewAfterChanges({ commits, reviewPath }) { ... }
 - 2026-11-26: 단계 5 완료. PR #42를 draft로 열어 CI 통과(검사 6 건너뜀 알림). 설명의 리뷰 링크를 15 리뷰로 바꾸고 draft를 풀자 검사 6만 실패(PR #38 모양). 다시 draft로 돌리고 설명을 되돌림
 - 2026-11-26: 리뷰 통과 ([리뷰 문서](../reviews/17-review-after-change-check-review.md)). 발견 사항 1(충돌을 푼 `main` 머지는 검사 6이 보지 않음, #20 사례)은 이 PR에서 고치지 않고 사용자 결정으로 남김. 남은 일: draft 해제 뒤 CI, 머지, 머지 뒤 `fe-main`·`pr-42` 태그
 - 2026-11-26: draft를 푼 뒤 PR #42 CI `check` 통과 (`39c8290`, 실행 45775662077): 검사 1~6 모두 ✔. 남은 일: 머지, 머지 뒤 `fe-main`·`pr-42` 태그
+- 2026-11-26: 머지 뒤 확인 완료. PR #42 머지 `5817ee4`의 `fe-main` 빌드 SUCCESS, production 트래픽 100% `diegesis-fe-5817ee4-ba9b03`, `/` 200. `pr-42` 태그는 지웠다. 상태 `완료`. 이 기록은 phase 18 브랜치(#43)에서 커밋했다

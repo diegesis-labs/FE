@@ -296,6 +296,29 @@ describe('검사 6: 리뷰가 마지막 변경 뒤에', () => {
     assert.equal(check([code, reviewResult, late]).length, 1)
   })
 
+  // 머지 커밋: files는 충돌을 풀며 손댄 파일만 (phase 18)
+  const merge = (files, n = 'e') => ({
+    sha: n.repeat(40),
+    subject: "Merge remote-tracking branch 'origin/main' into feat/1-x",
+    files,
+    merge: true,
+  })
+
+  test('실패: 리뷰 결과 뒤에 충돌을 푼 머지 (PR #20 모양)', () => {
+    const errors = check([plan, code, reviewPlan, reviewResult, merge(['src/b.tsx'])])
+    assert.equal(errors.length, 1)
+    assert.match(errors[0], /`eeeeeee`\(충돌을 푼 머지\) 이후의 변경이/)
+  })
+
+  test('통과: 충돌을 푼 머지 뒤에 리뷰 결과 (PR #18 모양)', () =>
+    assert.deepEqual(check([plan, code, merge(['src/a.ts']), reviewResult]), []))
+
+  test('통과: 리뷰 결과 뒤 충돌 없는 머지', () =>
+    assert.deepEqual(check([plan, code, reviewResult, merge([])]), []))
+
+  test('통과: 리뷰 결과 뒤 계획·리뷰 문서만 충돌을 푼 머지', () =>
+    assert.deepEqual(check([plan, code, reviewResult, merge(['docs/phases/16-x.md'])]), []))
+
   test('통과: 코드 없이 리뷰 문서만 바꾼 PR', () => assert.deepEqual(check([reviewResult]), []))
 })
 
@@ -366,6 +389,33 @@ describe('runChecks', () => {
       pr: { body: BODY, draft: false, author: 'someone' },
     })
     assert.deepEqual(failed(out), ['5. PR 설명'])
+  })
+
+  test('머지 커밋은 검사 1·3·4에 들어가지 않고 검사 6에만 들어간다', () => {
+    const mergeCommit = {
+      sha: 'e'.repeat(40),
+      subject: "Merge branch 'main' into feat/12-x", // 검사 1 형식이 아님
+      files: ['docs/phases/05-x.md', 'src/b.ts'], // 검사 3이면 섞인 커밋
+      merge: true,
+    }
+    const reviewResult = commit('docs(review): 05 리뷰 결과', ['docs/reviews/05-x-review.md'])
+    const pr = { body: BODY, draft: false, author: 'someone' }
+    // 첫 커밋이 머지라도 검사 4는 머지가 아닌 첫 코드 커밋 시점을 본다
+    const readAt = (sha) => (sha === 'e'.repeat(40) ? '- 상태: 계획' : '- 상태: 승인됨')
+    const passed = runChecks({
+      ...base,
+      readAt,
+      commits: [mergeCommit, commit('feat: x', ['src/a.ts']), reviewResult],
+      pr,
+    })
+    assert.deepEqual(failed(passed), [])
+    const late = runChecks({
+      ...base,
+      readAt,
+      commits: [commit('feat: x', ['src/a.ts']), reviewResult, mergeCommit],
+      pr,
+    })
+    assert.deepEqual(failed(late), ['6. 리뷰가 마지막 변경 뒤에'])
   })
 
   test('Dependabot PR은 검사 1만 한다', () => {

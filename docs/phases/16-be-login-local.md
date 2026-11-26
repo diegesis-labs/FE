@@ -27,7 +27,7 @@
 1. **BE를 BE 레포를 건드리지 않고 띄운다**: BE `origin/main`을 `git archive`로 임시 폴더(작업 폴더 밖)에 풀어 `docker compose`로 띄운다. BE 작업 폴더의 브랜치와 파일은 바꾸지 않는다.
 2. **비밀값은 사용자가 넣는다**: 임시 폴더의 `.env`에 `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`을 사용자가 직접 넣는다. Claude는 값을 읽거나 출력하지 않는다. 허용 목록에는 사용자가 알려 준 계정 A를 `user`로 넣는다 (BE README의 SQL).
 3. **개발 서버 경로**: `VITE_API_MOCK=false pnpm dev --strictPort`(5173)로 띄워 아래 "확인할 것"을 본다. 포트가 5174로 밀리면 Google 돌아올 주소가 맞지 않으므로 `--strictPort`를 쓴다.
-4. **컨테이너 경로**: `VITE_API_MOCK=false`로 빌드한 이미지를 `-p 5173:8080 -e BE_ORIGIN=http://host.docker.internal:8080`으로 띄워 같은 것을 본다. 운영과 같은 nginx 넘겨주기(쿠키, `Origin`, `X-Forwarded-*`)를 실제 BE로 확인한다.
+4. **컨테이너 경로**: `VITE_API_MOCK=false`로 빌드한 이미지를 `-p 5173:8080 -e BE_ORIGIN=http://host.docker.internal:<BE 포트>`로 띄워 같은 것을 본다. 운영과 같은 nginx 넘겨주기(쿠키, `Origin`, `X-Forwarded-*`)를 실제 BE로 확인한다.
 5. **어긋난 것 고치기**: 확인 중 FE 결함이 나오면 이 문서를 먼저 고치고(계획 변경 커밋) FE를 고친다.
 6. **문서**: architecture.md에 "실제 BE로 로컬 개발하기"(BE 띄우기, `.env`, 허용 목록, 두 경로)를 적는다. 12 리뷰 문서 3절에 결과를 채운다.
 7. **GCP 정리 (phase 15 리뷰 지적 2)**: 기본 Compute 서비스 계정(`872555598631-compute@developer.gserviceaccount.com`)의 프로젝트 `roles/editor`를 뺀다 (사용자 결정 2026-11-26). 우리 서비스(`fe-run`)와 빌드(`fe-build`)는 이 계정을 쓰지 않는다. 빼기 전후의 역할과, 뺀 뒤 `fe-main`·`fe-pr` 빌드와 production 응답이 그대로인지 15 리뷰 문서에 적는다.
@@ -57,12 +57,13 @@
 
 ```
 브라우저 ── http://localhost:5173 ──┬─ 개발 서버(Vite) ── /api 프록시 ──┐
-                                    └─ 또는 FE 컨테이너(nginx) ─────────┴─▶ BE api (localhost:8080) ─▶ PostgreSQL (compose)
+                                    └─ 또는 FE 컨테이너(nginx) ─────────┴─▶ BE api (localhost:8081) ─▶ PostgreSQL (compose)
 Google ── 돌아올 주소 http://localhost:5173/api/auth/google/callback
 ```
 
 - BE의 `FRONTEND_URL`은 `http://localhost:5173` 그대로다. 그래서 BE가 보내는 리다이렉트, 쿠키(`Secure` 없음), 출처 확인의 기준이 FE 주소와 맞는다.
 - 두 경로는 같은 포트를 쓰므로 한 번에 하나만 띄운다.
+- BE 포트: BE 기본값은 8080이지만, 이 컴퓨터에서는 8080을 다른 프로그램(code-server)이 쓰고 있어 임시 폴더의 `.env`에 `API_PORT=8081`을 더해 8081로 띄웠다. 그래서 개발 서버는 `API_PROXY_TARGET=http://localhost:8081`, 컨테이너는 `BE_ORIGIN=http://host.docker.internal:8081`이다. FE 코드와 BE 계약에는 영향이 없다.
 - 확인은 평소 브라우저 프로필이 아니라 Chrome 게스트 창에서 한다 (쿠키 없이 시작, 계정 로그인이 남지 않게. BE ADR-031과 같은 이유).
 
 ### 확인할 것 (두 경로 각각)
@@ -94,10 +95,12 @@ phase 12에서 만든 화면을 그대로 쓴다. 바꾸지 않는다.
 ## 작업 단계
 
 - [ ] 1. GCP: 기본 Compute 서비스 계정에서 `roles/editor`를 뺀다. 남은 역할을 확인하고, 다음 빌드와 production 응답이 그대로인지 본다 (범위 7).
-- [ ] 2. BE `origin/main`을 임시 폴더에 풀고, 사용자가 `.env`에 Google 값을 넣는다. `docker compose up --build -d --wait`, 허용 목록에 계정 A를 넣는다. `GET /api/health` 200을 본다.
-- [ ] 3. 개발 서버 경로로 "확인할 것" 1~7을 사용자와 함께 본다. Claude는 BE 로그와 응답 헤더를, 사용자는 게스트 창의 화면을 본다.
-- [ ] 4. 컨테이너 경로로 같은 것을 본다.
-- [ ] 5. 결함이 나오면 이 문서를 고치고(계획 변경) FE를 고친다. 없으면 건너뛴다.
+  - [x] 뺐다 (2026-11-26). 남은 프로젝트 역할 없음. production `/` 200 그대로
+  - [ ] 이 PR의 `fe-pr` 빌드, 머지 뒤 `fe-main` 빌드가 성공하는지 (PR을 올린 뒤 리뷰에서 확인)
+- [x] 2. BE `origin/main`을 임시 폴더에 풀고, 사용자가 `.env`에 Google 값을 넣는다. `docker compose up --build -d --wait`, 허용 목록에 계정 A를 넣는다. `GET /api/health` 200을 본다.
+- [x] 3. 개발 서버 경로로 "확인할 것" 1~7을 사용자와 함께 본다. Claude는 BE 로그와 응답 헤더를, 사용자는 게스트 창의 화면을 본다.
+- [x] 4. 컨테이너 경로로 같은 것을 본다.
+- [x] 5. 결함이 나오면 이 문서를 고치고(계획 변경) FE를 고친다. 없으면 건너뛴다.
 - [ ] 6. architecture.md, 12 리뷰 문서 3절, 15 리뷰 문서를 고친다.
 - [ ] 7. BE를 내리고(`docker compose down -v`) 임시 폴더를 지운다. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`를 통과시킨다.
 
@@ -124,3 +127,4 @@ phase 12에서 만든 화면을 그대로 쓴다. 바꾸지 않는다.
 
 - 2026-11-26: 작성. BE Epic 1 머지 뒤 실제 BE로 로그인을 확인하는 phase. 기본 Compute 계정의 편집자 권한 빼기(사용자 결정)도 이 phase에 넣음
 - 2026-11-26: 승인. 운영 주소가 아니라 로컬에서만 확인한다는 것을 사용자와 다시 확인함. 계정 A는 사용자가 알려 준 계정(이메일은 문서에 적지 않음). 이슈 #39 생성, 브랜치 `setup/39-be-login-local`
+- 2026-11-26: 계획 변경 - BE 포트 8081. 8080을 code-server가 쓰고 있어 BE를 `API_PORT=8081`로 띄움 (로컬 구성에 적음). 단계 2~4 완료: 두 경로 모두 확인할 것 1~4, 6, 7이 기대와 같음(6·7은 개발 서버 경로에서). 5는 계정 B가 없어 확인 못 함. FE 결함 없음(단계 5 건너뜀)

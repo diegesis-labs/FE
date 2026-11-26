@@ -69,8 +69,9 @@ export function phaseStatus(content) {
 /**
  * 검사 4: 코드를 바꾼 첫 커밋 시점에 phase 문서가 이미 승인되어 있다 (`상태:`가 `계획`이 아님).
  * commits는 오래된 것부터. readAt(sha, path)는 그 커밋 시점의 파일 내용(없으면 null).
+ * pastPathsOf(path)는 그 문서의 예전 이름들이다. phase 번호를 옮긴 문서는 그 시점에 예전 이름으로 있다.
  */
-export function checkPhaseBeforeCode({ commits, phasePath, readAt }) {
+export function checkPhaseBeforeCode({ commits, phasePath, readAt, pastPathsOf = () => [] }) {
   const first = commits.find((c) => c.files.some(isCodeFile))
   if (!first) return []
   if (!phasePath) {
@@ -79,7 +80,10 @@ export function checkPhaseBeforeCode({ commits, phasePath, readAt }) {
         `phase가 필요 없는 작은 수정이면 \`- Phase: 없음 — 이유\`를 적으세요.`,
     ]
   }
-  const status = phaseStatus(readAt(first.sha, phasePath))
+  const content = [phasePath, ...pastPathsOf(phasePath)]
+    .map((path) => readAt(first.sha, path))
+    .find((c) => c !== null && c !== undefined)
+  const status = phaseStatus(content)
   if (status === null) {
     return [
       `코드 커밋 \`${short(first.sha)}\` 시점에 \`${phasePath}\`가 없거나 \`- 상태:\` 줄이 없습니다. ` +
@@ -143,7 +147,15 @@ export function checkPrBody({ body, draft, exists }) {
  * 다섯 검사를 묶어 실행한다. pr이 null이면(로컬, PR 설명 없음) 검사 5를 건너뛰고,
  * 검사 4의 phase 문서는 `- 브랜치:` 줄이 현재 브랜치인 문서로 찾는다(findPhaseForBranch).
  */
-export function runChecks({ commits, branch, pr, readAt, exists, findPhaseForBranch }) {
+export function runChecks({
+  commits,
+  branch,
+  pr,
+  readAt,
+  exists,
+  findPhaseForBranch,
+  pastPathsOf,
+}) {
   const results = []
   const add = (name, errors) => results.push({ name, errors })
 
@@ -160,7 +172,10 @@ export function runChecks({ commits, branch, pr, readAt, exists, findPhaseForBra
     notes.push(`phase 없이 머지되는 PR입니다: ${reason || '(이유 없음)'}`)
   } else {
     const phasePath = pr ? phaseLinkOf(pr.body) : findPhaseForBranch(branch)
-    add('4. phase 승인이 코드보다 먼저', checkPhaseBeforeCode({ commits, phasePath, readAt }))
+    add(
+      '4. phase 승인이 코드보다 먼저',
+      checkPhaseBeforeCode({ commits, phasePath, readAt, pastPathsOf }),
+    )
   }
 
   if (pr) add('5. PR 설명', checkPrBody({ body: pr.body ?? '', draft: pr.draft, exists }))
@@ -247,8 +262,24 @@ function main() {
     )
   }
 
+  // git의 이름 변경 기록에서 이 문서의 예전 이름들 (지금 이름 제외)
+  const pastPathsOf = (path) => {
+    const names = (tryGit(['log', '--follow', '--name-only', '--format=', head, '--', path]) ?? '')
+      .split('\n')
+      .filter(Boolean)
+    return [...new Set(names)].filter((name) => name !== path)
+  }
+
   const commits = collectCommits(base, head)
-  const { results, notes } = runChecks({ commits, branch, pr, readAt, exists, findPhaseForBranch })
+  const { results, notes } = runChecks({
+    commits,
+    branch,
+    pr,
+    readAt,
+    exists,
+    findPhaseForBranch,
+    pastPathsOf,
+  })
 
   console.log(
     `작업 절차 검사: ${branch} (${commits.length}개 커밋, ${short(base)}..${short(head)})`,

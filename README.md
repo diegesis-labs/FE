@@ -4,11 +4,11 @@ Diegesis 웹 프론트엔드. Vite + React + TypeScript SPA.
 
 기술스택, 폴더 구조, BE 연동 방식은 [docs/architecture.md](docs/architecture.md)에 정리되어 있다.
 
-배포: <https://diegesis-fe.vercel.app> (Vercel, `main` 머지 때 자동 배포. BE가 생기기 전이라 MSW 목 데이터로 동작한다. [architecture.md](docs/architecture.md) 5장)
+배포: <https://diegesis-fe-872555598631.asia-northeast3.run.app> (GCP Cloud Run, `main` 머지 때 자동 배포, PR마다 `pr-<번호>` 미리보기 주소. BE가 생기기 전이라 MSW 목 데이터로 동작한다. [architecture.md](docs/architecture.md) 5장)
 
 ## 시작하기
 
-Node 24가 필요하다 (`.nvmrc`, `engines`는 `24.x`. Vercel도 같은 버전으로 빌드한다). pnpm 버전은 `package.json`의 `packageManager`로 고정되어 있으니 Corepack으로 맞춘다.
+Node 24가 필요하다 (`.nvmrc`, `engines`는 `24.x`. 배포 컨테이너도 Node 24로 빌드한다). pnpm 버전은 `package.json`의 `packageManager`로 고정되어 있으니 Corepack으로 맞춘다.
 
 ```bash
 corepack enable        # 처음 한 번

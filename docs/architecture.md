@@ -143,31 +143,156 @@ BE [docs/API.md](https://github.com/diegesis-labs/BE/blob/main/docs/API.md) 1절
 
 ## 5. 배포
 
-> 관련 phase: [10 Vercel 배포](phases/10-vercel-deploy.md)
+> 관련 phase: [15 GCP Cloud Run 배포](phases/15-gcp-deploy.md) (이전: [10 Vercel 배포](phases/10-vercel-deploy.md))
 
-Vercel에 정적 파일(`dist/`)로 올린다. 주소: <https://diegesis-fe.vercel.app>
+GCP Cloud Run에 nginx 컨테이너로 올린다. 도메인은 사지 않고 Cloud Run 기본 주소를 운영 주소로 쓴다.
 
-프로젝트 이름은 `diegesis`인데 `diegesis.vercel.app`은 다른 사람이 쓰고 있어서, production 주소로 `diegesis-fe.vercel.app`을 프로젝트 도메인에 따로 붙였다. 자동으로 붙은 `diegesis-indol.vercel.app`도 같은 배포를 가리킨다. Node 버전은 `engines`(`24.x`)와 프로젝트 설정 모두 24.x다.
+운영 주소: <https://diegesis-fe-872555598631.asia-northeast3.run.app>
 
-- **연결**: Vercel 프로젝트 `diegesis`(개인 Hobby 팀 `def-uk`)가 이 레포와 Git으로 연결돼 있다. `main`에 머지되면 production, PR마다 Preview 주소가 생긴다. Preview는 Vercel 기본 보호로 팀 구성원만 볼 수 있다.
-- **설정 파일**: `vercel.json`이 기준이다 (설치·빌드 명령, 출력 폴더, rewrite, 헤더). 대시보드에서 같은 값을 따로 고치지 않는다.
-  - SPA rewrite: 실제 파일이 없는 경로는 모두 `index.html`로 보낸다 (`/api/` 제외). 없는 경로는 앱의 404 화면이 보여 준다.
-  - 헤더: `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy`. `/assets/`는 파일 이름에 해시가 있어 1년 `immutable` 캐시. CSP는 아직 없다.
-  - 설치는 CI와 같이 `pnpm install --frozen-lockfile`. `pnpm-workspace.yaml` 보안 설정도 그대로 적용된다.
-- **환경 변수** (Vercel 프로젝트 설정): `VITE_API_MOCK=true`(Production, Preview, 데모 모드), `ENABLE_EXPERIMENTAL_COREPACK=1`(`packageManager`의 pnpm 버전을 쓰게 함).
-- **CI와의 관계**: 배포는 Vercel이 한다. GitHub Actions에는 배포 비밀값이 없고, Vercel의 커밋 상태는 필수 검사가 아니다 (필수는 `check` 하나).
+- HTTPS 인증서는 구글이 발급하고 갱신한다. DNS 설정이 없다.
+- 같은 서비스에 예전 형식의 주소(`https://diegesis-fe-fcfmer236q-du.a.run.app`)도 열려 있다. 문서, OAuth, 테스트 참가자에게는 위의 주소 하나만 쓴다. 두 주소는 출처가 달라서 로그인 쿠키를 나눠 쓰지 않는다.
+- 주소에 프로젝트 번호가 들어간다. 프로젝트나 서비스를 다시 만들면 주소가 바뀐다 ([phase 15](phases/15-gcp-deploy.md) 위험 1).
+
+### 구성
+
+| 항목             | 값                                                                                                                            |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| GCP 프로젝트     | `diegesis-front` (번호 `872555598631`). BE와 다른 프로젝트                                                                    |
+| 리전             | `asia-northeast3` (서울)                                                                                                      |
+| Cloud Run 서비스 | `diegesis-fe`. 공개, CPU 1, 메모리 256Mi, 동시 요청 80, 인스턴스 0~2                                                          |
+| 이미지 저장소    | Artifact Registry `diegesis`. 이미지 `asia-northeast3-docker.pkg.dev/diegesis-front/diegesis/fe:<커밋 SHA>`, 최근 10개만 남김 |
+| 서비스 계정      | `fe-run`(실행, 권한 없음), `fe-build`(빌드·배포, 최소 권한. 아래 명령 참고)                                                   |
+| GitHub 연결      | Cloud Build 저장소 연결 `github-diegesis` → `diegesis-labs/FE` (Cloud Build GitHub 앱, `FE`만 허용)                           |
+| 트리거           | `fe-main`(`main` push → production), `fe-pr`(`main` 대상 PR → `pr-<번호>` 미리보기)                                           |
+| 예산 알림        | 월 1만 원, 50%·90%·100%에서 결제 계정 관리자에게 메일 (비용을 막지는 않는다)                                                  |
+
+### 컨테이너
+
+- `Dockerfile`: 1단계에서 Node 24와 Corepack pnpm으로 `pnpm install --frozen-lockfile`, `pnpm build`. 2단계 nginx 이미지에는 `dist/`와 nginx 설정만 담는다. 기반 이미지는 digest로 고정한다.
+- `deploy/nginx/`: Vercel의 `vercel.json`이 하던 일을 그대로 옮겼다.
+  - SPA: 실제 파일이 없는 경로는 `index.html`. 없는 경로는 앱의 404 화면이 보여 준다.
+  - `/assets/`: 없는 파일은 404. 있는 파일만 1년 `immutable` 캐시.
+  - 그 밖(`index.html`, `mockServiceWorker.js` 등)은 `no-cache`.
+  - 헤더: `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy`. CSP는 아직 없다.
+  - 접근 로그에 쿼리 문자열을 남기지 않는다 (Google 로그인 결과의 `code`). 다만 Cloud Run 자체 요청 로그에는 남는다 ([phase 15](phases/15-gcp-deploy.md) 위험 7).
+  - `/api/`: 환경 변수 `BE_ORIGIN`이 비어 있으면 404 `text/plain`. 있으면 그 출처로 넘긴다 (아래 "BE가 생기면").
+- 로컬에서 돌려 보기:
+
+  ```bash
+  docker build --build-arg VITE_API_MOCK=true -t diegesis-fe .
+  docker run --rm -p 8080:8080 diegesis-fe                                   # 데모 모드
+  docker run --rm -p 8080:8080 -e BE_ORIGIN=http://host.docker.internal:8000 diegesis-fe   # 로컬 BE로 /api 넘기기
+  ```
+
+### 배포 흐름
+
+`cloudbuild.yaml`이 빌드 → 이미지 올리기 → Cloud Run 배포를 한다. 트리거는 `fe-build` 서비스 계정으로 돈다.
+
+- **`main`에 머지**: `fe-main`이 머지 커밋을 빌드해서 트래픽 없이 리비전을 만들고, production 트래픽 100%를 그 리비전으로 옮긴다. 리비전 이름은 `diegesis-fe-<커밋 7자리>-<빌드 ID 6자리>`다.
+- **PR**: `fe-pr`이 같은 빌드를 트래픽 없이 배포하고 `pr-<번호>` 태그를 붙인다. 주소: `https://pr-<번호>---diegesis-fe-872555598631.asia-northeast3.run.app`. 조직 밖 사람의 PR은 `/gcbrun` 댓글 승인 뒤에만 돈다.
+  - PR 미리보기는 공개 주소다 (Vercel Preview와 달리 로그인 보호가 없다).
+  - 트래픽은 "가장 최근 리비전"이 아니라 이름으로 옮긴다. `main` 배포 도중에 PR 빌드가 리비전을 만들어도 production이 PR 코드로 바뀌지 않는다.
+  - PR 빌드는 PR 브랜치의 `cloudbuild.yaml`로 돌고 `fe-build` 권한을 쓴다. 그래서 PR 코드가 production 서비스의 설정이나 트래픽을 바꿀 수 있다. 조직 밖 사람의 PR에 `/gcbrun`을 달기 전에 `cloudbuild.yaml`과 `Dockerfile`의 변경을 먼저 읽는다.
+- **빌드 시점 값**: `VITE_API_MOCK`은 트리거의 대체 변수 `_VITE_API_MOCK`(지금 `true`, 데모 모드)이다.
+- **실행 시점 값**: `BE_ORIGIN`은 Cloud Run 서비스의 환경 변수다. 배포가 이 값을 지우지 않는다.
+- **CI와의 관계**: GitHub Actions에는 배포 비밀값이 없다. Cloud Build의 결과는 PR에 `fe-pr (diegesis-front)`로 보이지만 필수 검사가 아니다 (필수는 `check` 하나).
+- **손으로 배포**(트리거가 안 될 때): 작업 트리가 깨끗한 상태에서
+
+  ```bash
+  gcloud builds submit --config=cloudbuild.yaml --region=asia-northeast3 \
+    --service-account=projects/diegesis-front/serviceAccounts/fe-build@diegesis-front.iam.gserviceaccount.com \
+    --gcs-source-staging-dir=gs://diegesis-front-build-src/source \
+    --substitutions=_TAG=$(git rev-parse HEAD)
+  ```
+
+  소스는 서울 버킷 `gs://diegesis-front-build-src`(7일 뒤 자동 삭제)에 올라간다.
+
+### 되돌리는 법
+
+이전 리비전으로 트래픽을 옮긴다. 이미지를 다시 빌드하지 않는다.
+
+```bash
+gcloud run revisions list --service=diegesis-fe --region=asia-northeast3
+gcloud run services update-traffic diegesis-fe --region=asia-northeast3 --to-revisions=<리비전 이름>=100
+```
+
+다음 `main` 머지 때 `fe-main`이 그 빌드의 리비전으로 트래픽을 옮긴다. 그 전에 원인을 고친다.
+
+### PR 미리보기 정리
+
+PR이 닫혀도 `pr-<번호>` 태그와 리비전이 남는다 (비용은 없다). 쌓이면 지운다.
+
+```bash
+gcloud run services update-traffic diegesis-fe --region=asia-northeast3 --remove-tags=pr-<번호>
+```
+
+### GCP 리소스를 만든 명령 (2026-11-25)
+
+다시 만들 때 참고한다. `P=diegesis-front`, `R=asia-northeast3`, `B=fe-build@$P.iam.gserviceaccount.com`.
+
+```bash
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com billingbudgets.googleapis.com
+gcloud billing budgets create --billing-account=<결제 계정> --display-name="diegesis-front 월 예산" \
+  --budget-amount=10000KRW --filter-projects=projects/$P \
+  --threshold-rule=percent=0.5 --threshold-rule=percent=0.9 --threshold-rule=percent=1.0
+
+# 이미지 저장소와 정리 정책 (최근 10개 Keep, 나머지 Delete)
+gcloud artifacts repositories create diegesis --repository-format=docker --location=$R
+gcloud artifacts repositories set-cleanup-policies diegesis --location=$R --policy=<정책 JSON> --no-dry-run
+
+# 서비스 계정과 권한. fe-run에는 권한을 주지 않는다.
+gcloud iam service-accounts create fe-run
+gcloud iam service-accounts create fe-build
+gcloud artifacts repositories add-iam-policy-binding diegesis --location=$R --member=serviceAccount:$B --role=roles/artifactregistry.writer
+gcloud projects add-iam-policy-binding $P --member=serviceAccount:$B --role=roles/run.developer
+gcloud projects add-iam-policy-binding $P --member=serviceAccount:$B --role=roles/logging.logWriter
+gcloud iam service-accounts add-iam-policy-binding fe-run@$P.iam.gserviceaccount.com --member=serviceAccount:$B --role=roles/iam.serviceAccountUser
+
+# 손으로 배포할 때 쓰는 소스 버킷 (7일 뒤 삭제)
+gcloud storage buckets create gs://$P-build-src --location=$R --uniform-bucket-level-access --public-access-prevention
+gcloud storage buckets update gs://$P-build-src --lifecycle-file=<age 7 Delete 규칙 JSON>
+gcloud storage buckets add-iam-policy-binding gs://$P-build-src --member=serviceAccount:$B --role=roles/storage.objectViewer
+
+# 첫 배포(위 "손으로 배포") 뒤, 소유자가 서비스를 한 번 공개한다. fe-build는 IAM을 바꿀 수 없다.
+gcloud run services add-iam-policy-binding diegesis-fe --region=$R --member=allUsers --role=roles/run.invoker
+
+# GitHub 연결: 콘솔에서 호스트 연결 github-diegesis를 만들고 Cloud Build GitHub 앱을 diegesis-labs에 설치(FE만)
+gcloud builds repositories create FE --remote-uri=https://github.com/diegesis-labs/FE.git --connection=github-diegesis --region=$R
+REPO=projects/$P/locations/$R/connections/github-diegesis/repositories/FE
+SA=projects/$P/serviceAccounts/$B
+gcloud builds triggers create github --name=fe-main --region=$R --repository=$REPO --branch-pattern='^main$' \
+  --build-config=cloudbuild.yaml --service-account=$SA --substitutions=_VITE_API_MOCK=true
+gcloud builds triggers create github --name=fe-pr --region=$R --repository=$REPO --pull-request-pattern='^main$' \
+  --comment-control=COMMENTS_ENABLED_FOR_EXTERNAL_CONTRIBUTORS_ONLY \
+  --build-config=cloudbuild.yaml --service-account=$SA --substitutions=_VITE_API_MOCK=true
+```
 
 ### 데모 모드 (BE가 생기기 전)
 
-BE가 아직 없어서 배포된 화면은 MSW 목(3장 "목 API")으로 동작한다. 데이터는 저작권이 끝난 단편 3편이다.
+BE가 아직 없어서 배포된 화면은 MSW 목(3장 "목 API")으로 동작한다. 데이터는 저작권이 끝난 단편 3편이다. `/api/`는 404다.
 
 ### BE가 생기면
 
-BE INFRA.md의 구성 A(FE와 BE가 한 주소를 함께 씀)로 붙인다. 쿠키 로그인이 같은 사이트에서 동작하고 CORS 설정이 필요 없다.
+BE INFRA.md의 구성 A(FE와 BE가 한 주소를 함께 씀)로 붙인다. nginx가 `/api/`를 BE로 넘기므로 쿠키 로그인이 같은 출처에서 동작하고 CORS 설정이 필요 없다.
 
-1. `vercel.json`의 `rewrites` **맨 앞에** `{ "source": "/api/:path*", "destination": "https://<BE 주소>/api/:path*" }`를 더한다.
-2. Vercel 환경 변수에서 `VITE_API_MOCK`을 지운다.
-3. 이미 방문한 브라우저에 남은 MSW 서비스 워커를 정리한다 (등록 해제 코드 또는 `public/mockServiceWorker.js` 삭제. [phase 10](phases/10-vercel-deploy.md) 위험 4).
+1. BE 주소를 Cloud Run 환경 변수로 넣는다. 이미지를 다시 만들지 않는다.
+
+   ```bash
+   gcloud run services update diegesis-fe --region=asia-northeast3 --update-env-vars=BE_ORIGIN=https://<BE 주소>
+   ```
+
+2. BE 쪽 설정: `FRONTEND_URL`은 위 운영 주소, Google OAuth의 돌아올 주소는 `<운영 주소>/api/auth/google/callback`.
+3. 데모 모드를 끈다: `fe-main` 트리거의 `_VITE_API_MOCK`을 `false`로 바꾸고 다시 배포한다. PR 미리보기(`fe-pr`)를 데모 모드로 둘지는 그때 정한다.
+
+   ```bash
+   gcloud builds triggers update github fe-main --region=asia-northeast3 --update-substitutions=_VITE_API_MOCK=false
+   ```
+
+4. 이미 방문한 브라우저에 남은 MSW 서비스 워커를 정리한다 (등록 해제 코드 또는 `public/mockServiceWorker.js` 삭제. [phase 10](phases/10-vercel-deploy.md) 위험 4).
+
+### Vercel (옮기는 중)
+
+[phase 15](phases/15-gcp-deploy.md) 6단계 전까지 Vercel(<https://diegesis-fe.vercel.app>)도 그대로 살아 있고 PR마다 Preview를 만든다. GCP production을 확인한 뒤 후속 PR에서 `vercel.json`을 지우고 Vercel Git 연결을 끊는다.
 
 ## 6. CI와 브랜치 규칙
 

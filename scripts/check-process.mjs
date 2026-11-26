@@ -149,7 +149,8 @@ export function checkPrBody({ body, draft, exists }) {
 /**
  * 검사 6: PR이 링크한 리뷰 문서가 이 PR에서 바뀌었고, 마지막 변경(계획·리뷰 문서 밖)보다 뒤에 바뀌었다.
  * 이미 끝난 리뷰 문서를 링크해서 리뷰 없이 머지하는 것을 막는다 (docs/phases/17-review-after-change-check.md).
- * commits는 오래된 것부터(머지 커밋 제외). reviewPath는 PR 설명의 리뷰 문서 경로.
+ * commits는 오래된 것부터. 충돌을 푼 머지 커밋도 들어온다(merge: true, files는 충돌을 풀며 손댄 파일).
+ * reviewPath는 PR 설명의 리뷰 문서 경로. 머지 커밋: docs/phases/18-merge-resolution-check.md
  */
 export function checkReviewAfterChanges({ commits, reviewPath }) {
   const reviewAt = commits.findLastIndex((c) => c.files.includes(reviewPath))
@@ -161,8 +162,9 @@ export function checkReviewAfterChanges({ commits, reviewPath }) {
   }
   const changeAt = commits.findLastIndex((c) => c.files.some((f) => !PLAN_DOC_RE.test(f)))
   if (changeAt > reviewAt) {
+    const { sha, merge } = commits[changeAt]
     return [
-      `\`${short(commits[changeAt].sha)}\` 이후의 변경이 \`${reviewPath}\`에 기록되지 않았습니다. ` +
+      `\`${short(sha)}\`${merge ? '(충돌을 푼 머지)' : ''} 이후의 변경이 \`${reviewPath}\`에 기록되지 않았습니다. ` +
         `리뷰 문서에 그 변경을 확인한 결과를 적으세요.`,
     ]
   }
@@ -170,8 +172,8 @@ export function checkReviewAfterChanges({ commits, reviewPath }) {
 }
 
 /**
- * 여섯 검사를 묶어 실행한다. pr이 null이면(로컬, PR 설명 없음) 검사 5·6을 건너뛰고,
- * 검사 4의 phase 문서는 `- 브랜치:` 줄이 현재 브랜치인 문서로 찾는다(findPhaseForBranch).
+ * 여섯 검사를 묶어 실행한다. commits는 머지 커밋을 포함한다(merge: true). 검사 1~4는 머지가 아닌 커밋만 본다.
+ * pr이 null이면(로컬, PR 설명 없음) 검사 5·6을 건너뛰고, 검사 4의 phase 문서는 `- 브랜치:` 줄이 현재 브랜치인 문서로 찾는다(findPhaseForBranch).
  */
 export function runChecks({
   commits,
@@ -184,14 +186,16 @@ export function runChecks({
 }) {
   const results = []
   const add = (name, errors) => results.push({ name, errors })
+  // 검사 1~4는 머지가 아닌 커밋만 본다. 머지 커밋(충돌 해결)은 검사 6만 본다
+  const plain = commits.filter((c) => !c.merge)
 
-  add('1. 커밋 메시지', checkCommitMessages(commits))
+  add('1. 커밋 메시지', checkCommitMessages(plain))
   if (pr?.author === 'dependabot[bot]')
     return { results, notes: ['Dependabot PR: 검사 1만 합니다.'] }
 
   const notes = []
   add('2. 브랜치 이름', checkBranchName(branch))
-  add('3. 계획 문서와 코드 분리', checkPlanDocSeparation(commits))
+  add('3. 계획 문서와 코드 분리', checkPlanDocSeparation(plain))
 
   const { exempt, reason } = parseExemption(pr?.body)
   if (exempt) {
@@ -200,7 +204,7 @@ export function runChecks({
     const phasePath = pr ? phaseLinkOf(pr.body) : findPhaseForBranch(branch)
     add(
       '4. phase 승인이 코드보다 먼저',
-      checkPhaseBeforeCode({ commits, phasePath, readAt, pastPathsOf }),
+      checkPhaseBeforeCode({ commits: plain, phasePath, readAt, pastPathsOf }),
     )
   }
 
@@ -238,17 +242,22 @@ function tryGit(args) {
   }
 }
 
+const lines = (out) => [...new Set(out.split('\n').filter(Boolean))]
+
+// { sha, subject, files, merge }. 오래된 것부터, 머지 커밋 포함.
+// 머지 커밋의 files는 충돌을 풀며 손댄 파일만이다 (자동 머지 결과와 다른 파일, --remerge-diff). 충돌 없는 머지는 빈 목록.
 function collectCommits(base, head) {
-  const shas = git(['rev-list', '--no-merges', '--reverse', `${base}..${head}`])
+  const rows = git(['rev-list', '--reverse', '--parents', `${base}..${head}`])
     .split('\n')
     .filter(Boolean)
-  return shas.map((sha) => ({
-    sha,
-    subject: git(['show', '-s', '--format=%s', sha]),
-    files: git(['diff-tree', '--root', '--no-commit-id', '--name-only', '-r', sha])
-      .split('\n')
-      .filter(Boolean),
-  }))
+  return rows.map((row) => {
+    const [sha, ...parents] = row.split(' ')
+    const merge = parents.length > 1
+    const files = merge
+      ? git(['show', '--remerge-diff', '--format=', '--name-only', sha])
+      : git(['diff-tree', '--root', '--no-commit-id', '--name-only', '-r', sha])
+    return { sha, subject: git(['show', '-s', '--format=%s', sha]), files: lines(files), merge }
+  })
 }
 
 function parseArgs(argv) {
@@ -316,8 +325,9 @@ function main() {
     pastPathsOf,
   })
 
+  const merges = commits.filter((c) => c.merge).length
   console.log(
-    `작업 절차 검사: ${branch} (${commits.length}개 커밋, ${short(base)}..${short(head)})`,
+    `작업 절차 검사: ${branch} (${commits.length}개 커밋${merges ? `, 그중 머지 ${merges}개` : ''}, ${short(base)}..${short(head)})`,
   )
   for (const note of notes) console.log(`ℹ ${note}`)
   let failed = 0

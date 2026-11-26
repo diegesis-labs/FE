@@ -176,7 +176,7 @@ pnpm이 없으면 `corepack enable`을 먼저 실행한다 (버전은 `package.j
 
 - `main`은 ruleset으로 보호된다: PR 필수, CI(`check`) 통과 필수, 리뷰 댓글 해결 필수, force push·삭제 금지. 관리자도 우회할 수 없다. 자세한 내용은 [docs/architecture.md](docs/architecture.md) 6장.
 - PR을 올리기 전에 로컬에서 `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`를 통과시킨다. CI도 같은 명령을 돌린다.
-- CI는 PR마다 작업 절차도 검사한다 (`scripts/check-process.mjs`): 커밋 메시지 형식, 브랜치 이름, 계획·리뷰 문서와 다른 파일이 한 커밋에 섞였는지, 코드를 바꾼 첫 커밋 시점에 phase 문서가 승인됐는지, PR 설명에 `Refs #N`·phase 문서·(draft가 아니면) 리뷰 문서가 있는지, (draft가 아니면) 그 리뷰 문서가 이 PR에서 계획·리뷰 문서 밖의 마지막 변경보다 뒤에 바뀌었는지. PR 설명을 고치거나 draft를 풀면 다시 돈다.
+- CI는 PR마다 작업 절차도 검사한다 (`scripts/check-process.mjs`): 커밋 메시지 형식, 브랜치 이름, 계획·리뷰 문서와 다른 파일이 한 커밋에 섞였는지, 코드를 바꾼 첫 커밋 시점에 phase 문서가 승인됐는지, PR 설명에 `Refs #N`·phase 문서·(draft가 아니면) 리뷰 문서가 있는지, (draft가 아니면) 그 리뷰 문서가 이 PR에서 계획·리뷰 문서 밖의 마지막 변경(충돌을 풀며 고친 `main` 머지 포함)보다 뒤에 바뀌었는지. PR 설명을 고치거나 draft를 풀면 다시 돈다.
 - phase가 필요 없는 작은 수정(위 "예외")은 PR 설명에 `- Phase: 없음 — 이유`를 쓴다. 이유를 비울 수 없고 CI 로그에 남는다. 이슈 링크는 예외 없이 필요하다.
 - 머지는 **merge commit으로만** 한다. squash·rebase는 커밋 해시를 바꿔서 phase·리뷰 문서에 적은 해시가 끊긴다.
 - 워크플로의 액션은 태그가 아니라 **커밋 SHA로 고정**한다 (`uses: owner/action@<40자리 SHA> # vX.Y.Z`). 레포 설정이 태그 사용을 거부한다.

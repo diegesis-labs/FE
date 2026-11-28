@@ -1,11 +1,11 @@
 # Phase 19: 화면 점검 HIGH 3건 고치기 (리더 작은 화면, 라우트 에러 화면, 막다른 에러 문구)
 
-- 상태: 승인됨
+- 상태: 진행 중
 - 선행 phase: 없음
 - 관련 이슈: [#45](https://github.com/diegesis-labs/FE/issues/45)
 - 브랜치: `fix/45-interface-blockers`
 - 계획 커밋: (승인 후 이 문서만 커밋·푸시한 해시)
-- 구현 커밋: (구현 완료 후 커밋 해시)
+- 구현 커밋: `b806ec6`
 - 리뷰 문서: [19-interface-blockers-review.md](../reviews/19-interface-blockers-review.md) (리뷰 단계에서 작성)
 
 ## 목표
@@ -131,13 +131,13 @@ Confluence 최신 회의록(페어 회의 2026-11-26·11-27, BGM 태깅 실험)�
 
 ## 작업 단계
 
-- [ ] 1. 목 시나리오 `chapter-error`, `broken`을 더하고 `architecture.md`에 적는다.
-- [ ] 2. 리더 최소 높이, 책 에러 스크롤, 챕터 에러 위치와 링크를 고친다.
-- [ ] 3. `RouteErrorPage`를 다시 쓴다.
-- [ ] 4. `describe-error.ts`의 두 문구를 고친다.
-- [ ] 5. 개발 서버(목)를 Playwright로 열어 아래 완료 기준의 화면 항목을 확인한다. 점검 때와 같은 크기다: 320×180, 640×360, 320×640, 1280×800.
-- [ ] 6. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`를 통과시킨다.
-- [ ] 7. phase 18 머지 뒤 기록을 적는다 (별도 커밋).
+- [x] 1. 목 시나리오 `chapter-error`, `broken`을 더하고 `architecture.md`에 적는다.
+- [x] 2. 리더 최소 높이, 책 에러 스크롤, 챕터 에러 위치와 링크를 고친다.
+- [x] 3. `RouteErrorPage`를 다시 쓴다.
+- [x] 4. `describe-error.ts`의 두 문구를 고친다.
+- [x] 5. 개발 서버(목)를 Playwright로 열어 아래 완료 기준의 화면 항목을 확인한다. 점검 때와 같은 크기다: 320×180, 640×360, 320×640, 1280×800.
+- [x] 6. `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`, `pnpm check:process`를 통과시킨다.
+- [x] 7. phase 18 머지 뒤 기록을 적는다 (별도 커밋).
 
 ## 완료 기준
 
@@ -162,3 +162,4 @@ Confluence 최신 회의록(페어 회의 2026-11-26·11-27, BGM 태깅 실험)�
 - 2026-11-28: 작성. 2026-11-28 화면 점검의 HIGH 3건을 phase로 열기로 함 (사용자 결정)
 - 2026-11-28: 사용자 승인. 이슈 #45, 브랜치 `fix/45-interface-blockers`
 - 2026-11-28: 계획 변경. 라우트 에러 화면의 `책 목록으로`를 `Link`에서 `<a href="/">`로. `/`에서 난 에러는 `Link`로 같은 주소에 가도 다시 실패했다 (위험 3)
+- 2026-11-28: 단계 1~7 완료 (구현 `b806ec6`). Playwright로 확인: 320×180 리더 5줄, 스크롤·Tab으로 `다음 페이지`에 닿음, 책·챕터 에러의 버튼 모두 닿음, 304px 이상 화면은 스크롤 없고 쪽 수가 점검 때와 같음(320×640 11쪽, 640×360 17쪽), `broken`에서 라우트 에러 화면과 `책 목록으로` 동작, 10개 상태 × 2폭 가로 넘침 없음. phase 18 머지 뒤 기록도 함께 커밋

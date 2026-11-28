@@ -58,7 +58,8 @@ Confluence 최신 회의록을 읽었다.
 
 ### 1. `aria-disabled`
 
-- `button.tsx` 기본 클래스에 `aria-disabled:pointer-events-none aria-disabled:opacity-50`을 더한다. 마우스로는 `disabled`와 같아 보이고 hover도 없다.
+- `button.tsx` 기본 클래스에 `aria-disabled:pointer-events-none`, `ghost` 변형에 `aria-disabled:text-foreground/50`을 더한다. 마우스로는 `disabled`처럼 흐리고 hover도 없다.
+- `opacity-50`은 쓰지 않는다. `opacity`는 요소의 포커스 링까지 흐리게 해서, 포커스를 받는 `aria-disabled` 버튼의 링이 3:1 아래로 떨어진다. 글자·아이콘 색만 흐리게 한다. 지금 `aria-disabled`를 쓰는 버튼은 모두 `ghost`다.
 - 키보드 Enter·Space는 여전히 `click`을 낸다. `ReaderBottomBar`의 `turn`은 끝에서 이미 아무것도 하지 않지만, 버튼에서도 `canPrev`/`canNext`가 거짓이면 부르지 않는다. `LogoutButton`은 `isPending`이면 `mutate`를 부르지 않는다.
 - 다른 곳의 `disabled`는 그대로 둔다 (지금은 이 세 곳뿐).
 
@@ -156,3 +157,4 @@ Confluence 최신 회의록을 읽었다.
 
 - 2026-11-28: 작성. #47 MEDIUM 중 접근성·색 6건을 먼저 하기로 함
 - 2026-11-28: 사용자 승인. 이슈 #47, 브랜치 `design/47-a11y-color`
+- 2026-11-28: 계획 변경. `aria-disabled` 버튼을 `opacity-50` 대신 글자색(`text-foreground/50`, `ghost`)으로 흐리게. 구현 중 끝 쪽 `다음 페이지`의 포커스 링이 `opacity`에 같이 흐려지는 것을 스크린샷에서 봤다

@@ -1,6 +1,8 @@
 import type { TransitionEvent } from 'react'
+import { Link } from 'react-router'
 
 import { cn } from '@/shared/lib/utils'
+import { Button } from '@/shared/ui/button'
 import { ErrorState } from '@/shared/ui/error-state'
 
 import { columnTrackStyle } from '../lib/geometry'
@@ -66,60 +68,75 @@ export function PageStage({ reader }: { reader: Reader }) {
       data-first-sentence={range?.first}
       data-last-sentence={range?.last}
     >
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div
-          role="region"
-          aria-label="본문"
-          className="overflow-clip"
-          style={{ width: geometry.viewportWidth, height: geometry.pageHeight }}
-        >
-          {chapter.isPending ? (
-            <ChapterBodySkeleton />
-          ) : chapter.isError ? (
-            <ErrorState error={chapter.error} onRetry={() => void chapter.refetch()} />
-          ) : (
-            // 챕터가 바뀌면 틀을 새로 만든다. 그래야 새 챕터가 미끄러짐 없이 제자리에 놓인다.
-            <div
-              key={chapter.data.chapter_no}
-              ref={slideRef}
-              onTransitionEnd={onTransitionEnd}
-              className={cn('relative', SETTLE_TRANSITION, animate && SLIDE_TRANSITION)}
-              style={{
-                width: geometry.viewportWidth,
-                height: geometry.pageHeight,
-                transform: `translateX(calc(${-offset}px + var(--drag-dx, 0px)))`,
-              }}
-            >
-              {neighbors.prev && (
-                <NeighborView
-                  chapter={neighbors.prev}
-                  geometry={geometry}
-                  fontsVersion={fontsVersion}
-                  edge="last"
-                  left={-viewStride}
-                />
-              )}
-              <div
-                ref={measureRef}
-                style={columnTrackStyle(geometry)}
-                className={cn(!layout && 'invisible')}
-              >
-                <h2 className="mb-8 font-display text-2xl leading-snug">{chapter.data.title}</h2>
-                <ChapterBody chapter={chapter.data} />
-              </div>
-              {neighbors.next && (
-                <NeighborView
-                  chapter={neighbors.next}
-                  geometry={geometry}
-                  fontsVersion={fontsVersion}
-                  edge="first"
-                  left={viewCount * viewStride}
-                />
-              )}
-            </div>
-          )}
+      {chapter.isError ? (
+        // 에러 안내는 쪽 높이에 맞춘 본문 틀 밖, 무대 전체에서 스크롤되게 둔다. 쪽이 몇 줄뿐이어도 버튼에 닿는다 (Phase 19).
+        <div className="absolute inset-0 overflow-y-auto px-4 py-6">
+          <div className="mx-auto max-w-165">
+            <ErrorState
+              error={chapter.error}
+              onRetry={() => void chapter.refetch()}
+              action={
+                <Button asChild variant="link">
+                  <Link to="/">책 목록으로</Link>
+                </Button>
+              }
+            />
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div
+            role="region"
+            aria-label="본문"
+            className="overflow-clip"
+            style={{ width: geometry.viewportWidth, height: geometry.pageHeight }}
+          >
+            {chapter.isPending ? (
+              <ChapterBodySkeleton />
+            ) : (
+              // 챕터가 바뀌면 틀을 새로 만든다. 그래야 새 챕터가 미끄러짐 없이 제자리에 놓인다.
+              <div
+                key={chapter.data.chapter_no}
+                ref={slideRef}
+                onTransitionEnd={onTransitionEnd}
+                className={cn('relative', SETTLE_TRANSITION, animate && SLIDE_TRANSITION)}
+                style={{
+                  width: geometry.viewportWidth,
+                  height: geometry.pageHeight,
+                  transform: `translateX(calc(${-offset}px + var(--drag-dx, 0px)))`,
+                }}
+              >
+                {neighbors.prev && (
+                  <NeighborView
+                    chapter={neighbors.prev}
+                    geometry={geometry}
+                    fontsVersion={fontsVersion}
+                    edge="last"
+                    left={-viewStride}
+                  />
+                )}
+                <div
+                  ref={measureRef}
+                  style={columnTrackStyle(geometry)}
+                  className={cn(!layout && 'invisible')}
+                >
+                  <h2 className="mb-8 font-display text-2xl leading-snug">{chapter.data.title}</h2>
+                  <ChapterBody chapter={chapter.data} />
+                </div>
+                {neighbors.next && (
+                  <NeighborView
+                    chapter={neighbors.next}
+                    geometry={geometry}
+                    fontsVersion={fontsVersion}
+                    edge="first"
+                    left={viewCount * viewStride}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

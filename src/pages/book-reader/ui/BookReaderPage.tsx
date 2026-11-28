@@ -12,13 +12,16 @@ import { PageStage } from './PageStage'
 import { ReaderBottomBar } from './ReaderBottomBar'
 import { ReaderTopBar } from './ReaderTopBar'
 
-/** 책 읽기 화면. 화면 전체를 쓰고 세로 스크롤 없이 쪽을 넘긴다 (Phase 07) */
+/**
+ * 책 읽기 화면. 화면 전체를 쓰고 세로 스크롤 없이 쪽을 넘긴다 (Phase 07).
+ * 화면이 아주 낮으면(400% 확대 등) 최소 높이 19rem = 막대 2개 + 위아래 여백 + 5줄로 그리고 문서가 세로로 스크롤된다 (Phase 19).
+ */
 export function BookReaderPage() {
   const { bookId = '' } = useParams()
   const book = useQuery(bookDetailQuery(bookId))
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
+    <div className="flex h-dvh min-h-76 flex-col overflow-hidden bg-background text-foreground">
       {book.isPending ? (
         <div aria-busy="true" className="flex flex-1 flex-col">
           <p className="sr-only">책 정보를 불러오는 중입니다.</p>
@@ -30,16 +33,18 @@ export function BookReaderPage() {
           </div>
         </div>
       ) : book.isError ? (
-        <div className="mx-auto w-full max-w-165 px-4 py-15">
-          <ErrorState
-            error={book.error}
-            onRetry={() => void book.refetch()}
-            action={
-              <Button asChild variant="link">
-                <Link to="/">책 목록으로</Link>
-              </Button>
-            }
-          />
+        <div className="min-h-0 w-full flex-1 overflow-y-auto px-4 py-15">
+          <div className="mx-auto max-w-165">
+            <ErrorState
+              error={book.error}
+              onRetry={() => void book.refetch()}
+              action={
+                <Button asChild variant="link">
+                  <Link to="/">책 목록으로</Link>
+                </Button>
+              }
+            />
+          </div>
         </div>
       ) : (
         <Reader book={book.data} />

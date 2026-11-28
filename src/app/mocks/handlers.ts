@@ -22,9 +22,17 @@ type FixtureBook = {
 }
 
 /** 목 응답 시나리오. 브라우저 콘솔에서 localStorage.setItem('diegesis-mock', 'empty') 처럼 바꾼다 */
-type Scenario = 'normal' | 'empty' | 'unauthorized' | 'not-allowed' | 'error'
+type Scenario =
+  'normal' | 'empty' | 'unauthorized' | 'not-allowed' | 'error' | 'chapter-error' | 'broken'
 const SCENARIO_KEY = 'diegesis-mock'
-const SCENARIOS: readonly Scenario[] = ['empty', 'unauthorized', 'not-allowed', 'error']
+const SCENARIOS: readonly Scenario[] = [
+  'empty',
+  'unauthorized',
+  'not-allowed',
+  'error',
+  'chapter-error',
+  'broken',
+]
 
 function scenario(): Scenario {
   const value = localStorage.getItem(SCENARIO_KEY)
@@ -98,6 +106,8 @@ export const handlers = [
     await delay(LATENCY_MS)
     const error = scenarioError()
     if (error) return error
+    // 형식이 깨진 200 응답. 목록 화면이 그려지지 못해 라우트 에러 화면이 나온다.
+    if (scenario() === 'broken') return HttpResponse.json({})
 
     const list: BookSummary[] =
       scenario() === 'empty'
@@ -145,6 +155,9 @@ export const handlers = [
     await delay(LATENCY_MS)
     const error = scenarioError()
     if (error) return error
+    if (scenario() === 'chapter-error') {
+      return errorResponse(500, 'INTERNAL_ERROR', '서버에서 문제가 생겼습니다.')
+    }
 
     const book = books.find((b) => b.id === params.bookId)
     const chapter = book?.chapters.find((c) => String(c.chapter_no) === params.chapterNo)

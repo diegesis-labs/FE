@@ -1,3 +1,4 @@
+import { useDocumentTitle } from '@/shared/lib/dom'
 import { Button } from '@/shared/ui/button'
 
 /**
@@ -5,6 +6,7 @@ import { Button } from '@/shared/ui/button'
  * 상태 코드와 예외 메시지는 보여 주지 않는다. 개발 모드에서는 React Router가 콘솔에 남긴다.
  */
 export function RouteErrorPage() {
+  useDocumentTitle('화면을 표시하지 못했습니다')
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-165 flex-col justify-center gap-6 px-4 py-15">
       <div className="space-y-2">

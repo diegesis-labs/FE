@@ -12,6 +12,7 @@ import { queryClient } from '../api/query-client'
 import { AppLoading } from '../layouts/AppLoading'
 import { RootLayout } from '../layouts/RootLayout'
 import { authRedirectPath, LOGIN_PATH, setAuthNavigator } from './auth-redirect'
+import { focusOnNavigate } from './focus-on-navigate'
 
 const MOCK = import.meta.env.VITE_API_MOCK === 'true'
 const MOCK_LOGIN_PATH = '/login/mock'
@@ -108,6 +109,8 @@ export function getRouter() {
     queryClient.removeQueries({ queryKey: userKeys.me })
     void created.navigate(to, { replace: true })
   })
+
+  focusOnNavigate(created)
 
   router = created
   return created

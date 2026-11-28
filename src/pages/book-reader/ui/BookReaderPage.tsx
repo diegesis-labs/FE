@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router'
 
 import { type BookDetail, bookDetailQuery } from '@/entities/book'
-import { useWindowKeydown } from '@/shared/lib/dom'
+import { useDocumentTitle, useWindowKeydown } from '@/shared/lib/dom'
 import { Button } from '@/shared/ui/button'
 import { ErrorState } from '@/shared/ui/error-state'
 
@@ -19,6 +19,7 @@ import { ReaderTopBar } from './ReaderTopBar'
 export function BookReaderPage() {
   const { bookId = '' } = useParams()
   const book = useQuery(bookDetailQuery(bookId))
+  useDocumentTitle(book.data?.title)
 
   return (
     <div className="flex h-dvh min-h-76 flex-col overflow-hidden bg-background text-foreground">

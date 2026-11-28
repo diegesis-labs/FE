@@ -1,12 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { BookCard, BookCardSkeleton, bookListQuery } from '@/entities/book'
+import { useDocumentTitle } from '@/shared/lib/dom'
 import { ErrorState } from '@/shared/ui/error-state'
 
 const GRID = 'grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 md:gap-x-6 lg:grid-cols-4'
 const SKELETON_COUNT = 8
 
 export function BookListPage() {
+  useDocumentTitle('오늘 읽을 책')
   return (
     <section className="space-y-10 md:space-y-15">
       <header className="space-y-2">

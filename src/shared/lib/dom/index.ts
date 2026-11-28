@@ -1,3 +1,4 @@
+export { useDocumentTitle } from './use-document-title'
 export { useElementSize, type ElementSize } from './use-element-size'
 export { useFontsVersion } from './use-fonts-version'
 export { useMediaQuery } from './use-media-query'

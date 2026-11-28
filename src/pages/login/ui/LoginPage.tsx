@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router'
 
 import { ThemeToggle } from '@/features/theme-toggle'
+import { useDocumentTitle } from '@/shared/lib/dom'
 import { Button } from '@/shared/ui/button'
 
 // BE가 로그인 결과로 보내는 `error` 값 (BE docs/API.md 4.2절). 그 밖의 값은 무시한다.
@@ -25,6 +26,7 @@ type LoginPageProps = {
 }
 
 export function LoginPage({ loginHref }: LoginPageProps) {
+  useDocumentTitle('로그인')
   const [searchParams] = useSearchParams()
   const error = searchParams.get('error')
   const notice = isNoticeKey(error) ? NOTICES[error] : undefined
@@ -42,7 +44,7 @@ export function LoginPage({ loginHref }: LoginPageProps) {
           </div>
           {notice && (
             <div role="alert" className="space-y-1 bg-accent p-4 text-left text-foreground">
-              <p className="font-medium">{notice.title}</p>
+              <p className="font-medium text-destructive">{notice.title}</p>
               <p className="text-sm text-muted-foreground">{notice.description}</p>
             </div>
           )}

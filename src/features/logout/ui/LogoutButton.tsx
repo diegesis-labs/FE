@@ -9,8 +9,11 @@ export function LogoutButton() {
     <Button
       variant="ghost"
       size="sm"
-      onClick={() => logout.mutate()}
-      disabled={logout.isPending}
+      onClick={() => {
+        if (!logout.isPending) logout.mutate()
+      }}
+      // 요청 중에도 포커스를 남긴다 (Phase 20)
+      aria-disabled={logout.isPending}
       aria-busy={logout.isPending}
     >
       로그아웃

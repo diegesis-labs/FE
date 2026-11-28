@@ -129,6 +129,7 @@ Instrument Wood는 크림 바탕에서 글자 대비가 4.87로 기준(4.5)에 �
 | `destructive`            | `brick-600`    | `brick-300`   | 오류, 삭제         |
 | `destructive-foreground` | `cream-50`     | `pine-950`    | 오류 색 위 글자    |
 | `border` / `input`       | `line`         | `line` (다크) | 테두리             |
+| `control-border`         | `sand-600`     | `pine-300`    | 버튼·입력창 테두리 |
 | `ring`                   | `charcoal-500` | `pine-300`    | 포커스 링 (4.6)    |
 
 ### 1.6 다크 모드
@@ -177,6 +178,17 @@ MVP에 포함한다. #4의 **Piano Bench 초록**을 바탕으로 쓴다. 밤의
 | 기본 (`primary`)     | 크림 / 차콜 12.45, hover 15.11   | 초록 / 크림 14.53, hover 12.19   |
 | 브랜드 (`brand`)     | 크림 / wood-500 4.87, hover 6.05 | 초록 / wood-300 7.85, hover 8.55 |
 | 위험 (`destructive`) | 크림 / brick-600 5.83            | 초록 / brick-300 8.03            |
+
+**버튼·입력창 테두리** (비텍스트, WCAG 1.4.11 기준 3:1)
+
+장식 구분선(`border`)은 대비 기준을 받지 않지만, 누를 수 있는 것의 경계는 3:1이 필요하다. 그래서 `outline` 버튼과 입력창은 `border`가 아니라 불투명한 `control-border`를 쓴다 (Phase 20). 이전에는 `input`(`line`)을 써서 라이트 1.45~1.62:1이었다.
+
+| 모드   | `control-border` 값 | 바탕                                              | 대비                      | 판정 |
+| ------ | ------------------- | ------------------------------------------------- | ------------------------- | ---- |
+| 라이트 | `sand-600`          | `cream-50` / `cream-100` / `cream-200`            | 5.31 / 4.94 / 4.45        | 통과 |
+| 다크   | `pine-300`          | `pine-950` / `pine-900` / `pine-800` / `pine-700` | 8.06 / 6.90 / 5.84 / 4.91 | 통과 |
+
+다크 값은 포커스 링과 같은 색이지만, 링은 2px 띄워 그리므로(4.6) 테두리와 겹치지 않는다.
 
 **포커스 링** (비텍스트, WCAG 1.4.11 기준 3:1)
 
@@ -273,18 +285,19 @@ shadcn/ui 컴포넌트를 쓰되, 아래 규칙에 맞게 `src/shared/ui/`의 �
 | --------------------- | ---------------------------- | ---------------------------- | -------------------------------------------------- |
 | Primary (`default`)   | 차콜 바탕 + 크림 글자        | `charcoal-900`               | 화면에서 가장 중요한 동작 1개                      |
 | Brand (`brand`)       | 포인트 컬러 바탕 + 크림 글자 | `brand-hover`                | 화면에서 가장 강조할 동작. **한 화면에 하나 이하** |
-| Secondary (`outline`) | 투명 바탕 + `line` 테두리    | 차콜 바탕 + 크림 글자 (반전) | 보조 동작                                          |
+| Secondary (`outline`) | 투명 바탕 + `control-border` | 차콜 바탕 + 크림 글자 (반전) | 보조 동작                                          |
 | Text (`link`)         | 밑줄 글자                    | 진하게                       | 덜 중요한 동작, 문장 속 링크                       |
 | Destructive           | `destructive` 바탕           | 조금 어둡게                  | 삭제 등 되돌릴 수 없는 동작                        |
 
 - 모서리 없음, 높이 44px, 좌우 여백 24px, 글자 14px Medium.
 - 주요 버튼은 **최소 너비 200px**으로 넉넉하게. 모바일에서는 가로 전체(`w-full`).
 - 아이콘만 있는 버튼은 40×40px.
+- 비활성: 포커스가 남아야 하는 버튼(끝 쪽의 `다음 페이지`, 요청 중인 버튼)은 `disabled` 대신 `aria-disabled`를 쓴다. `disabled`면 누르던 버튼이 포커스를 잃는다. 누를 때 동작은 부르는 쪽에서 막는다. 모양은 `ghost`에서 글자·아이콘만 `foreground` 50%로 흐리게 한다. `opacity`는 포커스 링까지 흐리게 하므로 쓰지 않는다 (Phase 20).
 - 전환: `background-color`와 `color`를 0.25초 `ease-out`.
 
 ### 4.2 입력창
 
-- 크림 바탕, 1px `line` 테두리, 모서리 없음, 높이 44px, 좌우 여백 16px.
+- 크림 바탕, 1px `control-border` 테두리, 모서리 없음, 높이 44px, 좌우 여백 16px.
 - 포커스: 테두리를 `charcoal-800`으로 진하게. 오류: 테두리와 아래 메시지를 `destructive`로.
 - 비활성: 바탕 `cream-100`.
 - 라벨은 입력창 위에 12px로 둔다. placeholder를 라벨 대신 쓰지 않는다.
@@ -313,6 +326,7 @@ shadcn/ui 컴포넌트를 쓰되, 아래 규칙에 맞게 `src/shared/ui/`의 �
 - 컴포넌트에서 `outline-none`으로 끄고 `ring-[3px]` 같은 box-shadow 링을 따로 주지 않는다. 그림자를 쓰지 않는 원칙(2.3)과 맞지 않고, 고대비 모드(forced-colors)에서는 box-shadow가 사라진다. `pnpm lint`가 이런 클래스(`outline-none`, `outline-hidden`, `focus-visible:ring-*` 등)를 막는다 ([guardrails.md](guardrails.md)).
 - 바깥 outline이 잘리는 곳(스크롤 목록, `overflow-hidden` 안)에서는 `focus-visible:-outline-offset-2`로 요소 안쪽에 그린다. 이때 링은 요소 면과 맞닿으므로 그 면 위 대비를 본다. `background`, `accent`는 1.7 표에서 3:1을 넘는다.
 - 대비 값은 1.7 "포커스 링" 표.
+- 화면(경로)을 옮기면 새 화면의 `h1`에 포커스를 옮긴다(`tabindex="-1"`). 키보드로 옮겼을 때만 링이 보인다 (Phase 20, `app/router/focus-on-navigate.ts`).
 
 ## 5. 모션
 
@@ -364,3 +378,4 @@ shadcn/ui 컴포넌트를 쓰되, 아래 규칙에 맞게 `src/shared/ui/`의 �
   - 이미지 보드는 #4를 기준으로 하되 레포에는 올리지 않는다. 로고는 계속 없다.
   - 타자기 포인트 서체(`font-typewriter`)를 추가한다.
   - 오류 색을 `#CA432F` → `#B33A27`로 바꾼다 (크림 2·3단계 바탕에서 대비 부족).
+- 2026-11-28: [Phase 20](phases/20-a11y-color.md). 버튼·입력창 테두리 토큰 `control-border`(라이트 `sand-600`, 다크 `pine-300`)를 둔다. 포커스를 남겨야 하는 비활성 버튼은 `aria-disabled`로, 화면을 옮기면 `h1`에 포커스.

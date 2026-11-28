@@ -1,6 +1,6 @@
 # Phase 18: 충돌을 푼 `main` 머지도 검사 6에서 변경으로 보기
 
-- 상태: 리뷰 통과 (머지와 머지 뒤 `fe-main` 확인 남음)
+- 상태: 완료 (`main` 머지 `c73bf29`)
 - 선행 phase: [17 리뷰 없이 머지되는 PR을 작업 절차 검사로 막기](17-review-after-change-check.md) (`main`에 머지됨)
 - 관련 이슈: [#43](https://github.com/diegesis-labs/FE/issues/43)
 - 브랜치: `setup/43-merge-resolution-check`
@@ -91,7 +91,7 @@ function collectCommits(base, head) { ... }
 - [x] 충돌 없는 머지, 머지 뒤 리뷰 결과를 적은 PR은 통과한다. PR #18, #10, #12, #26, #37 실제 커밋으로 확인한다.
 - [x] 머지 커밋이 검사 1·3·4의 결과를 바꾸지 않는다 (지난 머지 PR 전부에서 검사 1~5 결과가 이 phase 전과 같다).
 - [x] CLAUDE.md, guardrails.md의 검사 6 설명이 코드와 같다.
-- [ ] 이 PR 자체가 검사 6을 통과하고 머지된다.
+- [x] 이 PR 자체가 검사 6을 통과하고 머지된다.
 
 ## 위험과 열린 질문
 
@@ -108,3 +108,4 @@ function collectCommits(base, head) { ... }
 - 2026-11-26: 단계 5 완료. PR #44를 draft로 열어 CI `check`·`fe-pr` 통과. CI의 git은 2.56.1 (ubuntu-26.04)
 - 2026-11-26: 리뷰 통과 ([리뷰 문서](../reviews/18-merge-resolution-check-review.md)). 발견 사항 없음. 남은 일: draft 해제 뒤 CI, 머지, 머지 뒤 `fe-main`·`pr-44` 태그
 - 2026-11-26: draft를 푼 뒤 PR #44 CI `check` 통과 (`6170217`, 실행 45779326070): 검사 1~6 모두 ✔. 남은 일: 머지, 머지 뒤 `fe-main`·`pr-44` 태그
+- 2026-11-28: 완료. PR #44를 `c73bf29`로 머지 (2026-11-26). `fe-main` 빌드 SUCCESS, production 트래픽 100% `diegesis-fe-c73bf29-50b16e`, `/` 200. `pr-44` 태그는 지웠다. 이 기록은 phase 19 브랜치에서 커밋했다

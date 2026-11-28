@@ -97,7 +97,7 @@ BE가 구현되기 전에는 [MSW](https://mswjs.io)로 BE API 문서 형식 그
 - 켜기: `.env.local`에 `VITE_API_MOCK=true`를 넣고 `pnpm dev`. 빌드도 같은 값으로 정한다: `VITE_API_MOCK=true pnpm build`이면 배포 결과에서도 목이 켜지고(데모 모드, 5장), 값이 없으면 목 코드가 번들에 들어가지 않는다. 목 코드와 데이터는 따로 떨어진 파일(`browser-*.js`, gzip 약 184KB)로 들어가 목이 켜질 때만 받는다.
 - 위치: `src/app/mocks/` (`handlers.ts`, `fixtures/books.json`, `enable-mocking.ts`). 목은 엔티티 타입을 쓰므로 모든 레이어를 import 할 수 있는 `app`에 둔다.
 - 목 데이터: 저작권 보호 기간이 끝난 한국 단편 3편을 위키문헌에서 가져와 3장씩 나눴다. 출처는 `handlers.ts` 머리 주석에 있다.
-- 시나리오: 브라우저 콘솔에서 `localStorage.setItem('diegesis-mock', 'empty' | 'unauthorized' | 'not-allowed' | 'error')` 후 새로고침. `unauthorized`는 모든 경로가 401, `not-allowed`는 403 `NOT_ALLOWED`다. 되돌리기는 `localStorage.removeItem('diegesis-mock')`. 없는 책(`/books/nope`)은 404.
+- 시나리오: 브라우저 콘솔에서 `localStorage.setItem('diegesis-mock', 'empty' | 'unauthorized' | 'not-allowed' | 'error' | 'chapter-error' | 'broken')` 후 새로고침. `unauthorized`는 모든 경로가 401, `not-allowed`는 403 `NOT_ALLOWED`, `error`는 500이다. `chapter-error`는 챕터 본문만 500이고, `broken`은 책 목록이 형식이 깨진 200을 받아 라우트 에러 화면이 나온다 (Phase 19). 되돌리기는 `localStorage.removeItem('diegesis-mock')`. 없는 책(`/books/nope`)은 404.
 - 목 로그인 상태: `localStorage`의 `diegesis-mock-session`이 `out`이면 로그아웃한 상태다(값이 없으면 로그인한 상태). 헤더의 로그아웃이 `out`으로 바꾸고, 로그인 화면의 버튼(`/login/mock`)이 지운다. 실제 로그인 버튼은 화면 이동이라 MSW가 가로채지 못하므로, 목이 켜져 있을 때만 `/login/mock` 라우트가 생긴다.
 - `public/mockServiceWorker.js`는 `msw init`이 만드는 파일이라 고치지 않는다. MSW를 올리면 `pnpm exec msw init public`으로 다시 만든다. 배포 결과에는 늘 복사되고, 데모 모드일 때만 등록된다.
 - BE에 새 엔드포인트가 생기면 화면을 만들기 전에 목 핸들러부터 추가한다.

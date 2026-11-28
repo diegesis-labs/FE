@@ -17,12 +17,16 @@ function describeForbidden(error: ApiError): ErrorDescription {
         retryable: false,
       }
     case 'ADMIN_ONLY':
-      return { title: '관리자만 쓸 수 있습니다', retryable: false }
+      return {
+        title: '관리자만 쓸 수 있습니다',
+        description: '관리자 계정으로 로그인해야 쓸 수 있습니다.',
+        retryable: false,
+      }
     case 'ORIGIN_MISMATCH':
       // 같은 출처에서 부르면 생기지 않는다. FE에서 받았다면 결함이다.
       return {
-        title: '요청이 거절되었습니다',
-        description: '문제가 계속되면 알려 주세요.',
+        title: '요청을 처리하지 못했습니다',
+        description: '페이지를 새로고침한 뒤 다시 시도해 주세요.',
         retryable: false,
       }
     default:

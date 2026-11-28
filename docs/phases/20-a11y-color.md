@@ -1,11 +1,11 @@
 # Phase 20: 화면 점검 MEDIUM 중 접근성과 색 고치기
 
-- 상태: 승인됨
+- 상태: 리뷰 중
 - 선행 phase: [19 화면 점검 HIGH 3건 고치기](19-interface-blockers.md) (`main`에 머지됨)
 - 관련 이슈: [#47](https://github.com/diegesis-labs/FE/issues/47) (MEDIUM 13건 중 6건. 나머지는 다음 phase)
 - 브랜치: `design/47-a11y-color`
-- 계획 커밋: (승인 후 이 문서만 커밋·푸시한 해시)
-- 구현 커밋: (구현 완료 후 커밋 해시)
+- 계획 커밋: `9a289c5` (계획 변경 `64dc4f8`)
+- 구현 커밋: `d122d29`
 - 리뷰 문서: [20-a11y-color-review.md](../reviews/20-a11y-color-review.md) (리뷰 단계에서 작성)
 
 ## 목표
@@ -121,29 +121,29 @@ Confluence 최신 회의록을 읽었다.
 
 ## 작업 단계
 
-- [ ] 1. `control-border` 토큰과 `button.tsx`(`aria-disabled` 모양, `outline` 테두리)
-- [ ] 2. `ReaderBottomBar`·`LogoutButton`을 `aria-disabled`로
-- [ ] 3. `ChapterToc` 지금 챕터 막대, `text-start`
-- [ ] 4. `LoginPage` 안내 제목 색
-- [ ] 5. `useDocumentTitle`과 다섯 화면의 문서 제목
-- [ ] 6. 라우터의 화면 이동 뒤 `h1` 포커스
-- [ ] 7. `ReaderBottomBar` 알림 영역 상시 유지, 챕터 제목·책 끝 알림
-- [ ] 8. design-system 1.5, 1.7, 4.1, 4.2, 4.6 고치기
-- [ ] 9. Playwright로 화면 확인 (아래 완료 기준), `pnpm format:check`·`lint`·`typecheck`·`build`·`test:scripts`
+- [x] 1. `control-border` 토큰과 `button.tsx`(`aria-disabled` 모양, `outline` 테두리)
+- [x] 2. `ReaderBottomBar`·`LogoutButton`을 `aria-disabled`로
+- [x] 3. `ChapterToc` 지금 챕터 막대, `text-start`
+- [x] 4. `LoginPage` 안내 제목 색
+- [x] 5. `useDocumentTitle`과 다섯 화면의 문서 제목
+- [x] 6. 라우터의 화면 이동 뒤 `h1` 포커스
+- [x] 7. `ReaderBottomBar` 알림 영역 상시 유지, 챕터 제목·책 끝 알림
+- [x] 8. design-system 1.5, 1.7, 4.1, 4.2, 4.6 고치기
+- [x] 9. Playwright로 화면 확인 (아래 완료 기준), `pnpm format:check`·`lint`·`typecheck`·`build`·`test:scripts`
 
 ## 완료 기준
 
-- [ ] `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`가 통과한다.
-- [ ] 리더에서 키보드로 `다음 페이지`를 눌러 책 끝까지 가도 포커스가 `다음 페이지`에 남는다 (`document.activeElement`가 `<body>`가 아님). 책 끝에서 Enter를 눌러도 쪽·주소가 그대로다. 첫 쪽의 `이전 페이지`도 같다.
-- [ ] 끝 쪽의 `다음 페이지`가 `aria-disabled="true"`이고 흐리게 보이며, 마우스 hover에 바탕이 바뀌지 않는다.
-- [ ] 로그아웃 요청 중 버튼이 `aria-disabled="true"`이고, 그동안 다시 눌러도 `/auth/logout` 요청이 한 번만 간다.
-- [ ] 목차에서 지금 챕터에 시작 쪽 막대가 보이고, 막대와 바탕의 대비가 라이트·다크 모두 3:1 이상이다 (계산 값을 리뷰 문서에).
-- [ ] `outline` 버튼 테두리와 바탕의 대비가 라이트(`cream-50/100/200`)·다크(`pine-950/900/800/700`) 모두 3:1 이상이다. 1.7 표에 같은 값이 있다.
-- [ ] `/login?error=NOT_ALLOWED`, `?error=LOGIN_FAILED`의 안내 제목이 `destructive` 색이고 대비 4.5:1 이상이다 (라이트·다크).
-- [ ] 다섯 화면(책 목록, 리더, 로그인, 없는 페이지, 라우트 에러)의 `document.title`이 위 표와 같다.
-- [ ] 책 목록에서 책을 눌러 리더로, 리더에서 `책 목록으로`·뒤로 가기로 목록에 오면 포커스가 새 화면의 `h1`에 있다. 쪽 넘김(`?chapter&s`만 바뀜)과 첫 화면 열기에서는 포커스가 움직이지 않는다.
-- [ ] 쪽을 넘길 때 `aria-live` 영역 요소가 그대로(같은 DOM 노드)이고, 챕터를 넘기면 그 영역 문장에 새 챕터 제목이 들어가며, 같은 챕터 안의 다음 쪽에서는 빠진다. 책 끝에서 `마지막 페이지입니다`가 들어간다.
-- [ ] 바뀐 화면에서 320px·1280px 가로 넘침이 없고, 다크 모드에서도 위 표시가 보인다 (스크린샷).
+- [x] `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test:scripts`가 통과한다.
+- [x] 리더에서 키보드로 `다음 페이지`를 눌러 책 끝까지 가도 포커스가 `다음 페이지`에 남는다 (`document.activeElement`가 `<body>`가 아님). 책 끝에서 Enter를 눌러도 쪽·주소가 그대로다. 첫 쪽의 `이전 페이지`도 같다.
+- [x] 끝 쪽의 `다음 페이지`가 `aria-disabled="true"`이고 흐리게 보이며, 마우스 hover에 바탕이 바뀌지 않는다.
+- [x] 로그아웃 요청 중 버튼이 `aria-disabled="true"`이고, 그동안 다시 눌러도 `/auth/logout` 요청이 한 번만 간다.
+- [x] 목차에서 지금 챕터에 시작 쪽 막대가 보이고, 막대와 바탕의 대비가 라이트·다크 모두 3:1 이상이다 (계산 값을 리뷰 문서에).
+- [x] `outline` 버튼 테두리와 바탕의 대비가 라이트(`cream-50/100/200`)·다크(`pine-950/900/800/700`) 모두 3:1 이상이다. 1.7 표에 같은 값이 있다.
+- [x] `/login?error=NOT_ALLOWED`, `?error=LOGIN_FAILED`의 안내 제목이 `destructive` 색이고 대비 4.5:1 이상이다 (라이트·다크).
+- [x] 다섯 화면(책 목록, 리더, 로그인, 없는 페이지, 라우트 에러)의 `document.title`이 위 표와 같다.
+- [x] 책 목록에서 책을 눌러 리더로, 리더에서 `책 목록으로`·뒤로 가기로 목록에 오면 포커스가 새 화면의 `h1`에 있다. 쪽 넘김(`?chapter&s`만 바뀜)과 첫 화면 열기에서는 포커스가 움직이지 않는다.
+- [x] 쪽을 넘길 때 `aria-live` 영역 요소가 그대로(같은 DOM 노드)이고, 챕터를 넘기면 그 영역 문장에 새 챕터 제목이 들어가며, 같은 챕터 안의 다음 쪽에서는 빠진다. 책 끝에서 `마지막 페이지입니다`가 들어간다.
+- [x] 바뀐 화면에서 320px·1280px 가로 넘침이 없고, 다크 모드에서도 위 표시가 보인다 (스크린샷).
 
 ## 위험과 열린 질문
 
@@ -158,3 +158,4 @@ Confluence 최신 회의록을 읽었다.
 - 2026-11-28: 작성. #47 MEDIUM 중 접근성·색 6건을 먼저 하기로 함
 - 2026-11-28: 사용자 승인. 이슈 #47, 브랜치 `design/47-a11y-color`
 - 2026-11-28: 계획 변경. `aria-disabled` 버튼을 `opacity-50` 대신 글자색(`text-foreground/50`, `ghost`)으로 흐리게. 구현 중 끝 쪽 `다음 페이지`의 포커스 링이 `opacity`에 같이 흐려지는 것을 스크린샷에서 봤다
+- 2026-11-28: 단계 1~9 완료 (구현 `d122d29`). Playwright로 확인: 책 끝·첫 쪽에서 Enter·Space·→를 눌러도 포커스가 버튼에 남고 주소 그대로, 끝 쪽 버튼의 포커스 링 대비 5.66. 로그아웃 요청 중 클릭 3번·Enter 2번에 요청 1번. 대비: 목차 막대 6.05(라이트)·7.85(다크), outline 테두리 5.31/4.94/4.45·8.06, 로그인 안내 제목 4.89(라이트·다크). 다섯 화면 제목이 표와 같음. 목록→리더(클릭·키보드)·뒤로 가기 뒤 포커스가 `h1`, 첫 화면 열기·로그인으로 보내기·쪽 넘김에서는 그대로, 리더 `h1`에서 →로 쪽이 넘어감. 알림 영역은 같은 노드로 남고, 챕터가 바뀐 첫 쪽에만 챕터 제목, 책 끝에 `마지막 페이지입니다`. 5개 화면 × 2폭 가로 넘침 없음

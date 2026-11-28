@@ -85,6 +85,7 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
+  --color-control-border: var(--control-border);
   --color-ring: var(--ring);
   --color-overlay: var(--overlay);
   --color-chart-1: var(--chart-1);
@@ -130,6 +131,8 @@
   --destructive-foreground: var(--color-cream-50);
   --border: rgb(51 51 51 / 0.2);
   --input: rgb(51 51 51 / 0.2);
+  /* 버튼·입력창 테두리: 크림 3종 위 3:1 이상 (design-system 1.7) */
+  --control-border: var(--color-sand-600);
   /* 포커스 링: 크림 3종 위 3:1 이상 (design-system 1.7) */
   --ring: var(--color-charcoal-500);
   /* 모달·서랍 뒤 배경 (design-system 1.2 overlay) */
@@ -176,6 +179,8 @@
   --destructive-foreground: var(--color-pine-950);
   --border: rgb(255 254 241 / 0.16);
   --input: rgb(255 254 241 / 0.16);
+  /* 버튼·입력창 테두리: pine 4종 위 3:1 이상 (design-system 1.7) */
+  --control-border: var(--color-pine-300);
   /* 포커스 링: pine 4종 위 3:1 이상 (design-system 1.7) */
   --ring: var(--color-pine-300);
   --overlay: rgb(0 0 0 / 0.6);

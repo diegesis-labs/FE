@@ -1,10 +1,10 @@
 # Phase 19: 화면 점검 HIGH 3건 고치기 (리더 작은 화면, 라우트 에러 화면, 막다른 에러 문구)
 
-- 상태: 리뷰 통과 (머지와 머지 뒤 `fe-main` 확인 남음)
+- 상태: 완료 (`main` 머지 `073e773`)
 - 선행 phase: 없음
 - 관련 이슈: [#45](https://github.com/diegesis-labs/FE/issues/45)
 - 브랜치: `fix/45-interface-blockers`
-- 계획 커밋: (승인 후 이 문서만 커밋·푸시한 해시)
+- 계획 커밋: `1ac9cdd`
 - 구현 커밋: `b806ec6`
 - 리뷰 문서: [19-interface-blockers-review.md](../reviews/19-interface-blockers-review.md) (리뷰 단계에서 작성)
 
@@ -164,3 +164,4 @@ Confluence 최신 회의록(페어 회의 2026-11-26·11-27, BGM 태깅 실험)�
 - 2026-11-28: 계획 변경. 라우트 에러 화면의 `책 목록으로`를 `Link`에서 `<a href="/">`로. `/`에서 난 에러는 `Link`로 같은 주소에 가도 다시 실패했다 (위험 3)
 - 2026-11-28: 단계 1~7 완료 (구현 `b806ec6`). Playwright로 확인: 320×180 리더 5줄, 스크롤·Tab으로 `다음 페이지`에 닿음, 책·챕터 에러의 버튼 모두 닿음, 304px 이상 화면은 스크롤 없고 쪽 수가 점검 때와 같음(320×640 11쪽, 640×360 17쪽), `broken`에서 라우트 에러 화면과 `책 목록으로` 동작, 10개 상태 × 2폭 가로 넘침 없음. phase 18 머지 뒤 기록도 함께 커밋
 - 2026-11-28: 리뷰 통과 ([리뷰 문서](../reviews/19-interface-blockers-review.md)). 발견 사항 없음. 남은 일: draft 해제 뒤 CI, 머지, 머지 뒤 `fe-main`·`pr-46` 태그, 점검의 MEDIUM·LOW 이슈
+- 2026-11-28: 완료. PR #46을 `073e773`으로 머지. `fe-main` 빌드 SUCCESS, production 트래픽 100% `diegesis-fe-073e773-97533d`, `/` 200. `pr-46` 태그는 지웠다. production 320×180에서 리더 본문 144px(5줄), 문서 높이 304px. 점검의 MEDIUM·LOW는 이슈 #47로 올렸다. 이 기록은 phase 20 브랜치에서 커밋했다

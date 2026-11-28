@@ -13,7 +13,7 @@ import {
 
 import type { Reader } from '../model/use-reader'
 
-/** 목차 서랍. 챕터를 누르면 그 챕터 첫 쪽으로 가고 닫힌다 */
+/** 목차 서랍. 챕터를 누르면 그 챕터 첫 쪽으로 가고 닫힌다. 지금 챕터는 색 말고 시작 쪽 막대로도 보인다 (Phase 20) */
 export function ChapterToc({ reader }: { reader: Reader }) {
   const [open, setOpen] = useState(false)
   const { book, position, goToChapter } = reader
@@ -45,8 +45,8 @@ export function ChapterToc({ reader }: { reader: Reader }) {
                       goToChapter(c.chapter_no)
                       setOpen(false)
                     }}
-                    className={`flex w-full cursor-pointer items-center py-3 text-left text-sm transition-colors duration-250 ease-out hover:bg-accent ${
-                      current ? 'font-medium text-brand-ink' : ''
+                    className={`flex w-full cursor-pointer items-center border-s-2 py-3 ps-3 text-start text-sm transition-colors duration-250 ease-out hover:bg-accent ${
+                      current ? 'border-brand-ink font-medium text-brand-ink' : 'border-transparent'
                     }`}
                   >
                     {c.title}
